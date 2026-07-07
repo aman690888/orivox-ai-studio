@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkspaceIdRouteImport } from './routes/workspace.$id'
+import { Route as PresentIdRouteImport } from './routes/present.$id'
+import { Route as ExportIdRouteImport } from './routes/export.$id'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppPresentationsRouteImport } from './routes/_app.presentations'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
@@ -28,6 +31,21 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkspaceIdRoute = WorkspaceIdRouteImport.update({
+  id: '/workspace/$id',
+  path: '/workspace/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PresentIdRoute = PresentIdRouteImport.update({
+  id: '/present/$id',
+  path: '/present/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExportIdRoute = ExportIdRouteImport.update({
+  id: '/export/$id',
+  path: '/export/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -52,6 +70,9 @@ export interface FileRoutesByFullPath {
   '/home': typeof AppHomeRoute
   '/presentations': typeof AppPresentationsRoute
   '/settings': typeof AppSettingsRoute
+  '/export/$id': typeof ExportIdRoute
+  '/present/$id': typeof PresentIdRoute
+  '/workspace/$id': typeof WorkspaceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -59,6 +80,9 @@ export interface FileRoutesByTo {
   '/home': typeof AppHomeRoute
   '/presentations': typeof AppPresentationsRoute
   '/settings': typeof AppSettingsRoute
+  '/export/$id': typeof ExportIdRoute
+  '/present/$id': typeof PresentIdRoute
+  '/workspace/$id': typeof WorkspaceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,12 +92,31 @@ export interface FileRoutesById {
   '/_app/home': typeof AppHomeRoute
   '/_app/presentations': typeof AppPresentationsRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/export/$id': typeof ExportIdRoute
+  '/present/$id': typeof PresentIdRoute
+  '/workspace/$id': typeof WorkspaceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/home' | '/presentations' | '/settings'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/home'
+    | '/presentations'
+    | '/settings'
+    | '/export/$id'
+    | '/present/$id'
+    | '/workspace/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/home' | '/presentations' | '/settings'
+  to:
+    | '/'
+    | '/auth'
+    | '/home'
+    | '/presentations'
+    | '/settings'
+    | '/export/$id'
+    | '/present/$id'
+    | '/workspace/$id'
   id:
     | '__root__'
     | '/'
@@ -82,12 +125,18 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/_app/presentations'
     | '/_app/settings'
+    | '/export/$id'
+    | '/present/$id'
+    | '/workspace/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ExportIdRoute: typeof ExportIdRoute
+  PresentIdRoute: typeof PresentIdRoute
+  WorkspaceIdRoute: typeof WorkspaceIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -111,6 +160,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workspace/$id': {
+      id: '/workspace/$id'
+      path: '/workspace/$id'
+      fullPath: '/workspace/$id'
+      preLoaderRoute: typeof WorkspaceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/present/$id': {
+      id: '/present/$id'
+      path: '/present/$id'
+      fullPath: '/present/$id'
+      preLoaderRoute: typeof PresentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/export/$id': {
+      id: '/export/$id'
+      path: '/export/$id'
+      fullPath: '/export/$id'
+      preLoaderRoute: typeof ExportIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/settings': {
@@ -155,6 +225,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  ExportIdRoute: ExportIdRoute,
+  PresentIdRoute: PresentIdRoute,
+  WorkspaceIdRoute: WorkspaceIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
