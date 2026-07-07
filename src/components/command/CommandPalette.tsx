@@ -1,7 +1,6 @@
 import { Command } from "cmdk";
 import { AnimatePresence, motion } from "motion/react";
-import { create } from "zustand";
-import { useEffect } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Search,
@@ -15,14 +14,30 @@ import {
 } from "lucide-react";
 import { presentations } from "@/lib/mock";
 
-type PaletteStore = { isOpen: boolean; open: () => void; close: () => void; toggle: () => void };
+// Tiny global store (no zustand dependency)
+const listeners = new Set<() => void>();
+let paletteOpen = false;
+const paletteApi = {
+  getState: () => paletteOpen,
+  subscribe: (fn: () => void) => {
+    listeners.add(fn);
+    return () => listeners.delete(fn);
+  },
+  set: (v: boolean) => {
+    paletteOpen = v;
+    listeners.forEach((l) => l());
+  },
+};
 
-export const useCommandPalette = create<PaletteStore>((set) => ({
-  isOpen: false,
-  open: () => set({ isOpen: true }),
-  close: () => set({ isOpen: false }),
-  toggle: () => set((s) => ({ isOpen: !s.isOpen })),
-}));
+export function useCommandPalette() {
+  const isOpen = useSyncExternalStore(paletteApi.subscribe, paletteApi.getState, () => false);
+  return {
+    isOpen,
+    open: () => paletteApi.set(true),
+    close: () => paletteApi.set(false),
+    toggle: () => paletteApi.set(!paletteApi.getState()),
+  };
+}
 
 export function CommandPalette() {
   const { isOpen, close, toggle } = useCommandPalette();
