@@ -18,12 +18,22 @@ function Home() {
 
   const go = (p: string) => navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: p } });
 
+  const greeting = getGreeting();
+  const dateLabel = getDateLabel();
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-10 md:py-14">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-xs text-muted-foreground">Tuesday, July 7</div>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl">Good evening, Alex.</h1>
+          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-muted-foreground">{dateLabel}</motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl"
+          >
+            {greeting}, Alex.
+          </motion.h1>
         </div>
         <button
           onClick={open}
@@ -34,7 +44,7 @@ function Home() {
         </button>
       </div>
 
-      <div className="mt-8">
+      <motion.div className="mt-8" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <PromptBox
           value={prompt}
           onChange={setPrompt}
@@ -42,17 +52,21 @@ function Home() {
           placeholder="Describe your next presentation..."
         />
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {suggestions.slice(0, 4).map((s) => (
-            <button
+          {suggestions.slice(0, 4).map((s, i) => (
+            <motion.button
               key={s}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 + i * 0.04 }}
               onClick={() => setPrompt(s)}
-              className="rounded-full border border-border bg-white/[0.02] px-3 py-1 text-xs text-muted-foreground transition hover:border-white/20 hover:text-foreground"
+              className="rounded-full border border-border bg-white/[0.02] px-3 py-1 text-xs text-muted-foreground transition hover:border-electric/40 hover:bg-electric/5 hover:text-foreground hover:shadow-[0_0_20px_-4px_var(--electric)]"
             >
               {s}
-            </button>
+            </motion.button>
           ))}
         </div>
-      </div>
+      </motion.div>
+
 
       {/* Featured Continue */}
       <section className="mt-12">
@@ -171,3 +185,17 @@ function accentGrad(a: string) {
     amber: "from-amber-500/40 to-rose-500/20",
   }[a] || "from-electric/40 to-violet/30";
 }
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 5) return "Still up, Alex";
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  if (h < 22) return "Good evening";
+  return "Good evening";
+}
+
+function getDateLabel() {
+  return new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+}
+

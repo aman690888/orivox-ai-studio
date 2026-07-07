@@ -38,31 +38,40 @@ export function PromptBox({
     }
   };
 
+  const isActive = v.length > 0;
+
   return (
     <motion.div
       layout
+      animate={{
+        boxShadow: isActive
+          ? "0 0 0 1px color-mix(in oklab, var(--electric) 35%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--electric) 30%, transparent)"
+          : "0 0 0 0 transparent",
+      }}
+      transition={{ type: "spring", stiffness: 200, damping: 28 }}
       className={cn(
-        "glass group relative w-full rounded-2xl transition-shadow",
-        "focus-within:glow-electric",
+        "glass group relative w-full rounded-2xl",
         size === "lg" ? "p-4" : "p-3",
         className
       )}
     >
       <div className="flex items-start gap-3">
-        <Sparkles className={cn("mt-1 shrink-0 text-electric", size === "lg" ? "h-5 w-5" : "h-4 w-4")} />
-        <textarea
+        <Sparkles className={cn("mt-1 shrink-0 text-electric transition-transform", isActive && "scale-110", size === "lg" ? "h-5 w-5" : "h-4 w-4")} />
+        <motion.textarea
+          layout
           autoFocus={autoFocus}
           value={v}
           onChange={(e) => set(e.target.value)}
           onKeyDown={onKey}
           placeholder={placeholder}
-          rows={size === "lg" ? 2 : 1}
+          rows={isActive && size === "lg" ? 3 : size === "lg" ? 2 : 1}
           className={cn(
             "min-h-0 flex-1 resize-none bg-transparent leading-relaxed text-foreground outline-none placeholder:text-muted-foreground",
             size === "lg" ? "text-lg" : "text-sm"
           )}
         />
       </div>
+
       <div className="mt-3 flex items-center justify-between">
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <button className="rounded-md p-1.5 transition hover:bg-white/5" aria-label="Attach">
