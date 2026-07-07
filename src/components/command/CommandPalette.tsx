@@ -49,7 +49,7 @@ export function CommandPalette() {
         e.preventDefault();
         toggle();
       }
-      if (e.key === "Escape") useCommandPalette.getState().close();
+      if (e.key === "Escape") paletteApi.set(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
