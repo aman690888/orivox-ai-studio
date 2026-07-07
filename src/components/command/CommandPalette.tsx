@@ -1,6 +1,6 @@
 import { Command } from "cmdk";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Search,
