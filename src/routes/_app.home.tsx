@@ -185,3 +185,17 @@ function accentGrad(a: string) {
     amber: "from-amber-500/40 to-rose-500/20",
   }[a] || "from-electric/40 to-violet/30";
 }
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 5) return "Still up, Alex";
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  if (h < 22) return "Good evening";
+  return "Good evening";
+}
+
+function getDateLabel() {
+  return new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+}
+
