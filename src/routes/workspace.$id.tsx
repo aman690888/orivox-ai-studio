@@ -19,7 +19,14 @@ import { AIThinking } from "@/components/workspace/AIThinking";
 import { AIAssistant, ElementSelectedPanel } from "@/components/workspace/RightPanels";
 import { SlideCanvas } from "@/components/workspace/SlideCanvas";
 import { useGenerationTimeline } from "@/hooks/useGenerationTimeline";
-import { demoSlides, research, followUps } from "@/lib/mock";
+import { demoSlides, research, followUps, Slide } from "@/lib/mock";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getPresentation,
+  createPresentation,
+  updatePresentation,
+} from "@/lib/database/presentations";
+import { getSlides, saveSlides } from "@/lib/database/slides";
 
 const searchSchema = z.object({ prompt: z.string().optional() });
 
@@ -34,18 +41,87 @@ type Message = { id: number; role: "user" | "ai"; text: string; ts: number; stre
 function Workspace() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate({ to: "/auth" });
-    }
-  }, [user, loading, navigate]);
+  const queryClient = useQueryClient();
 
   const { id } = Route.useParams();
   const { prompt } = Route.useSearch();
 
   const seededPrompt =
     prompt || (id === "new" ? "" : "AI in healthcare, 2026 outlook, executive tone");
+
+  // Real-time queries
+  const {
+    data: dbPresentation,
+    isLoading: isPresLoading,
+    error: presError,
+  } = useQuery({
+    queryKey: ["presentation", id],
+    queryFn: () => getPresentation(id),
+    enabled: id !== "new" && !!user?.id,
+  });
+
+  const { data: dbSlides, isLoading: isSlidesLoading } = useQuery({
+    queryKey: ["slides", id],
+    queryFn: () => getSlides(id),
+    enabled: id !== "new" && !!user?.id,
+  });
+
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [title, setTitle] = useState(seededPrompt ? "Untitled deck" : "New presentation");
+
+  useEffect(() => {
+    if (dbSlides) {
+      setSlides(dbSlides);
+    }
+  }, [dbSlides]);
+
+  useEffect(() => {
+    if (dbPresentation) {
+      setTitle(dbPresentation.title);
+    }
+  }, [dbPresentation]);
+
+  // Handle new presentation creation on mount
+  useEffect(() => {
+    const initNew = async () => {
+      if (id === "new" && user?.id) {
+        try {
+          const presentationTitle = seededPrompt
+            ? seededPrompt.length > 25
+              ? seededPrompt.slice(0, 25) + "..."
+              : seededPrompt
+            : "Untitled Presentation";
+
+          const newPres = await createPresentation(
+            user.id,
+            presentationTitle,
+            "Research",
+            "electric",
+          );
+
+          await saveSlides(newPres.id, demoSlides);
+
+          // Redirect immediately to the new UUID workspace
+          navigate({
+            to: "/workspace/$id",
+            params: { id: newPres.id },
+            search: { prompt },
+          });
+        } catch (err) {
+          console.error("Failed to initialize presentation:", err);
+        }
+      }
+    };
+    initNew();
+  }, [id, user, seededPrompt, prompt, navigate]);
+
+  // Route protection
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate({ to: "/auth" });
+    }
+  }, [user, loading, navigate]);
+
   const nextIdRef = useRef(1);
   const [messages, setMessages] = useState<Message[]>(() => {
     if (!seededPrompt) return [];
@@ -65,23 +141,30 @@ function Workspace() {
   const [selectedEl, setSelectedEl] = useState<string | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const [composer, setComposer] = useState("");
-  const [title, setTitle] = useState(seededPrompt ? "Untitled deck" : "New presentation");
   const [timelineOpen, setTimelineOpen] = useState(true);
 
   const active = messages.length > 0;
   const gen = useGenerationTimeline(active);
 
   useEffect(() => {
-    if (gen.isReady) setTitle("AI in Healthcare");
-  }, [gen.isReady]);
+    if (gen.isReady && id !== "new" && dbPresentation?.title === "Untitled Presentation") {
+      setTitle("AI in Healthcare");
+      updatePresentation(id, { title: "AI in Healthcare" }).then(() => {
+        queryClient.invalidateQueries({ queryKey: ["presentation", id] });
+      });
+    }
+  }, [gen.isReady, id, dbPresentation, queryClient]);
 
-  const conversationRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    conversationRef.current?.scrollTo({
-      top: conversationRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages.length]);
+  const handleTitleBlur = async () => {
+    if (id !== "new" && title.trim()) {
+      try {
+        await updatePresentation(id, { title });
+        queryClient.invalidateQueries({ queryKey: ["presentation", id] });
+      } catch (err) {
+        console.error("Failed to update presentation title:", err);
+      }
+    }
+  };
 
   const send = (text: string) => {
     if (!text.trim()) return;
@@ -109,18 +192,44 @@ function Workspace() {
       ? "assistant"
       : "thinking";
 
+  const renderSlidesList = slides.length > 0 ? slides : demoSlides;
+
   // How many slides are visible during generation
   const generatedCount = useMemo(() => {
-    if (gen.isReady) return demoSlides.length;
+    if (gen.isReady) return renderSlidesList.length;
     if (!gen.showSlides) return 0;
-    return Math.min(demoSlides.length, 2 + (gen.showCharts ? 2 : 0) + (gen.showDiagrams ? 2 : 0));
-  }, [gen.isReady, gen.showSlides, gen.showCharts, gen.showDiagrams]);
-  const visibleSlides = demoSlides.slice(0, generatedCount);
+    return Math.min(
+      renderSlidesList.length,
+      2 + (gen.showCharts ? 2 : 0) + (gen.showDiagrams ? 2 : 0),
+    );
+  }, [gen.isReady, gen.showSlides, gen.showCharts, gen.showDiagrams, renderSlidesList]);
 
-  if (loading) {
+  const visibleSlides = renderSlidesList.slice(0, generatedCount);
+
+  if (loading || isPresLoading || isSlidesLoading || id === "new") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
+          <span className="text-xs text-muted-foreground">Setting up workspace...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (presError || !dbPresentation) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
+        <h1 className="text-xl font-semibold text-foreground">Presentation not found</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          The presentation you are trying to access doesn't exist or you don't have access.
+        </p>
+        <Link
+          to="/home"
+          className="mt-6 inline-flex items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90"
+        >
+          Go home
+        </Link>
       </div>
     );
   }
@@ -144,6 +253,7 @@ function Workspace() {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            onBlur={handleTitleBlur}
             className="rounded-md bg-transparent px-2 py-1 text-sm outline-none focus:bg-white/5"
           />
           <StatusPill ready={gen.isReady} generating={active && !gen.isReady} />
@@ -151,7 +261,7 @@ function Workspace() {
         <div className="flex items-center gap-2">
           {gen.showSlides && !gen.isReady && (
             <span className="hidden font-mono text-[11px] text-muted-foreground md:inline">
-              {generatedCount} / {demoSlides.length} slides
+              {generatedCount} / {renderSlidesList.length} slides
             </span>
           )}
           <motion.button
@@ -398,7 +508,7 @@ function Workspace() {
                       </button>
                     </div>
                     <div className="space-y-2">
-                      {demoSlides.map((s, i) => (
+                      {renderSlidesList.map((s, i) => (
                         <motion.div
                           key={s.id}
                           layoutId={`slide-${s.id}`}
@@ -427,7 +537,7 @@ function Workspace() {
                       <div className="mb-3 flex items-center justify-between text-[11px] text-muted-foreground">
                         <span>Designing slides</span>
                         <span className="font-mono">
-                          {generatedCount} / {demoSlides.length} generated
+                          {generatedCount} / {renderSlidesList.length} generated
                         </span>
                       </div>
                     )}
@@ -455,7 +565,7 @@ function Workspace() {
 
                   {/* Filmstrip */}
                   <div className="no-scrollbar mt-6 flex gap-2 overflow-x-auto pb-2">
-                    {demoSlides.map((s, i) => {
+                    {renderSlidesList.map((s, i) => {
                       const shown = i < visibleSlides.length;
                       return (
                         <motion.button
@@ -525,7 +635,7 @@ function Workspace() {
                         </div>
                         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                           {[
-                            { label: "Slides", value: demoSlides.length.toString() },
+                            { label: "Slides", value: renderSlidesList.length.toString() },
                             { label: "Sources", value: research.length.toString() },
                             { label: "Charts", value: "2" },
                           ].map((s) => (

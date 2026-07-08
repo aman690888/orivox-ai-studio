@@ -46,6 +46,8 @@ export interface Database {
           description: string | null;
           thumbnail_url: string | null;
           status: string;
+          category: string;
+          accent: string;
           created_at: string;
           updated_at: string;
         };
@@ -56,6 +58,8 @@ export interface Database {
           description?: string | null;
           thumbnail_url?: string | null;
           status?: string;
+          category?: string;
+          accent?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -66,6 +70,8 @@ export interface Database {
           description?: string | null;
           thumbnail_url?: string | null;
           status?: string;
+          category?: string;
+          accent?: string;
           created_at?: string;
           updated_at?: string;
         };

@@ -1,10 +1,13 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { ArrowRight, Sparkles, Play } from "lucide-react";
+import { ArrowRight, Sparkles, Play, Presentation as PresIcon } from "lucide-react";
 import { PromptBox } from "@/components/prompt/PromptBox";
-import { featured, presentations, suggestions, categories } from "@/lib/mock";
+import { suggestions, categories } from "@/lib/mock";
 import { useCommandPalette } from "@/components/command/CommandPalette";
+import { useAuth } from "@/lib/auth-context";
+import { useQuery } from "@tanstack/react-query";
+import { getPresentations } from "@/lib/database/presentations";
 
 export const Route = createFileRoute("/_app/home")({
   head: () => ({ meta: [{ title: "Home — Orivox" }] }),
@@ -13,14 +16,25 @@ export const Route = createFileRoute("/_app/home")({
 
 function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [prompt, setPrompt] = useState("");
   const { open } = useCommandPalette();
+
+  const { data: presentations = [], isLoading } = useQuery({
+    queryKey: ["presentations", user?.id],
+    queryFn: () => getPresentations(user!.id),
+    enabled: !!user?.id,
+  });
 
   const go = (p: string) =>
     navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: p } });
 
   const greeting = getGreeting();
   const dateLabel = getDateLabel();
+  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
+
+  const featured = presentations.length > 0 ? presentations[0] : null;
+  const recents = presentations.length > 1 ? presentations.slice(1, 7) : [];
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10 md:py-14">
@@ -39,7 +53,7 @@ function Home() {
             transition={{ delay: 0.05 }}
             className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl"
           >
-            {greeting}, Alex.
+            {greeting}, {userName}.
           </motion.h1>
         </div>
         <button
@@ -79,98 +93,131 @@ function Home() {
         </div>
       </motion.div>
 
-      {/* Featured Continue */}
-      <section className="mt-12">
-        <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
-          Continue where you left off
+      {isLoading ? (
+        <div className="mt-12 flex flex-col items-center justify-center py-10">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
+          <span className="mt-2 text-xs text-muted-foreground">Loading presentations...</span>
         </div>
-        <Link to="/workspace/$id" params={{ id: featured.id }} className="group block">
-          <motion.div
-            whileHover={{ y: -2 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="glass relative flex items-stretch overflow-hidden rounded-3xl p-2"
-          >
-            <div className="relative m-1 hidden aspect-video w-64 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-electric/30 to-violet/30 md:block">
-              <div className="absolute inset-4 rounded-lg bg-background/60 p-3 backdrop-blur">
-                <div className="h-2 w-16 rounded bg-white/20" />
-                <div className="mt-2 h-1.5 w-24 rounded bg-white/10" />
-                <div className="mt-1 h-1.5 w-20 rounded bg-white/10" />
-              </div>
+      ) : presentations.length === 0 ? (
+        <section className="mt-12 text-center">
+          <div className="glass flex flex-col items-center justify-center rounded-3xl p-10 border border-border">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 mb-4">
+              <PresIcon className="h-6 w-6 text-electric animate-pulse" />
             </div>
-            <div className="flex flex-1 flex-col justify-between p-5">
-              <div>
-                <div className="text-xs text-muted-foreground">{featured.category}</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight">{featured.title}</div>
-                <div className="mt-4">
-                  <div className="mb-1.5 flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="font-mono text-foreground">{featured.progress}%</span>
-                  </div>
-                  <div className="h-1.5 w-full max-w-md rounded-full bg-white/5">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${featured.progress}%` }}
-                      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                      className="h-full rounded-full bg-gradient-to-r from-electric to-violet"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 inline-flex items-center gap-1.5 text-sm text-foreground/90 transition group-hover:text-foreground">
-                Continue <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-              </div>
-            </div>
-          </motion.div>
-        </Link>
-      </section>
-
-      {/* Recent */}
-      <section className="mt-12">
-        <div className="mb-3 flex items-end justify-between">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground">
-            Recent presentations
+            <h2 className="text-lg font-medium text-foreground">No presentations yet</h2>
+            <p className="mt-1.5 text-sm text-muted-foreground max-w-sm">
+              Describe an idea above to generate your first professional deck in seconds.
+            </p>
           </div>
-          <Link to="/presentations" className="text-xs text-muted-foreground hover:text-foreground">
-            View all
-          </Link>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {presentations.slice(1, 7).map((p, i) => (
-            <motion.div
-              key={p.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-            >
-              <Link to="/present/$id" params={{ id: p.id }} className="group block">
+        </section>
+      ) : (
+        <>
+          {/* Featured Continue */}
+          {featured && (
+            <section className="mt-12">
+              <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
+                Continue where you left off
+              </div>
+              <Link to="/workspace/$id" params={{ id: featured.id }} className="group block">
                 <motion.div
                   whileHover={{ y: -2 }}
-                  className="glass overflow-hidden rounded-2xl p-2"
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="glass relative flex items-stretch overflow-hidden rounded-3xl p-2"
                 >
-                  <div
-                    className={`relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br ${accentGrad(p.accent)}`}
-                  >
-                    <div className="absolute inset-3 rounded-md bg-background/50 p-2 backdrop-blur-sm">
-                      <div className="h-1.5 w-12 rounded bg-white/25" />
-                      <div className="mt-1.5 h-1 w-16 rounded bg-white/15" />
-                    </div>
-                    <div className="absolute right-2 top-2 rounded-md bg-black/50 px-1.5 py-0.5 text-[10px] text-white/80 opacity-0 backdrop-blur transition group-hover:opacity-100">
-                      <Play className="inline h-3 w-3" />
+                  <div className="relative m-1 hidden aspect-video w-64 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-electric/30 to-violet/30 md:block">
+                    <div className="absolute inset-4 rounded-lg bg-background/60 p-3 backdrop-blur">
+                      <div className="h-2 w-16 rounded bg-white/20" />
+                      <div className="mt-2 h-1.5 w-24 rounded bg-white/10" />
+                      <div className="mt-1 h-1.5 w-20 rounded bg-white/10" />
                     </div>
                   </div>
-                  <div className="px-2 py-2.5">
-                    <div className="truncate text-sm font-medium">{p.title}</div>
-                    <div className="mt-0.5 flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span>{p.category}</span>
-                      <span>{p.updated}</span>
+                  <div className="flex flex-1 flex-col justify-between p-5">
+                    <div>
+                      <div className="text-xs text-muted-foreground">{featured.category}</div>
+                      <div className="mt-1 text-2xl font-semibold tracking-tight">
+                        {featured.title}
+                      </div>
+                      {featured.progress !== undefined && (
+                        <div className="mt-4">
+                          <div className="mb-1.5 flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Progress</span>
+                            <span className="font-mono text-foreground">{featured.progress}%</span>
+                          </div>
+                          <div className="h-1.5 w-full max-w-md rounded-full bg-white/5">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${featured.progress}%` }}
+                              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                              className="h-full rounded-full bg-gradient-to-r from-electric to-violet"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-6 inline-flex items-center gap-1.5 text-sm text-foreground/90 transition group-hover:text-foreground">
+                      Continue{" "}
+                      <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                     </div>
                   </div>
                 </motion.div>
               </Link>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+            </section>
+          )}
+
+          {/* Recent */}
+          {recents.length > 0 && (
+            <section className="mt-12">
+              <div className="mb-3 flex items-end justify-between">
+                <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Recent presentations
+                </div>
+                <Link
+                  to="/presentations"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  View all
+                </Link>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {recents.map((p, i) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                  >
+                    <Link to="/present/$id" params={{ id: p.id }} className="group block">
+                      <motion.div
+                        whileHover={{ y: -2 }}
+                        className="glass overflow-hidden rounded-2xl p-2"
+                      >
+                        <div
+                          className={`relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br ${accentGrad(p.accent)}`}
+                        >
+                          <div className="absolute inset-3 rounded-md bg-background/50 p-2 backdrop-blur-sm">
+                            <div className="h-1.5 w-12 rounded bg-white/25" />
+                            <div className="mt-1.5 h-1 w-16 rounded bg-white/15" />
+                          </div>
+                          <div className="absolute right-2 top-2 rounded-md bg-black/50 px-1.5 py-0.5 text-[10px] text-white/80 opacity-0 backdrop-blur transition group-hover:opacity-100">
+                            <Play className="inline h-3 w-3" />
+                          </div>
+                        </div>
+                        <div className="px-2 py-2.5">
+                          <div className="truncate text-sm font-medium">{p.title}</div>
+                          <div className="mt-0.5 flex items-center justify-between text-[11px] text-muted-foreground">
+                            <span>{p.category}</span>
+                            <span>{p.updated}</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      )}
 
       {/* Categories */}
       <section className="mt-12">
@@ -207,7 +254,7 @@ function accentGrad(a: string) {
 
 function getGreeting() {
   const h = new Date().getHours();
-  if (h < 5) return "Still up, Alex";
+  if (h < 5) return "Still up";
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
   if (h < 22) return "Good evening";

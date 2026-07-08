@@ -12,7 +12,9 @@ import {
   Clock,
   ArrowRight,
 } from "lucide-react";
-import { presentations } from "@/lib/mock";
+import { useAuth } from "@/lib/auth-context";
+import { useQuery } from "@tanstack/react-query";
+import { getPresentations } from "@/lib/database/presentations";
 
 // Tiny global store (no zustand dependency)
 const listeners = new Set<() => void>();
@@ -42,6 +44,13 @@ export function useCommandPalette() {
 export function CommandPalette() {
   const { isOpen, close, toggle } = useCommandPalette();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const { data: presentations = [] } = useQuery({
+    queryKey: ["presentations", user?.id],
+    queryFn: () => getPresentations(user!.id),
+    enabled: !!user?.id && isOpen,
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
