@@ -24,3 +24,4 @@ export * from "./prompts/slides";
 export * from "./prompts/speaker-notes";
 export * from "./services/presentation-generator";
 export * from "./services/slide-generator";
+export * from "./config";
