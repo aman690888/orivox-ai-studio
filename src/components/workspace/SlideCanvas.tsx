@@ -1,26 +1,123 @@
 import { motion } from "motion/react";
 import type { Slide } from "@/lib/mock";
-import { BarChart3, GitBranch, Quote } from "lucide-react";
+import { Quote } from "lucide-react";
+import { useState, useEffect } from "react";
+
+function EditableText({
+  value,
+  onChange,
+  className,
+  isTextArea = false,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  className?: string;
+  isTextArea?: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(value);
+
+  useEffect(() => {
+    setVal(value);
+  }, [value]);
+
+  const handleBlur = () => {
+    setEditing(false);
+    if (val !== value) {
+      onChange(val);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleBlur();
+    }
+    if (e.key === "Escape") {
+      setVal(value);
+      setEditing(false);
+    }
+  };
+
+  if (editing) {
+    if (isTextArea) {
+      return (
+        <textarea
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          autoFocus
+          className={`w-full bg-white/5 border border-white/10 rounded px-2 py-1 outline-none text-white focus:border-electric/50 ${className}`}
+        />
+      );
+    }
+    return (
+      <input
+        type="text"
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        autoFocus
+        className={`w-full bg-white/5 border border-white/10 rounded px-2 py-1 outline-none text-white focus:border-electric/50 ${className}`}
+      />
+    );
+  }
+
+  return (
+    <div
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        setEditing(true);
+      }}
+      className={`cursor-text hover:bg-white/5 rounded px-2 py-1 min-h-[1.5em] transition ${className}`}
+      title="Double-click to edit text"
+    >
+      {value || <span className="opacity-40 italic">Empty</span>}
+    </div>
+  );
+}
 
 export function SlideCanvas({
   slide,
   onSelect,
   selected,
+  onSlideChange,
 }: {
   slide: Slide;
   onSelect: (el: string) => void;
   selected?: string | null;
+  onSlideChange?: (updates: Partial<Slide>) => void;
 }) {
+  const handleTitleChange = (newTitle: string) => {
+    onSlideChange?.({ title: newTitle });
+  };
+
+  const handleBulletChange = (index: number, newBullet: string) => {
+    const updatedBullets = [...(slide.bullets || [])];
+    updatedBullets[index] = newBullet;
+    onSlideChange?.({ bullets: updatedBullets });
+  };
+
   return (
     <div className="aspect-video w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#141419] to-[#0f0f14] p-10 shadow-2xl ring-1 ring-white/10">
       {slide.kind === "cover" && (
         <div className="flex h-full flex-col justify-end">
           <Selectable id="title" onSelect={onSelect} selected={selected}>
-            <div className="text-5xl font-semibold tracking-tight text-white/95">{slide.title}</div>
+            <EditableText
+              value={slide.title}
+              onChange={handleTitleChange}
+              className="text-5xl font-semibold tracking-tight text-white/95"
+            />
           </Selectable>
-          {slide.bullets && (
+          {slide.bullets && slide.bullets.length > 0 && (
             <Selectable id="subtitle" onSelect={onSelect} selected={selected}>
-              <div className="mt-3 text-lg text-white/60">{slide.bullets[0]}</div>
+              <EditableText
+                value={slide.bullets[0]}
+                onChange={(val) => handleBulletChange(0, val)}
+                className="mt-3 text-lg text-white/60"
+              />
             </Selectable>
           )}
         </div>
@@ -28,14 +125,22 @@ export function SlideCanvas({
       {slide.kind === "content" && (
         <div className="flex h-full flex-col">
           <Selectable id="title" onSelect={onSelect} selected={selected}>
-            <div className="text-3xl font-medium tracking-tight text-white/95">{slide.title}</div>
+            <EditableText
+              value={slide.title}
+              onChange={handleTitleChange}
+              className="text-3xl font-medium tracking-tight text-white/95"
+            />
           </Selectable>
           <div className="mt-8 space-y-3 text-lg text-white/80">
             {slide.bullets?.map((b, i) => (
               <Selectable key={i} id={`bullet-${i}`} onSelect={onSelect} selected={selected}>
                 <div className="flex items-start gap-3">
-                  <div className="mt-2.5 h-1 w-1 rounded-full bg-electric" />
-                  <div>{b}</div>
+                  <div className="mt-2.5 h-1 w-1 rounded-full bg-electric shrink-0" />
+                  <EditableText
+                    value={b}
+                    onChange={(val) => handleBulletChange(i, val)}
+                    className="flex-1 text-lg text-white/80"
+                  />
                 </div>
               </Selectable>
             ))}
@@ -45,7 +150,11 @@ export function SlideCanvas({
       {slide.kind === "chart" && (
         <div className="flex h-full flex-col">
           <Selectable id="title" onSelect={onSelect} selected={selected}>
-            <div className="text-2xl font-medium tracking-tight text-white/95">{slide.title}</div>
+            <EditableText
+              value={slide.title}
+              onChange={handleTitleChange}
+              className="text-2xl font-medium tracking-tight text-white/95"
+            />
           </Selectable>
           <Selectable id="chart" onSelect={onSelect} selected={selected}>
             <div className="mt-6 flex-1">
@@ -57,7 +166,11 @@ export function SlideCanvas({
       {slide.kind === "diagram" && (
         <div className="flex h-full flex-col">
           <Selectable id="title" onSelect={onSelect} selected={selected}>
-            <div className="text-2xl font-medium tracking-tight text-white/95">{slide.title}</div>
+            <EditableText
+              value={slide.title}
+              onChange={handleTitleChange}
+              className="text-2xl font-medium tracking-tight text-white/95"
+            />
           </Selectable>
           <Selectable id="diagram" onSelect={onSelect} selected={selected}>
             <div className="mt-6 flex-1">
@@ -70,8 +183,12 @@ export function SlideCanvas({
         <div className="flex h-full items-center justify-center">
           <Selectable id="quote" onSelect={onSelect} selected={selected}>
             <div className="flex items-start gap-3 text-center">
-              <Quote className="mt-2 h-6 w-6 text-electric" />
-              <div className="text-3xl font-medium leading-snug text-white/95">{slide.title}</div>
+              <Quote className="mt-2 h-6 w-6 text-electric shrink-0" />
+              <EditableText
+                value={slide.title}
+                onChange={handleTitleChange}
+                className="text-3xl font-medium leading-snug text-white/95"
+              />
             </div>
           </Selectable>
         </div>
@@ -79,12 +196,23 @@ export function SlideCanvas({
       {slide.kind === "closing" && (
         <div className="flex h-full flex-col justify-center">
           <Selectable id="title" onSelect={onSelect} selected={selected}>
-            <div className="text-4xl font-semibold tracking-tight text-white/95">{slide.title}</div>
+            <EditableText
+              value={slide.title}
+              onChange={handleTitleChange}
+              className="text-4xl font-semibold tracking-tight text-white/95"
+            />
           </Selectable>
           <div className="mt-6 space-y-2 text-white/70">
             {slide.bullets?.map((b, i) => (
               <Selectable key={i} id={`bullet-${i}`} onSelect={onSelect} selected={selected}>
-                <div>· {b}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-white/40 shrink-0">·</span>
+                  <EditableText
+                    value={b}
+                    onChange={(val) => handleBulletChange(i, val)}
+                    className="flex-1 text-white/70"
+                  />
+                </div>
               </Selectable>
             ))}
           </div>

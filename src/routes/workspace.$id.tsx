@@ -13,6 +13,10 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Cloud,
+  CloudLightning,
+  CloudOff,
+  RefreshCw,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { AIThinking } from "@/components/workspace/AIThinking";
@@ -20,13 +24,14 @@ import { AIAssistant, ElementSelectedPanel } from "@/components/workspace/RightP
 import { SlideCanvas } from "@/components/workspace/SlideCanvas";
 import { useGenerationTimeline } from "@/hooks/useGenerationTimeline";
 import { demoSlides, research, followUps, Slide } from "@/lib/mock";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getPresentation,
   createPresentation,
   updatePresentation,
 } from "@/lib/database/presentations";
 import { getSlides, saveSlides } from "@/lib/database/slides";
+import { usePresentationSync } from "@/hooks/usePresentationSync";
 
 const searchSchema = z.object({ prompt: z.string().optional() });
 
@@ -37,6 +42,58 @@ export const Route = createFileRoute("/workspace/$id")({
 });
 
 type Message = { id: number; role: "user" | "ai"; text: string; ts: number; stream?: boolean };
+
+function SaveStatusIndicator({
+  status,
+  isOnline,
+  onRetry,
+}: {
+  status: "idle" | "saving" | "saved" | "failed";
+  isOnline: boolean;
+  onRetry: () => void;
+}) {
+  if (!isOnline) {
+    return (
+      <div className="flex items-center gap-1 text-[11px] text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+        <CloudOff className="h-3.5 w-3.5" />
+        <span>Offline</span>
+      </div>
+    );
+  }
+
+  if (status === "saving") {
+    return (
+      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <RefreshCw className="h-3 w-3 animate-spin text-electric" />
+        <span>Saving...</span>
+      </div>
+    );
+  }
+
+  if (status === "saved") {
+    return (
+      <div className="flex items-center gap-1 text-[11px] text-emerald-400">
+        <Cloud className="h-3.5 w-3.5" />
+        <span>Saved</span>
+      </div>
+    );
+  }
+
+  if (status === "failed") {
+    return (
+      <button
+        onClick={onRetry}
+        className="flex items-center gap-1 text-[11px] text-rose-400 bg-rose-400/15 px-2.5 py-0.5 rounded-full border border-rose-400/30 transition hover:bg-rose-400/25"
+        title="Click to retry saving"
+      >
+        <CloudLightning className="h-3.5 w-3.5 animate-bounce" />
+        <span>Failed (Retry)</span>
+      </button>
+    );
+  }
+
+  return null;
+}
 
 function Workspace() {
   const { user, loading } = useAuth();
@@ -68,6 +125,10 @@ function Workspace() {
 
   const [slides, setSlides] = useState<Slide[]>([]);
   const [title, setTitle] = useState(seededPrompt ? "Untitled deck" : "New presentation");
+
+  const { sync, retry, status: saveStatus, isOnline } = usePresentationSync(id);
+
+  const renderSlidesList = slides.length > 0 ? slides : demoSlides;
 
   useEffect(() => {
     if (dbSlides) {
@@ -155,14 +216,20 @@ function Workspace() {
     }
   }, [gen.isReady, id, dbPresentation, queryClient]);
 
-  const handleTitleBlur = async () => {
-    if (id !== "new" && title.trim()) {
-      try {
-        await updatePresentation(id, { title });
-        queryClient.invalidateQueries({ queryKey: ["presentation", id] });
-      } catch (err) {
-        console.error("Failed to update presentation title:", err);
-      }
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    if (id !== "new") {
+      sync({ title: newTitle, slides: renderSlidesList });
+    }
+  };
+
+  const handleSlideChange = (updatedFields: Partial<Slide>) => {
+    const updatedSlides = renderSlidesList.map((s, index) =>
+      index === activeSlide ? { ...s, ...updatedFields } : s,
+    );
+    setSlides(updatedSlides);
+    if (id !== "new") {
+      sync({ title, slides: updatedSlides });
     }
   };
 
@@ -191,9 +258,6 @@ function Workspace() {
     : gen.isReady
       ? "assistant"
       : "thinking";
-
-  const renderSlidesList = slides.length > 0 ? slides : demoSlides;
-
   // How many slides are visible during generation
   const generatedCount = useMemo(() => {
     if (gen.isReady) return renderSlidesList.length;
@@ -252,11 +316,13 @@ function Workspace() {
           <Logo showWord={false} />
           <input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={handleTitleBlur}
+            onChange={(e) => handleTitleChange(e.target.value)}
             className="rounded-md bg-transparent px-2 py-1 text-sm outline-none focus:bg-white/5"
           />
           <StatusPill ready={gen.isReady} generating={active && !gen.isReady} />
+          {id !== "new" && (
+            <SaveStatusIndicator status={saveStatus} isOnline={isOnline} onRetry={retry} />
+          )}
         </div>
         <div className="flex items-center gap-2">
           {gen.showSlides && !gen.isReady && (
@@ -549,6 +615,7 @@ function Workspace() {
                         slide={visibleSlides[activeSlide]}
                         onSelect={setSelectedEl}
                         selected={selectedEl}
+                        onSlideChange={handleSlideChange}
                       />
                     </motion.div>
                     {gen.showNotes && visibleSlides[activeSlide]?.notes && (
