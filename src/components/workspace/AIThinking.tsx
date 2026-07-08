@@ -21,9 +21,21 @@ export function AIThinking({ steps, status }: Props) {
         </div>
         <div className="relative h-10 w-10">
           <svg viewBox="0 0 36 36" className="h-full w-full -rotate-90">
-            <circle cx="18" cy="18" r="14" strokeWidth="2.5" className="stroke-white/10" fill="none" />
+            <circle
+              cx="18"
+              cy="18"
+              r="14"
+              strokeWidth="2.5"
+              className="stroke-white/10"
+              fill="none"
+            />
             <motion.circle
-              cx="18" cy="18" r="14" strokeWidth="2.5" fill="none" strokeLinecap="round"
+              cx="18"
+              cy="18"
+              r="14"
+              strokeWidth="2.5"
+              fill="none"
+              strokeLinecap="round"
               className="stroke-electric"
               initial={{ pathLength: 0 }}
               animate={{ pathLength: pct / 100 }}
@@ -32,7 +44,9 @@ export function AIThinking({ steps, status }: Props) {
               pathLength={1}
             />
           </svg>
-          <div className="absolute inset-0 flex items-center justify-center font-mono text-[10px]">{pct}%</div>
+          <div className="absolute inset-0 flex items-center justify-center font-mono text-[10px]">
+            {pct}%
+          </div>
         </div>
       </div>
 
@@ -50,23 +64,33 @@ export function AIThinking({ steps, status }: Props) {
             >
               <div className="flex h-5 w-5 shrink-0 items-center justify-center">
                 {st === "done" && (
-                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex h-5 w-5 items-center justify-center rounded-full bg-electric/20">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="flex h-5 w-5 items-center justify-center rounded-full bg-electric/20"
+                  >
                     <Check className="h-3 w-3 text-electric" />
                   </motion.div>
                 )}
                 {st === "active" && <Loader2 className="h-3.5 w-3.5 animate-spin text-electric" />}
                 {st === "pending" && <div className="h-1.5 w-1.5 rounded-full bg-white/15" />}
               </div>
-              <span className={cn(
-                st === "done" && "text-foreground",
-                st === "active" && "text-foreground",
-                st === "pending" && "text-muted-foreground",
-              )}>{s}</span>
+              <span
+                className={cn(
+                  st === "done" && "text-foreground",
+                  st === "active" && "text-foreground",
+                  st === "pending" && "text-muted-foreground",
+                )}
+              >
+                {s}
+              </span>
               {st === "active" && (
-                <motion.div
-                  className="ml-auto h-1 w-10 overflow-hidden rounded-full bg-white/5"
-                >
-                  <motion.div className="h-full w-1/3 bg-electric" animate={{ x: ["-100%", "300%"] }} transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }} />
+                <motion.div className="ml-auto h-1 w-10 overflow-hidden rounded-full bg-white/5">
+                  <motion.div
+                    className="h-full w-1/3 bg-electric"
+                    animate={{ x: ["-100%", "300%"] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                  />
                 </motion.div>
               )}
             </motion.div>

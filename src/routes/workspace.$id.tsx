@@ -2,7 +2,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowUp, Play, Sparkles, Circle, Check, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUp,
+  Play,
+  Sparkles,
+  Circle,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { AIThinking } from "@/components/workspace/AIThinking";
 import { AIAssistant, ElementSelectedPanel } from "@/components/workspace/RightPanels";
@@ -25,7 +35,8 @@ function Workspace() {
   const { prompt } = Route.useSearch();
   const navigate = useNavigate();
 
-  const seededPrompt = prompt || (id === "new" ? "" : "AI in healthcare, 2026 outlook, executive tone");
+  const seededPrompt =
+    prompt || (id === "new" ? "" : "AI in healthcare, 2026 outlook, executive tone");
   const nextIdRef = useRef(1);
   const [messages, setMessages] = useState<Message[]>(() => {
     if (!seededPrompt) return [];
@@ -33,7 +44,13 @@ function Workspace() {
     const aiId = nextIdRef.current++;
     return [
       { id: uId, role: "user", text: seededPrompt, ts: Date.now() },
-      { id: aiId, role: "ai", text: "Got it. Researching the topic and drafting an outline now.", ts: Date.now() + 1, stream: true },
+      {
+        id: aiId,
+        role: "ai",
+        text: "Got it. Researching the topic and drafting an outline now.",
+        ts: Date.now() + 1,
+        stream: true,
+      },
     ];
   });
   const [selectedEl, setSelectedEl] = useState<string | null>(null);
@@ -51,7 +68,10 @@ function Workspace() {
 
   const conversationRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    conversationRef.current?.scrollTo({ top: conversationRef.current.scrollHeight, behavior: "smooth" });
+    conversationRef.current?.scrollTo({
+      top: conversationRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages.length]);
 
   const send = (text: string) => {
@@ -61,15 +81,24 @@ function Workspace() {
     setComposer("");
     setTimeout(() => {
       const aiId = nextIdRef.current++;
-      setMessages((m) => [...m, { id: aiId, role: "ai", text: "On it — updating the deck now.", ts: Date.now(), stream: true }]);
+      setMessages((m) => [
+        ...m,
+        {
+          id: aiId,
+          role: "ai",
+          text: "On it — updating the deck now.",
+          ts: Date.now(),
+          stream: true,
+        },
+      ]);
     }, 600);
   };
 
   const rightMode: "thinking" | "assistant" | "selected" = selectedEl
     ? "selected"
     : gen.isReady
-    ? "assistant"
-    : "thinking";
+      ? "assistant"
+      : "thinking";
 
   // How many slides are visible during generation
   const generatedCount = useMemo(() => {
@@ -84,7 +113,10 @@ function Workspace() {
       {/* Top bar */}
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
         <div className="flex items-center gap-3">
-          <Link to="/home" className="flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground">
+          <Link
+            to="/home"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <Logo showWord={false} />
@@ -126,7 +158,11 @@ function Workspace() {
                   <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
                     <Sparkles className="h-3 w-3 text-electric" /> Generation timeline
                   </div>
-                  {timelineOpen ? <ChevronUp className="h-3 w-3 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 text-muted-foreground" />}
+                  {timelineOpen ? (
+                    <ChevronUp className="h-3 w-3 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                  )}
                 </button>
                 <AnimatePresence initial={false}>
                   {timelineOpen && (
@@ -144,14 +180,24 @@ function Workspace() {
                             <div key={s} className="flex items-center gap-2 text-[11px]">
                               <span className="flex h-3.5 w-3.5 items-center justify-center">
                                 {st === "done" && <Check className="h-3 w-3 text-electric" />}
-                                {st === "active" && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-electric" />}
-                                {st === "pending" && <span className="h-1 w-1 rounded-full bg-white/20" />}
+                                {st === "active" && (
+                                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-electric" />
+                                )}
+                                {st === "pending" && (
+                                  <span className="h-1 w-1 rounded-full bg-white/20" />
+                                )}
                               </span>
-                              <span className={
-                                st === "pending" ? "text-muted-foreground" :
-                                st === "active" ? "text-foreground" :
-                                "text-muted-foreground line-through decoration-white/10"
-                              }>{s}</span>
+                              <span
+                                className={
+                                  st === "pending"
+                                    ? "text-muted-foreground"
+                                    : st === "active"
+                                      ? "text-foreground"
+                                      : "text-muted-foreground line-through decoration-white/10"
+                                }
+                              >
+                                {s}
+                              </span>
                             </div>
                           );
                         })}
@@ -177,7 +223,9 @@ function Workspace() {
                         <div className="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-electric to-violet">
                           <Sparkles className="h-2.5 w-2.5 text-background" />
                         </div>
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Orivox</div>
+                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                          Orivox
+                        </div>
                         <div className="text-[10px] text-muted-foreground/60">{formatTs(m.ts)}</div>
                       </div>
                       <div className="text-sm text-foreground/90">
@@ -188,7 +236,10 @@ function Workspace() {
                       {i === 1 && gen.showResearch && (
                         <div className="mt-2.5 flex flex-wrap gap-1">
                           {research.slice(0, 3).map((r) => (
-                            <span key={r.title} className="rounded-md border border-border bg-white/[0.03] px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            <span
+                              key={r.title}
+                              className="rounded-md border border-border bg-white/[0.03] px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                            >
                               {r.source}
                             </span>
                           ))}
@@ -214,7 +265,9 @@ function Workspace() {
                       <div className="rounded-2xl bg-white/[0.06] px-3.5 py-2 text-sm text-foreground">
                         {m.text}
                       </div>
-                      <div className="mt-1 text-right text-[10px] text-muted-foreground/60">{formatTs(m.ts)}</div>
+                      <div className="mt-1 text-right text-[10px] text-muted-foreground/60">
+                        {formatTs(m.ts)}
+                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -282,7 +335,9 @@ function Workspace() {
                     exit={{ opacity: 0, y: -8 }}
                     className="mb-6"
                   >
-                    <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">Sources</div>
+                    <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
+                      Sources
+                    </div>
                     <div className="grid gap-2 md:grid-cols-2">
                       {research.map((r, i) => (
                         <motion.div
@@ -292,7 +347,9 @@ function Workspace() {
                           transition={{ delay: i * 0.12 }}
                           className="glass rounded-xl p-3"
                         >
-                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{r.source} · {r.year}</div>
+                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                            {r.source} · {r.year}
+                          </div>
                           <div className="mt-1 text-sm">{r.title}</div>
                         </motion.div>
                       ))}
@@ -312,7 +369,9 @@ function Workspace() {
                     className="mb-6"
                   >
                     <div className="mb-3 flex items-center justify-between">
-                      <div className="text-xs uppercase tracking-widest text-muted-foreground">Outline</div>
+                      <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                        Outline
+                      </div>
                       <button className="rounded-md border border-electric/40 bg-electric/10 px-2.5 py-1 text-[11px] text-electric transition hover:bg-electric/20">
                         Approve outline
                       </button>
@@ -327,7 +386,9 @@ function Workspace() {
                           transition={{ delay: i * 0.06 }}
                           className="glass flex items-center gap-3 rounded-xl px-4 py-3"
                         >
-                          <div className="w-6 font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</div>
+                          <div className="w-6 font-mono text-xs text-muted-foreground">
+                            {String(i + 1).padStart(2, "0")}
+                          </div>
                           <div className="text-sm">{s.title}</div>
                         </motion.div>
                       ))}
@@ -344,10 +405,15 @@ function Workspace() {
                     {!gen.isReady && (
                       <div className="mb-3 flex items-center justify-between text-[11px] text-muted-foreground">
                         <span>Designing slides</span>
-                        <span className="font-mono">{generatedCount} / {demoSlides.length} generated</span>
+                        <span className="font-mono">
+                          {generatedCount} / {demoSlides.length} generated
+                        </span>
                       </div>
                     )}
-                    <motion.div key={visibleSlides[activeSlide]?.id} layoutId={`slide-${visibleSlides[activeSlide]?.id}`}>
+                    <motion.div
+                      key={visibleSlides[activeSlide]?.id}
+                      layoutId={`slide-${visibleSlides[activeSlide]?.id}`}
+                    >
                       <SlideCanvas
                         slide={visibleSlides[activeSlide]}
                         onSelect={setSelectedEl}
@@ -360,7 +426,8 @@ function Workspace() {
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-3 rounded-xl border border-border bg-white/[0.02] p-3 text-xs text-muted-foreground"
                       >
-                        <span className="mr-1.5 text-foreground/70">Notes:</span> {visibleSlides[activeSlide]?.notes}
+                        <span className="mr-1.5 text-foreground/70">Notes:</span>{" "}
+                        {visibleSlides[activeSlide]?.notes}
                       </motion.div>
                     )}
                   </div>
@@ -390,7 +457,9 @@ function Workspace() {
                               <Circle className="h-3 w-3 text-white/20" />
                             </div>
                           )}
-                          <div className="absolute left-1 top-1 rounded bg-black/40 px-1 font-mono text-[8px] text-white/70">{i + 1}</div>
+                          <div className="absolute left-1 top-1 rounded bg-black/40 px-1 font-mono text-[8px] text-white/70">
+                            {i + 1}
+                          </div>
                         </motion.button>
                       );
                     })}
@@ -409,14 +478,21 @@ function Workspace() {
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.35 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 260,
+                              damping: 18,
+                              delay: 0.35,
+                            }}
                             className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-400/15"
                           >
                             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                           </motion.div>
                           <div className="flex-1">
                             <div className="text-sm font-medium">Presentation ready</div>
-                            <div className="text-xs text-muted-foreground">Reviewed and ready to present.</div>
+                            <div className="text-xs text-muted-foreground">
+                              Reviewed and ready to present.
+                            </div>
                           </div>
                           <motion.button
                             whileHover={{ scale: 1.03 }}
@@ -432,9 +508,14 @@ function Workspace() {
                             { label: "Sources", value: research.length.toString() },
                             { label: "Charts", value: "2" },
                           ].map((s) => (
-                            <div key={s.label} className="rounded-xl border border-border bg-white/[0.02] py-2.5">
+                            <div
+                              key={s.label}
+                              className="rounded-xl border border-border bg-white/[0.02] py-2.5"
+                            >
                               <div className="font-mono text-lg text-foreground">{s.value}</div>
-                              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{s.label}</div>
+                              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                {s.label}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -459,10 +540,15 @@ function Workspace() {
                 transition={{ duration: 0.25 }}
                 className="flex h-full flex-col"
               >
-                {rightMode === "thinking" && <AIThinking steps={gen.steps} status={gen.stepStatus} />}
+                {rightMode === "thinking" && (
+                  <AIThinking steps={gen.steps} status={gen.stepStatus} />
+                )}
                 {rightMode === "assistant" && <AIAssistant />}
                 {rightMode === "selected" && selectedEl && (
-                  <ElementSelectedPanel element={selectedEl} onDeselect={() => setSelectedEl(null)} />
+                  <ElementSelectedPanel
+                    element={selectedEl}
+                    onDeselect={() => setSelectedEl(null)}
+                  />
                 )}
               </motion.div>
             </AnimatePresence>
@@ -508,7 +594,9 @@ function StreamText({ text }: { text: string }) {
   return (
     <span>
       {text.slice(0, n)}
-      {n < text.length && <span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-electric/70" />}
+      {n < text.length && (
+        <span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-electric/70" />
+      )}
     </span>
   );
 }

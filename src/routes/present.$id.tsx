@@ -24,7 +24,11 @@ function Viewer() {
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
       <header className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
         <div className="flex items-center gap-3">
-          <Link to="/workspace/$id" params={{ id }} className="flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground">
+          <Link
+            to="/workspace/$id"
+            params={{ id }}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4" /> Back to Workspace
           </Link>
           <div className="mx-2 h-4 w-px bg-border" />
@@ -32,7 +36,9 @@ function Viewer() {
           <div className="text-sm font-medium">AI in Healthcare</div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="font-mono text-xs text-muted-foreground">{active + 1} / {demoSlides.length}</div>
+          <div className="font-mono text-xs text-muted-foreground">
+            {active + 1} / {demoSlides.length}
+          </div>
           <button
             onClick={() => navigate({ to: "/export/$id", params: { id } })}
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs transition hover:border-white/25"
@@ -49,9 +55,14 @@ function Viewer() {
             {demoSlides.map((s, i) => (
               <button
                 key={s.id}
-                onClick={() => { setActive(i); setSelectedEl(null); }}
+                onClick={() => {
+                  setActive(i);
+                  setSelectedEl(null);
+                }}
                 className={`group relative block w-full overflow-hidden rounded-lg border text-left transition ${
-                  active === i ? "border-electric/60 bg-electric/5" : "border-border hover:border-white/20"
+                  active === i
+                    ? "border-electric/60 bg-electric/5"
+                    : "border-border hover:border-white/20"
                 }`}
               >
                 <div className="flex items-center gap-2 p-2">
@@ -64,7 +75,10 @@ function Viewer() {
         </aside>
 
         {/* Center: canvas */}
-        <main className="flex flex-1 flex-col overflow-hidden bg-[oklch(0.14_0.008_270)]" onClick={() => setSelectedEl(null)}>
+        <main
+          className="flex flex-1 flex-col overflow-hidden bg-[oklch(0.14_0.008_270)]"
+          onClick={() => setSelectedEl(null)}
+        >
           <div className="flex-1 overflow-y-auto p-10">
             <div className="mx-auto max-w-4xl">
               <SlideCanvas slide={slide} onSelect={setSelectedEl} selected={selectedEl} />
@@ -72,13 +86,19 @@ function Viewer() {
           </div>
           <div className="flex items-center justify-center gap-2 border-t border-border py-3">
             <button
-              onClick={(e) => { e.stopPropagation(); setActive((a) => Math.max(0, a - 1)); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActive((a) => Math.max(0, a - 1));
+              }}
               className="rounded-lg p-2 text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
-              onClick={(e) => { e.stopPropagation(); setActive((a) => Math.min(demoSlides.length - 1, a + 1)); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActive((a) => Math.min(demoSlides.length - 1, a + 1));
+              }}
               className="rounded-lg p-2 text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
             >
               <ChevronRight className="h-4 w-4" />
@@ -99,7 +119,10 @@ function Viewer() {
                 className="flex h-full flex-col"
               >
                 {selectedEl ? (
-                  <ElementSelectedPanel element={selectedEl} onDeselect={() => setSelectedEl(null)} />
+                  <ElementSelectedPanel
+                    element={selectedEl}
+                    onDeselect={() => setSelectedEl(null)}
+                  />
                 ) : (
                   <AIAssistant />
                 )}

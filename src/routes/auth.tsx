@@ -35,7 +35,9 @@ function Auth() {
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
       <div className="pointer-events-none absolute inset-0 [background:radial-gradient(600px_at_50%_20%,color-mix(in_oklab,var(--electric)_15%,transparent),transparent)]" />
       <FloatingOrbs />
-      <Link to="/" className="absolute left-6 top-6"><Logo /></Link>
+      <Link to="/" className="absolute left-6 top-6">
+        <Logo />
+      </Link>
 
       <motion.div
         layout
@@ -43,7 +45,8 @@ function Auth() {
         className="glass relative w-full max-w-md overflow-hidden rounded-2xl p-6"
       >
         {/* Tabs — only visible on the entry steps */}
-        {((mode === "signup" && signupStep === "email") || (mode === "login" && loginStep === "credentials")) && (
+        {((mode === "signup" && signupStep === "email") ||
+          (mode === "login" && loginStep === "credentials")) && (
           <div className="mb-6 flex rounded-lg bg-white/5 p-1 text-sm">
             {(["signup", "login"] as const).map((t) => (
               <button
@@ -52,9 +55,15 @@ function Auth() {
                 className="relative flex-1 rounded-md py-1.5 text-center"
               >
                 {mode === t && (
-                  <motion.span layoutId="auth-tab" className="absolute inset-0 rounded-md bg-white/[0.08]" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+                  <motion.span
+                    layoutId="auth-tab"
+                    className="absolute inset-0 rounded-md bg-white/[0.08]"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                  />
                 )}
-                <span className={`relative ${mode === t ? "text-foreground" : "text-muted-foreground"}`}>
+                <span
+                  className={`relative ${mode === t ? "text-foreground" : "text-muted-foreground"}`}
+                >
                   {t === "signup" ? "Create account" : "Log in"}
                 </span>
               </button>
@@ -66,7 +75,9 @@ function Auth() {
           {mode === "signup" && signupStep === "email" && (
             <StepShell key="signup-email">
               <h1 className="text-xl font-semibold tracking-tight">Create your account</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Start turning ideas into presentations.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Start turning ideas into presentations.
+              </p>
 
               <GoogleButton onClick={() => navigate({ to: "/home" })} label="Sign up with Google" />
               <Divider />
@@ -85,7 +96,8 @@ function Auth() {
               <BackButton onClick={() => setSignupStep("email")} />
               <h1 className="text-xl font-semibold tracking-tight">Check your inbox</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                We sent a 6-digit code to <span className="text-foreground">{email || "your email"}</span>.
+                We sent a 6-digit code to{" "}
+                <span className="text-foreground">{email || "your email"}</span>.
               </p>
               <OtpInput onComplete={() => setSignupStep("password")} />
               <ResendTimer />
@@ -96,7 +108,9 @@ function Auth() {
             <StepShell key="signup-password">
               <BackButton onClick={() => setSignupStep("otp")} />
               <h1 className="text-xl font-semibold tracking-tight">Create a password</h1>
-              <p className="mt-1 text-sm text-muted-foreground">You'll use this to sign in next time.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                You'll use this to sign in next time.
+              </p>
               <PasswordFields onSubmit={() => navigate({ to: "/home" })} />
             </StepShell>
           )}
@@ -106,7 +120,10 @@ function Auth() {
               <h1 className="text-xl font-semibold tracking-tight">Welcome back</h1>
               <p className="mt-1 text-sm text-muted-foreground">Sign in to continue to Orivox.</p>
 
-              <GoogleButton onClick={() => navigate({ to: "/home" })} label="Continue with Google" />
+              <GoogleButton
+                onClick={() => navigate({ to: "/home" })}
+                label="Continue with Google"
+              />
               <Divider />
 
               <EmailInput email={email} setEmail={setEmail} />
@@ -134,7 +151,9 @@ function Auth() {
             <StepShell key="forgot">
               <BackButton onClick={() => setLoginStep("credentials")} />
               <h1 className="text-xl font-semibold tracking-tight">Reset your password</h1>
-              <p className="mt-1 text-sm text-muted-foreground">We'll email you a secure reset link.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                We'll email you a secure reset link.
+              </p>
               <EmailInput email={email} setEmail={setEmail} className="mt-6" />
               <PrimaryButton
                 disabled={!isValidEmail(email)}
@@ -152,7 +171,8 @@ function Auth() {
                 </div>
                 <h1 className="mt-4 text-xl font-semibold tracking-tight">Check your email</h1>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  If <span className="text-foreground">{email}</span> exists, a reset link is on its way.
+                  If <span className="text-foreground">{email}</span> exists, a reset link is on its
+                  way.
                 </p>
                 <button
                   onClick={() => setLoginStep("credentials")}
@@ -186,7 +206,10 @@ function StepShell({ children }: { children: React.ReactNode }) {
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
-    <button onClick={onClick} className="mb-4 flex items-center gap-1 text-xs text-muted-foreground transition hover:text-foreground">
+    <button
+      onClick={onClick}
+      className="mb-4 flex items-center gap-1 text-xs text-muted-foreground transition hover:text-foreground"
+    >
       <ArrowLeft className="h-3 w-3" /> Back
     </button>
   );
@@ -200,7 +223,15 @@ function Divider() {
   );
 }
 
-function EmailInput({ email, setEmail, className = "" }: { email: string; setEmail: (v: string) => void; className?: string }) {
+function EmailInput({
+  email,
+  setEmail,
+  className = "",
+}: {
+  email: string;
+  setEmail: (v: string) => void;
+  className?: string;
+}) {
   return (
     <div className={className || "mt-1"}>
       <label className="mb-1.5 block text-xs text-muted-foreground">Email</label>
@@ -236,7 +267,15 @@ function PasswordInput({ placeholder }: { placeholder: string }) {
   );
 }
 
-function PrimaryButton({ disabled, onClick, label }: { disabled?: boolean; onClick: () => void; label: string }) {
+function PrimaryButton({
+  disabled,
+  onClick,
+  label,
+}: {
+  disabled?: boolean;
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       disabled={disabled}
@@ -317,7 +356,9 @@ function OtpInput({ onComplete }: { onComplete: () => void }) {
       {values.map((v, i) => (
         <input
           key={i}
-          ref={(el) => { refs.current[i] = el; }}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
           inputMode="numeric"
           autoComplete="one-time-code"
           maxLength={1}
@@ -342,9 +383,14 @@ function ResendTimer() {
   return (
     <div className="mt-5 text-center text-xs text-muted-foreground">
       {secs > 0 ? (
-        <>Resend code in <span className="font-mono text-foreground">{secs}s</span></>
+        <>
+          Resend code in <span className="font-mono text-foreground">{secs}s</span>
+        </>
       ) : (
-        <button onClick={() => setSecs(30)} className="text-foreground transition hover:text-electric">
+        <button
+          onClick={() => setSecs(30)}
+          className="text-foreground transition hover:text-electric"
+        >
           Resend code
         </button>
       )}
@@ -450,10 +496,22 @@ function FloatingOrbs() {
 function GoogleIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24">
-      <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.4-.2-2.1H12v3.9h5.9c-.1.9-.8 2.4-2.3 3.4l-.1.1 3.3 2.5.2.1c2.1-1.9 3.3-4.8 3.3-7.9" />
-      <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-.9.6-2.2 1.1-3.8 1.1-2.9 0-5.4-1.9-6.3-4.6l-.1 0-3.4 2.6-.1.1C3.9 20.4 7.6 23 12 23" />
-      <path fill="#FBBC05" d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.1-1.5.3-2.1V7.2l-3.5-.1C1.4 8.7 1 10.3 1 12s.4 3.3 1.1 4.9L5.7 14" />
-      <path fill="#EB4335" d="M12 5.4c2.1 0 3.5.9 4.3 1.7l3.1-3C17.5 2.4 15 1 12 1 7.6 1 3.9 3.6 2.1 7.1L5.7 10c.9-2.7 3.4-4.6 6.3-4.6" />
+      <path
+        fill="#4285F4"
+        d="M22.5 12.3c0-.8-.1-1.4-.2-2.1H12v3.9h5.9c-.1.9-.8 2.4-2.3 3.4l-.1.1 3.3 2.5.2.1c2.1-1.9 3.3-4.8 3.3-7.9"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-.9.6-2.2 1.1-3.8 1.1-2.9 0-5.4-1.9-6.3-4.6l-.1 0-3.4 2.6-.1.1C3.9 20.4 7.6 23 12 23"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.1-1.5.3-2.1V7.2l-3.5-.1C1.4 8.7 1 10.3 1 12s.4 3.3 1.1 4.9L5.7 14"
+      />
+      <path
+        fill="#EB4335"
+        d="M12 5.4c2.1 0 3.5.9 4.3 1.7l3.1-3C17.5 2.4 15 1 12 1 7.6 1 3.9 3.6 2.1 7.1L5.7 10c.9-2.7 3.4-4.6 6.3-4.6"
+      />
     </svg>
   );
 }

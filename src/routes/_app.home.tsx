@@ -16,7 +16,8 @@ function Home() {
   const [prompt, setPrompt] = useState("");
   const { open } = useCommandPalette();
 
-  const go = (p: string) => navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: p } });
+  const go = (p: string) =>
+    navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: p } });
 
   const greeting = getGreeting();
   const dateLabel = getDateLabel();
@@ -25,7 +26,13 @@ function Home() {
     <div className="mx-auto max-w-5xl px-6 py-10 md:py-14">
       <div className="flex items-center justify-between">
         <div>
-          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-muted-foreground">{dateLabel}</motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-xs text-muted-foreground"
+          >
+            {dateLabel}
+          </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -44,7 +51,12 @@ function Home() {
         </button>
       </div>
 
-      <motion.div className="mt-8" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+      <motion.div
+        className="mt-8"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
         <PromptBox
           value={prompt}
           onChange={setPrompt}
@@ -67,15 +79,12 @@ function Home() {
         </div>
       </motion.div>
 
-
       {/* Featured Continue */}
       <section className="mt-12">
-        <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">Continue where you left off</div>
-        <Link
-          to="/workspace/$id"
-          params={{ id: featured.id }}
-          className="group block"
-        >
+        <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
+          Continue where you left off
+        </div>
+        <Link to="/workspace/$id" params={{ id: featured.id }} className="group block">
           <motion.div
             whileHover={{ y: -2 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -118,8 +127,12 @@ function Home() {
       {/* Recent */}
       <section className="mt-12">
         <div className="mb-3 flex items-end justify-between">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground">Recent presentations</div>
-          <Link to="/presentations" className="text-xs text-muted-foreground hover:text-foreground">View all</Link>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground">
+            Recent presentations
+          </div>
+          <Link to="/presentations" className="text-xs text-muted-foreground hover:text-foreground">
+            View all
+          </Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {presentations.slice(1, 7).map((p, i) => (
@@ -134,7 +147,9 @@ function Home() {
                   whileHover={{ y: -2 }}
                   className="glass overflow-hidden rounded-2xl p-2"
                 >
-                  <div className={`relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br ${accentGrad(p.accent)}`}>
+                  <div
+                    className={`relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br ${accentGrad(p.accent)}`}
+                  >
                     <div className="absolute inset-3 rounded-md bg-background/50 p-2 backdrop-blur-sm">
                       <div className="h-1.5 w-12 rounded bg-white/25" />
                       <div className="mt-1.5 h-1 w-16 rounded bg-white/15" />
@@ -159,7 +174,9 @@ function Home() {
 
       {/* Categories */}
       <section className="mt-12">
-        <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">Start from a category</div>
+        <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
+          Start from a category
+        </div>
         <div className="flex flex-wrap gap-2">
           {categories.map((c) => (
             <button
@@ -178,12 +195,14 @@ function Home() {
 }
 
 function accentGrad(a: string) {
-  return {
-    electric: "from-electric/40 to-violet/30",
-    violet: "from-violet/40 to-electric/20",
-    emerald: "from-emerald-500/40 to-teal-500/20",
-    amber: "from-amber-500/40 to-rose-500/20",
-  }[a] || "from-electric/40 to-violet/30";
+  return (
+    {
+      electric: "from-electric/40 to-violet/30",
+      violet: "from-violet/40 to-electric/20",
+      emerald: "from-emerald-500/40 to-teal-500/20",
+      amber: "from-amber-500/40 to-rose-500/20",
+    }[a] || "from-electric/40 to-violet/30"
+  );
 }
 
 function getGreeting() {
@@ -196,6 +215,9 @@ function getGreeting() {
 }
 
 function getDateLabel() {
-  return new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  return new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 }
-

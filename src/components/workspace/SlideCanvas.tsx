@@ -155,16 +155,44 @@ function MockDiagram() {
         return (
           <motion.line
             key={i}
-            x1={n.x + 6} y1={n.y + 3} x2={next.x - 1} y2={next.y + 3}
-            stroke="currentColor" strokeWidth="0.3" className="text-electric/60"
-            initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.1 + i * 0.15 }}
+            x1={n.x + 6}
+            y1={n.y + 3}
+            x2={next.x - 1}
+            y2={next.y + 3}
+            stroke="currentColor"
+            strokeWidth="0.3"
+            className="text-electric/60"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ delay: 0.1 + i * 0.15 }}
           />
         );
       })}
       {nodes.map((n, i) => (
-        <motion.g key={i} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.1, type: "spring" }}>
-          <rect x={n.x - 6} y={n.y - 3} width="14" height="7" rx="1.5" className="fill-white/5 stroke-white/20" strokeWidth="0.2" />
-          <text x={n.x + 1} y={n.y + 1.5} textAnchor="middle" className="fill-white/80" style={{ fontSize: 2.5 }}>{n.label}</text>
+        <motion.g
+          key={i}
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: i * 0.1, type: "spring" }}
+        >
+          <rect
+            x={n.x - 6}
+            y={n.y - 3}
+            width="14"
+            height="7"
+            rx="1.5"
+            className="fill-white/5 stroke-white/20"
+            strokeWidth="0.2"
+          />
+          <text
+            x={n.x + 1}
+            y={n.y + 1.5}
+            textAnchor="middle"
+            className="fill-white/80"
+            style={{ fontSize: 2.5 }}
+          >
+            {n.label}
+          </text>
         </motion.g>
       ))}
     </svg>

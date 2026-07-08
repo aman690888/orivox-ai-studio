@@ -14,8 +14,15 @@ export type GenPhase =
   | "ready";
 
 const order: GenPhase[] = [
-  "understanding", "researching", "outlining", "designing",
-  "charting", "diagramming", "noting", "reviewing", "ready",
+  "understanding",
+  "researching",
+  "outlining",
+  "designing",
+  "charting",
+  "diagramming",
+  "noting",
+  "reviewing",
+  "ready",
 ];
 
 // Map generation phases to step indexes in thinkingSteps
@@ -82,5 +89,16 @@ export function useGenerationTimeline(active: boolean) {
   const showDiagrams = orderIndex >= order.indexOf("diagramming");
   const showNotes = orderIndex >= order.indexOf("noting");
 
-  return { phase, isReady, stepStatus, steps: thinkingSteps, showResearch, showOutline, showSlides, showCharts, showDiagrams, showNotes };
+  return {
+    phase,
+    isReady,
+    stepStatus,
+    steps: thinkingSteps,
+    showResearch,
+    showOutline,
+    showSlides,
+    showCharts,
+    showDiagrams,
+    showNotes,
+  };
 }
