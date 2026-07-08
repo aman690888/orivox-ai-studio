@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth-context";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { User, Palette, Bell, Sparkles, CreditCard } from "lucide-react";
@@ -114,6 +115,18 @@ function Field({ defaultValue }: { defaultValue: string }) {
 }
 
 function Account() {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate({ to: "/auth" });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <Section title="Account" desc="Manage your identity on Orivox.">
       <Row label="Name">
@@ -121,6 +134,14 @@ function Account() {
       </Row>
       <Row label="Email">
         <Field defaultValue="alex@company.com" />
+      </Row>
+      <Row label="Sign out" hint="Log out of your current session">
+        <button
+          onClick={handleSignOut}
+          className="rounded-lg border border-border px-3 py-1.5 text-xs transition hover:bg-white/5"
+        >
+          Sign out
+        </button>
       </Row>
       <Row label="Delete account" hint="Permanent and cannot be undone">
         <button className="rounded-lg border border-destructive/40 px-3 py-1.5 text-xs text-destructive transition hover:bg-destructive/10">

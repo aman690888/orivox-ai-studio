@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, FileText, Presentation, Link2, Check, Copy } from "lucide-react";
@@ -11,11 +11,35 @@ export const Route = createFileRoute("/export/$id")({
 
 type Fmt = "pdf" | "pptx" | "link";
 
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
+
 function Export() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate({ to: "/auth" });
+    }
+  }, [user, loading, navigate]);
+
   const { id } = Route.useParams();
   const [fmt, setFmt] = useState<Fmt>("pdf");
   const [state, setState] = useState<"idle" | "working" | "done">("idle");
   const [copied, setCopied] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const start = () => {
     setState("working");

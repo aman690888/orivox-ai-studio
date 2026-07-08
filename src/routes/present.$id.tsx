@@ -12,13 +12,36 @@ export const Route = createFileRoute("/present/$id")({
   component: Viewer,
 });
 
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
+
 function Viewer() {
-  const { id } = Route.useParams();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate({ to: "/auth" });
+    }
+  }, [user, loading, navigate]);
+
+  const { id } = Route.useParams();
   const [active, setActive] = useState(0);
   const [selectedEl, setSelectedEl] = useState<string | null>(null);
 
   const slide = demoSlides[active];
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background">

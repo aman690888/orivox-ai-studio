@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeft,
@@ -31,9 +32,17 @@ export const Route = createFileRoute("/workspace/$id")({
 type Message = { id: number; role: "user" | "ai"; text: string; ts: number; stream?: boolean };
 
 function Workspace() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate({ to: "/auth" });
+    }
+  }, [user, loading, navigate]);
+
   const { id } = Route.useParams();
   const { prompt } = Route.useSearch();
-  const navigate = useNavigate();
 
   const seededPrompt =
     prompt || (id === "new" ? "" : "AI in healthcare, 2026 outlook, executive tone");
@@ -107,6 +116,18 @@ function Workspace() {
     return Math.min(demoSlides.length, 2 + (gen.showCharts ? 2 : 0) + (gen.showDiagrams ? 2 : 0));
   }, [gen.isReady, gen.showSlides, gen.showCharts, gen.showDiagrams]);
   const visibleSlides = demoSlides.slice(0, generatedCount);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
