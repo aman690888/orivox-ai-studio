@@ -1,9 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { User, Palette, Bell, Sparkles, CreditCard } from "lucide-react";
+import { User, Palette, Bell, Sparkles, CreditCard, Lock, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { supabase } from "@/lib/supabase";
+import { updateProfile } from "@/lib/database/profiles";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({ meta: [{ title: "Settings — Orivox" }] }),
@@ -105,10 +109,19 @@ function Row({
   );
 }
 
-function Field({ defaultValue, readOnly }: { defaultValue: string; readOnly?: boolean }) {
+function Field({
+  value,
+  onChange,
+  readOnly,
+}: {
+  value: string;
+  onChange?: (val: string) => void;
+  readOnly?: boolean;
+}) {
   return (
     <input
-      defaultValue={defaultValue}
+      value={value}
+      onChange={(e) => onChange?.(e.target.value)}
       readOnly={readOnly}
       className={`w-64 rounded-lg border border-border px-3 py-2 text-sm outline-none ${
         readOnly
@@ -120,10 +133,65 @@ function Field({ defaultValue, readOnly }: { defaultValue: string; readOnly?: bo
 }
 
 function Account() {
-  const { signOut, session } = useAuth();
-  const fullName = session?.user?.user_metadata?.full_name ?? "";
-  const email = session?.user?.email ?? "";
+  const { signOut, session, user } = useAuth();
   const navigate = useNavigate();
+
+  const originalName = user?.user_metadata?.full_name ?? "";
+  const email = user?.email ?? "";
+  const avatarUrl = user?.user_metadata?.avatar_url ?? "";
+  
+  const [name, setName] = useState(originalName);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const isDirty = name !== originalName;
+  const isGoogle = user?.app_metadata?.providers?.includes("google");
+  
+  const provider = isGoogle
+    ? "Google"
+    : user?.app_metadata?.providers?.includes("github")
+      ? "GitHub"
+      : "Email";
+
+  // Block navigation if there are unsaved changes
+  useBlocker({
+    shouldBlockFn: () => {
+      if (isDirty) {
+        return !window.confirm("You have unsaved changes. Are you sure you want to leave?");
+      }
+      return false;
+    }
+  });
+
+  const getInitials = (n: string) => {
+    if (!n) return "U";
+    return n.split(" ").map((part) => part[0]).slice(0, 2).join("").toUpperCase();
+  };
+
+  const handleSave = async () => {
+    if (!isDirty || !user?.id) return;
+    setIsSaving(true);
+    try {
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { full_name: name },
+      });
+      if (authError) throw authError;
+
+      try {
+        await updateProfile(user.id, { full_name: name });
+      } catch (e) {
+        console.warn("Could not update profiles table, but auth user updated.", e);
+      }
+      
+      // refresh local session hack:
+      await supabase.auth.refreshSession();
+      toast.success("Profile updated successfully");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -136,12 +204,56 @@ function Account() {
 
   return (
     <Section title="Account" desc="Manage your identity on Orivox.">
+      <Row label="Avatar">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-16 w-16 bg-muted">
+            <AvatarImage src={avatarUrl} alt={name || "User Avatar"} />
+            <AvatarFallback>{getInitials(name)}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col items-start gap-1">
+            {isGoogle && (
+              <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                Managed by Google
+              </span>
+            )}
+            {!isGoogle && (
+              <span className="text-xs text-muted-foreground">
+                Avatar is synced with your provider.
+              </span>
+            )}
+          </div>
+        </div>
+      </Row>
+
       <Row label="Name">
-        <Field defaultValue={fullName} />
+        <Field value={name} onChange={setName} />
       </Row>
-      <Row label="Email">
-        <Field defaultValue={email} readOnly />
+
+      <Row label="Email" hint="Your email address cannot be changed here.">
+        <div className="relative w-64">
+          <Field value={email} readOnly />
+          <Lock className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground/50" />
+        </div>
       </Row>
+
+      <Row label="Provider">
+        <span className="rounded bg-white/10 px-2.5 py-1 text-xs text-foreground">
+          {provider}
+        </span>
+      </Row>
+
+      {isDirty && (
+        <div className="mt-6 flex justify-end border-t border-border pt-4">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex h-9 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-black transition hover:bg-white/90 disabled:opacity-50"
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
+          </button>
+        </div>
+      )}
+
       <Row label="Sign out" hint="Log out of your current session">
         <button
           onClick={handleSignOut}

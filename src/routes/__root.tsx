@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -142,6 +143,7 @@ function RootComponent() {
             <Outlet />
           </motion.div>
         </AnimatePresence>
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
