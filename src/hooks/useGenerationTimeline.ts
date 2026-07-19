@@ -47,10 +47,10 @@ export function useGenerationTimeline(active: boolean, done?: boolean) {
 
   // When done becomes true, immediately jump to "ready" phase
   useEffect(() => {
-    if (done && phase !== "idle") {
+    if (done) {
       setPhase("ready");
     }
-  }, [done, phase]);
+  }, [done]);
 
   useEffect(() => {
     if (!active || started.current) return;

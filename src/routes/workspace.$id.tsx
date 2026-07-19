@@ -128,6 +128,7 @@ function Workspace() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const generationStarted = useRef(false);
+  const creationStarted = useRef(false);
   // The prompt is either from the URL (first load) or from the DB description field (on refresh)
   const [effectivePrompt, setEffectivePrompt] = useState(seededPrompt);
 
@@ -138,12 +139,14 @@ function Workspace() {
 
   useEffect(() => {
     if (dbSlides) {
+      console.log(`[Workspace] slides loaded: ${dbSlides.length}`);
       setSlides(dbSlides);
     }
   }, [dbSlides]);
 
   useEffect(() => {
     if (dbPresentation) {
+      console.log("[Workspace] presentation loaded");
       setTitle(dbPresentation.title);
       // Recover the prompt stored in description JSON on refresh
       if (!seededPrompt) {
@@ -164,8 +167,12 @@ function Workspace() {
     // Wait for the slides query to settle — undefined means still loading.
     // ponytail: one extra guard prevents the race on refresh.
     if (isSlidesLoading || !dbPresentation || !effectivePrompt || id === "new" || !user?.id) return;
-    if (dbSlides && dbSlides.length > 0) {
-      console.log("[Skip] Slides already exist — skipping generation on this load");
+    
+    const hasExistingSlides = dbSlides && dbSlides.length > 0;
+    const isCompleted = dbPresentation.status === "completed";
+    
+    if (isCompleted || hasExistingSlides) {
+      console.log("[Workspace] generation skipped (existing deck)");
       return;
     }
     if (generationStarted.current) return;
@@ -173,7 +180,7 @@ function Workspace() {
     generationStarted.current = true;
 
     const startGeneration = async () => {
-      console.log("[1] Workspace: startGeneration() triggered");
+      console.log("[Workspace] generation started (new deck)");
       console.log("[2] Prompt:", effectivePrompt, "| Presentation ID:", id);
       setIsGenerating(true);
       setGenerationError(null);
@@ -190,12 +197,14 @@ function Workspace() {
         const savedSlides = await saveSlides(id, result.slides);
         console.log("[6] After saveSlides() — saved", savedSlides.length, "slides");
 
-        // Update title if the AI returned one
+        // Update title and status
+        console.log("[7] Updating presentation status to completed");
+        const updates: any = { status: "completed" };
         if (result.title) {
-          console.log("[7] Updating presentation title to:", result.title);
+          updates.title = result.title;
           setTitle(result.title);
-          await updatePresentation(id, { title: result.title });
         }
+        await updatePresentation(id, updates);
 
         // Update local slides state from DB response
         setSlides(savedSlides);
@@ -222,7 +231,8 @@ function Workspace() {
   // Handle new presentation creation on mount
   useEffect(() => {
     const initNew = async () => {
-      if (id === "new" && user?.id) {
+      if (id === "new" && user?.id && !creationStarted.current) {
+        creationStarted.current = true;
         try {
           const presentationTitle = seededPrompt
             ? seededPrompt.length > 50
@@ -271,24 +281,35 @@ function Workspace() {
   const [messages, setMessages] = useState<Message[]>([]);
 
   // Seed the initial chat messages once effectivePrompt is available
-  // (from URL on first load, or from DB description on refresh)
   const messagesSeeded = useRef(false);
   useEffect(() => {
-    if (!effectivePrompt || messagesSeeded.current) return;
+    // Wait for presentation to load to know if it's existing
+    if (isPresLoading || isSlidesLoading || !dbPresentation || !effectivePrompt || messagesSeeded.current) return;
     messagesSeeded.current = true;
+    
+    const isExisting = dbPresentation.status === "completed" || (dbSlides && dbSlides.length > 0);
+    
     const uId = nextIdRef.current++;
     const aiId = nextIdRef.current++;
-    setMessages([
-      { id: uId, role: "user", text: effectivePrompt, ts: Date.now() },
-      {
-        id: aiId,
-        role: "ai",
-        text: "Got it. Researching the topic and drafting an outline now.",
-        ts: Date.now() + 1,
-        stream: true,
-      },
-    ]);
-  }, [effectivePrompt]);
+    
+    if (isExisting) {
+      setMessages([
+        { id: uId, role: "user", text: effectivePrompt, ts: Date.now() },
+        { id: aiId, role: "ai", text: "Presentation loaded.", ts: Date.now() + 1 },
+      ]);
+    } else {
+      setMessages([
+        { id: uId, role: "user", text: effectivePrompt, ts: Date.now() },
+        {
+          id: aiId,
+          role: "ai",
+          text: "Got it. Researching the topic and drafting an outline now.",
+          ts: Date.now() + 1,
+          stream: true,
+        },
+      ]);
+    }
+  }, [effectivePrompt, isPresLoading, isSlidesLoading, dbPresentation, dbSlides]);
 
   // Scroll conversation to bottom on new messages
   useEffect(() => {
@@ -301,11 +322,15 @@ function Workspace() {
   const [composer, setComposer] = useState("");
   const [timelineOpen, setTimelineOpen] = useState(true);
 
-  // active: there is a prompt in play (URL or restored from DB)
-  const active = effectivePrompt.length > 0;
-  // Timeline: runs while AI is generating; completes when isGenerating flips to false
-  const generationCompleted = active && !isGenerating && generationStarted.current;
-  const gen = useGenerationTimeline(active && isGenerating, generationCompleted);
+  // Check if presentation is already completed
+  const isExistingPresentation = dbPresentation?.status === "completed" || (dbSlides && dbSlides.length > 0);
+  
+  // active: there is a prompt in play AND we need to generate
+  const active = effectivePrompt.length > 0 && !isExistingPresentation;
+  
+  // Timeline: runs while AI is generating; completes when isGenerating flips to false, OR instantly if already existing
+  const generationCompleted = (active && !isGenerating && generationStarted.current) || false;
+  const gen = useGenerationTimeline(active && isGenerating, generationCompleted || !!isExistingPresentation);
 
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle);
