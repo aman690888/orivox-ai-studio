@@ -1,4 +1,3 @@
-
 # Orivox — UX & Architecture Revision
 
 Preserve all current visual design, tokens, typography, glass, motion, and component styling. This plan changes flow, layout logic, and interactions only.
@@ -15,11 +14,13 @@ Preserve all current visual design, tokens, typography, glass, motion, and compo
 Route: `workspace.$id.tsx`. Full-bleed, no app sidebar. Not a plain 3-column grid — an AI-first workspace with a dominant center canvas, a conversation rail that feels like a chat surface, and a right rail that morphs between two modes.
 
 **Left rail — Conversation (~380px, resizable)**
+
 - Chat transcript: user + AI messages, streamed text (typewriter for AI), inline citation chips, suggested follow-up chips under the latest AI message.
 - Composer pinned to bottom (glass), slash commands (`/chart`, `/diagram`, `/image`, `/tone`), attachment affordance (mock).
 - Header: deck title (inline-editable), status pill ("Generating…" → "Ready"), "Open Viewer" button.
 
 **Center — Presentation Canvas (flex, hero of the screen)**
+
 - The deck literally grows here. No blank loading screens. Progressive reveal driven by a scripted timeline:
   1. Prompt echo card fades in.
   2. Research cards stream in (source tiles with favicons + snippets, staggered).
@@ -33,6 +34,7 @@ Route: `workspace.$id.tsx`. Full-bleed, no app sidebar. Not a plain 3-column gri
 - "Open Viewer" CTA appears once the deck is complete.
 
 **Right rail — Morphing panel (~340px)**
+
 - **Mode A · AI Thinking** (during generation): vertical checklist of steps (Understanding Request → Researching → Finding Sources → Planning Outline → Choosing Layouts → Designing Slides → Creating Charts → Creating Diagrams → Writing Speaker Notes → Final Review). Each step animates pending → active (shimmer bar) → complete (check + subtle glow). Progress ring at the top.
 - **Mode B · AI Assistant** (after generation): Quick Actions grid, Recent Actions list, Contextual Suggestions, AI Prompt Box at the bottom.
 - **Mode C · Element Selected** (see §4).
@@ -88,6 +90,7 @@ Progression is scripted with `setTimeout`s so every visitor sees the same choreo
 ## 9. Micro-interactions pass
 
 Applied across the app using existing tokens/motion presets:
+
 - Page transitions via `AnimatePresence` in `__root.tsx` (fade + 4px rise, spring).
 - Shared-element animations with `layoutId`: Home card → Workspace title; Workspace outline card → slide thumb; Workspace deck title → Viewer deck title.
 - Progressive slide generation (§2).

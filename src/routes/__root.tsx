@@ -80,7 +80,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Orivox — Ideas to Beautiful Presentations" },
-      { name: "description", content: "Orivox is the AI Presentation Operating System. Describe an idea; the AI researches, outlines, designs, and refines your presentation." },
+      {
+        name: "description",
+        content:
+          "Orivox is the AI Presentation Operating System. Describe an idea; the AI researches, outlines, designs, and refines your presentation.",
+      },
       { name: "author", content: "Orivox" },
       { property: "og:title", content: "Orivox — Ideas to Beautiful Presentations" },
       { property: "og:description", content: "The AI Presentation Operating System." },
@@ -92,7 +96,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -115,23 +122,27 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { AuthProvider } from "../lib/auth-context";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={pathname}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <Outlet />
-        </motion.div>
-      </AnimatePresence>
+      <AuthProvider>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

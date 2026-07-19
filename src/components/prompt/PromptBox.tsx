@@ -52,11 +52,17 @@ export function PromptBox({
       className={cn(
         "glass group relative w-full rounded-2xl",
         size === "lg" ? "p-4" : "p-3",
-        className
+        className,
       )}
     >
       <div className="flex items-start gap-3">
-        <Sparkles className={cn("mt-1 shrink-0 text-electric transition-transform", isActive && "scale-110", size === "lg" ? "h-5 w-5" : "h-4 w-4")} />
+        <Sparkles
+          className={cn(
+            "mt-1 shrink-0 text-electric transition-transform",
+            isActive && "scale-110",
+            size === "lg" ? "h-5 w-5" : "h-4 w-4",
+          )}
+        />
         <motion.textarea
           layout
           autoFocus={autoFocus}
@@ -67,7 +73,7 @@ export function PromptBox({
           rows={isActive && size === "lg" ? 3 : size === "lg" ? 2 : 1}
           className={cn(
             "min-h-0 flex-1 resize-none bg-transparent leading-relaxed text-foreground outline-none placeholder:text-muted-foreground",
-            size === "lg" ? "text-lg" : "text-sm"
+            size === "lg" ? "text-lg" : "text-sm",
           )}
         />
       </div>
@@ -86,7 +92,7 @@ export function PromptBox({
             "flex h-8 w-8 items-center justify-center rounded-lg transition-all",
             v.trim()
               ? "bg-foreground text-background hover:scale-105"
-              : "bg-muted text-muted-foreground"
+              : "bg-muted text-muted-foreground",
           )}
           aria-label="Generate"
         >

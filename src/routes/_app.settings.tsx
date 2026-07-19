@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth-context";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { User, Palette, Bell, Sparkles, CreditCard } from "lucide-react";
@@ -34,7 +35,10 @@ function Settings() {
               }`}
             >
               {tab === t.id && (
-                <motion.span layoutId="settings-tab" className="absolute inset-0 rounded-lg bg-white/[0.06]" />
+                <motion.span
+                  layoutId="settings-tab"
+                  className="absolute inset-0 rounded-lg bg-white/[0.06]"
+                />
               )}
               <t.icon className="relative h-4 w-4" />
               <span className="relative">{t.label}</span>
@@ -44,7 +48,12 @@ function Settings() {
       </aside>
 
       <div className="flex-1">
-        <motion.div key={tab} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-2xl p-6">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass rounded-2xl p-6"
+        >
           {tab === "account" && <Account />}
           {tab === "appearance" && <Appearance />}
           {tab === "notifications" && <Notifications />}
@@ -56,7 +65,15 @@ function Settings() {
   );
 }
 
-function Section({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
+function Section({
+  title,
+  desc,
+  children,
+}: {
+  title: string;
+  desc?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-4">
       <div>
@@ -68,7 +85,15 @@ function Section({ title, desc, children }: { title: string; desc?: string; chil
   );
 }
 
-function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Row({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-center justify-between gap-4 border-t border-border pt-4 first:border-0 first:pt-0">
       <div>
@@ -81,16 +106,47 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 }
 
 function Field({ defaultValue }: { defaultValue: string }) {
-  return <input defaultValue={defaultValue} className="w-64 rounded-lg border border-border bg-white/[0.03] px-3 py-2 text-sm outline-none focus:border-white/25" />;
+  return (
+    <input
+      defaultValue={defaultValue}
+      className="w-64 rounded-lg border border-border bg-white/[0.03] px-3 py-2 text-sm outline-none focus:border-white/25"
+    />
+  );
 }
 
 function Account() {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate({ to: "/auth" });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <Section title="Account" desc="Manage your identity on Orivox.">
-      <Row label="Name"><Field defaultValue="Alex Rivera" /></Row>
-      <Row label="Email"><Field defaultValue="alex@company.com" /></Row>
+      <Row label="Name">
+        <Field defaultValue="Alex Rivera" />
+      </Row>
+      <Row label="Email">
+        <Field defaultValue="alex@company.com" />
+      </Row>
+      <Row label="Sign out" hint="Log out of your current session">
+        <button
+          onClick={handleSignOut}
+          className="rounded-lg border border-border px-3 py-1.5 text-xs transition hover:bg-white/5"
+        >
+          Sign out
+        </button>
+      </Row>
       <Row label="Delete account" hint="Permanent and cannot be undone">
-        <button className="rounded-lg border border-destructive/40 px-3 py-1.5 text-xs text-destructive transition hover:bg-destructive/10">Delete</button>
+        <button className="rounded-lg border border-destructive/40 px-3 py-1.5 text-xs text-destructive transition hover:bg-destructive/10">
+          Delete
+        </button>
       </Row>
     </Section>
   );
@@ -102,7 +158,12 @@ function Appearance() {
       <Row label="Theme" hint="Dark mode is optimized for long sessions.">
         <div className="flex rounded-lg border border-border p-0.5 text-xs">
           {["Dark", "Light", "System"].map((t) => (
-            <button key={t} className={`rounded-md px-3 py-1.5 ${t === "Dark" ? "bg-white/10" : "text-muted-foreground"}`}>{t}</button>
+            <button
+              key={t}
+              className={`rounded-md px-3 py-1.5 ${t === "Dark" ? "bg-white/10" : "text-muted-foreground"}`}
+            >
+              {t}
+            </button>
           ))}
         </div>
       </Row>
@@ -120,9 +181,15 @@ function Appearance() {
 function Notifications() {
   return (
     <Section title="Notifications">
-      <Row label="Generation complete"><Switch defaultChecked /></Row>
-      <Row label="Weekly summary"><Switch /></Row>
-      <Row label="Product updates"><Switch defaultChecked /></Row>
+      <Row label="Generation complete">
+        <Switch defaultChecked />
+      </Row>
+      <Row label="Weekly summary">
+        <Switch />
+      </Row>
+      <Row label="Product updates">
+        <Switch defaultChecked />
+      </Row>
     </Section>
   );
 }
@@ -132,15 +199,21 @@ function AIPrefs() {
     <Section title="AI Preferences" desc="Tune how Orivox writes and designs.">
       <Row label="Default tone">
         <select className="rounded-lg border border-border bg-white/[0.03] px-3 py-2 text-sm">
-          <option>Executive</option><option>Conversational</option><option>Academic</option>
+          <option>Executive</option>
+          <option>Conversational</option>
+          <option>Academic</option>
         </select>
       </Row>
       <Row label="Default length">
         <select className="rounded-lg border border-border bg-white/[0.03] px-3 py-2 text-sm">
-          <option>10 slides</option><option>15 slides</option><option>20+ slides</option>
+          <option>10 slides</option>
+          <option>15 slides</option>
+          <option>20+ slides</option>
         </select>
       </Row>
-      <Row label="Always include citations"><Switch defaultChecked /></Row>
+      <Row label="Always include citations">
+        <Switch defaultChecked />
+      </Row>
     </Section>
   );
 }
@@ -151,14 +224,26 @@ function Billing() {
       <div className="grid gap-3 md:grid-cols-3">
         {[
           { name: "Free", price: "$0", features: ["3 decks / month", "PDF export"], active: true },
-          { name: "Pro", price: "$20", features: ["Unlimited decks", "PPTX + share links", "Priority AI"] },
+          {
+            name: "Pro",
+            price: "$20",
+            features: ["Unlimited decks", "PPTX + share links", "Priority AI"],
+          },
           { name: "Team", price: "$40", features: ["Everything in Pro", "Shared library", "SSO"] },
         ].map((p) => (
-          <div key={p.name} className={`rounded-xl border p-4 ${p.active ? "border-electric/50 bg-electric/5" : "border-border"}`}>
+          <div
+            key={p.name}
+            className={`rounded-xl border p-4 ${p.active ? "border-electric/50 bg-electric/5" : "border-border"}`}
+          >
             <div className="text-xs uppercase tracking-widest text-muted-foreground">{p.name}</div>
-            <div className="mt-2 text-2xl font-semibold">{p.price}<span className="text-xs text-muted-foreground">/mo</span></div>
+            <div className="mt-2 text-2xl font-semibold">
+              {p.price}
+              <span className="text-xs text-muted-foreground">/mo</span>
+            </div>
             <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-              {p.features.map((f) => <li key={f}>· {f}</li>)}
+              {p.features.map((f) => (
+                <li key={f}>· {f}</li>
+              ))}
             </ul>
           </div>
         ))}

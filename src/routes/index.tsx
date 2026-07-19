@@ -1,16 +1,33 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { ArrowRight, Search, FileText, Wand2, Presentation, ChevronDown, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Search,
+  FileText,
+  Wand2,
+  Presentation,
+  ChevronDown,
+  Sparkles,
+} from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { PromptBox } from "@/components/prompt/PromptBox";
 import { useState } from "react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Orivox — Stop making presentations. Start describing ideas." },
-      { name: "description", content: "The AI Presentation Operating System. Describe an idea; Orivox researches, outlines, designs, and refines your presentation." },
+      {
+        name: "description",
+        content:
+          "The AI Presentation Operating System. Describe an idea; Orivox researches, outlines, designs, and refines your presentation.",
+      },
     ],
   }),
   component: Landing,
@@ -18,9 +35,12 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const navigate = useNavigate();
-  const [prompt, setPrompt] = useState("A pitch deck on AI in healthcare, 10 slides, executive tone");
+  const [prompt, setPrompt] = useState(
+    "A pitch deck on AI in healthcare, 10 slides, executive tone",
+  );
 
-  const go = (p: string) => navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: p } });
+  const go = (p: string) =>
+    navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: p } });
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
@@ -32,12 +52,23 @@ function Landing() {
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-          <a className="transition hover:text-foreground" href="#how">How it works</a>
-          <a className="transition hover:text-foreground" href="#features">Features</a>
-          <a className="transition hover:text-foreground" href="#faq">FAQ</a>
+          <a className="transition hover:text-foreground" href="#how">
+            How it works
+          </a>
+          <a className="transition hover:text-foreground" href="#features">
+            Features
+          </a>
+          <a className="transition hover:text-foreground" href="#faq">
+            FAQ
+          </a>
         </nav>
         <div className="flex items-center gap-2">
-          <Link to="/auth" className="hidden text-sm text-muted-foreground transition hover:text-foreground md:inline">Sign in</Link>
+          <Link
+            to="/auth"
+            className="hidden text-sm text-muted-foreground transition hover:text-foreground md:inline"
+          >
+            Sign in
+          </Link>
           <Link
             to="/auth"
             className="rounded-lg bg-foreground px-3 py-1.5 text-sm font-medium text-background transition hover:opacity-90"
@@ -78,7 +109,8 @@ function Landing() {
           transition={{ delay: 0.2 }}
           className="mx-auto mt-6 max-w-xl text-balance text-base text-muted-foreground md:text-lg"
         >
-          Orivox is your AI presentation partner. Describe an idea; it researches, outlines, designs, and refines the deck alongside you.
+          Orivox is your AI presentation partner. Describe an idea; it researches, outlines,
+          designs, and refines the deck alongside you.
         </motion.p>
 
         <motion.div
@@ -87,7 +119,12 @@ function Landing() {
           transition={{ delay: 0.3 }}
           className="mx-auto mt-10 max-w-2xl"
         >
-          <PromptBox value={prompt} onChange={setPrompt} onSubmit={go} placeholder="Describe your presentation..." />
+          <PromptBox
+            value={prompt}
+            onChange={setPrompt}
+            onSubmit={go}
+            placeholder="Describe your presentation..."
+          />
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs">
             {["Pitch deck", "Research report", "Product review", "Keynote"].map((t) => (
               <button
@@ -108,8 +145,16 @@ function Landing() {
         <div className="mt-14 grid gap-4 md:grid-cols-4">
           {[
             { icon: Search, label: "Research", body: "Pulls from the open web and your context." },
-            { icon: FileText, label: "Outline", body: "Structures the story before touching a slide." },
-            { icon: Presentation, label: "Slides", body: "Designs layouts, charts, and speaker notes." },
+            {
+              icon: FileText,
+              label: "Outline",
+              body: "Structures the story before touching a slide.",
+            },
+            {
+              icon: Presentation,
+              label: "Slides",
+              body: "Designs layouts, charts, and speaker notes.",
+            },
             { icon: Wand2, label: "Refinement", body: "Conversational edits at any zoom level." },
           ].map((s, i) => (
             <motion.div
@@ -163,11 +208,23 @@ function Landing() {
         <div className="mt-10">
           <Accordion type="single" collapsible className="space-y-2">
             {[
-              ["Is Orivox a Canva alternative?", "No. Orivox never asks you to design. You describe an idea; the AI designs the deck."],
-              ["Can I edit slides manually?", "Yes. Select any element to open manual controls alongside AI edits."],
+              [
+                "Is Orivox a Canva alternative?",
+                "No. Orivox never asks you to design. You describe an idea; the AI designs the deck.",
+              ],
+              [
+                "Can I edit slides manually?",
+                "Yes. Select any element to open manual controls alongside AI edits.",
+              ],
               ["Which export formats are supported?", "PDF, PPTX, and shareable links."],
-              ["Does Orivox research on its own?", "Yes. It pulls from the open web and surfaces its sources."],
-              ["Can I bring my own data?", "Yes. Attach files or paste data; Orivox turns it into charts."],
+              [
+                "Does Orivox research on its own?",
+                "Yes. It pulls from the open web and surfaces its sources.",
+              ],
+              [
+                "Can I bring my own data?",
+                "Yes. Attach files or paste data; Orivox turns it into charts.",
+              ],
               ["Is there a free plan?", "Yes, with generous limits."],
             ].map(([q, a]) => (
               <AccordionItem key={q} value={q} className="glass rounded-xl border-0 px-4">
@@ -197,7 +254,9 @@ function Landing() {
 
       <footer className="relative z-10 border-t border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2"><Logo /> </div>
+          <div className="flex items-center gap-2">
+            <Logo />{" "}
+          </div>
           <div>© 2026 Orivox</div>
         </div>
       </footer>
@@ -209,7 +268,9 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <div className="text-center">
       <div className="text-xs uppercase tracking-widest text-muted-foreground">{eyebrow}</div>
-      <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">{title}</h2>
+      <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+        {title}
+      </h2>
     </div>
   );
 }

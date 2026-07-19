@@ -12,7 +12,9 @@ import {
   Clock,
   ArrowRight,
 } from "lucide-react";
-import { presentations } from "@/lib/mock";
+import { useAuth } from "@/lib/auth-context";
+import { useQuery } from "@tanstack/react-query";
+import { getPresentations } from "@/lib/database/presentations";
 
 // Tiny global store (no zustand dependency)
 const listeners = new Set<() => void>();
@@ -42,6 +44,13 @@ export function useCommandPalette() {
 export function CommandPalette() {
   const { isOpen, close, toggle } = useCommandPalette();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const { data: presentations = [] } = useQuery({
+    queryKey: ["presentations", user?.id],
+    queryFn: () => getPresentations(user!.id),
+    enabled: !!user?.id && isOpen,
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -87,29 +96,55 @@ export function CommandPalette() {
                   placeholder="Search presentations, run commands..."
                   className="flex-1 bg-transparent py-4 text-sm outline-none placeholder:text-muted-foreground"
                 />
-                <kbd className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">esc</kbd>
+                <kbd className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  esc
+                </kbd>
               </div>
               <Command.List className="max-h-[400px] overflow-y-auto p-2">
                 <Command.Empty className="py-10 text-center text-sm text-muted-foreground">
                   No results found.
                 </Command.Empty>
 
-                <Command.Group heading="Actions" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground">
-                  <Item icon={Plus} label="Create new presentation" onSelect={() => run(() => navigate({ to: "/workspace/$id", params: { id: "new" } }))} />
-                  <Item icon={SettingsIcon} label="Open settings" onSelect={() => run(() => navigate({ to: "/settings" }))} />
-                  <Item icon={FileDown} label="Export current presentation" onSelect={() => run(() => navigate({ to: "/export/$id", params: { id: "healthcare-ai" } }))} />
+                <Command.Group
+                  heading="Actions"
+                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground"
+                >
+                  <Item
+                    icon={Plus}
+                    label="Create new presentation"
+                    onSelect={() =>
+                      run(() => navigate({ to: "/workspace/$id", params: { id: "new" } }))
+                    }
+                  />
+                  <Item
+                    icon={SettingsIcon}
+                    label="Open settings"
+                    onSelect={() => run(() => navigate({ to: "/settings" }))}
+                  />
+                  <Item
+                    icon={FileDown}
+                    label="Export current presentation"
+                    onSelect={() =>
+                      run(() => navigate({ to: "/export/$id", params: { id: "healthcare-ai" } }))
+                    }
+                  />
                   <Item icon={Copy} label="Duplicate current presentation" />
                   <Item icon={Trash2} label="Delete current presentation" />
                 </Command.Group>
 
-                <Command.Group heading="Recent" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground">
+                <Command.Group
+                  heading="Recent"
+                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-3 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground"
+                >
                   {presentations.slice(0, 5).map((p) => (
                     <Item
                       key={p.id}
                       icon={Clock}
                       label={p.title}
                       hint={p.updated}
-                      onSelect={() => run(() => navigate({ to: "/present/$id", params: { id: p.id } }))}
+                      onSelect={() =>
+                        run(() => navigate({ to: "/present/$id", params: { id: p.id } }))
+                      }
                     />
                   ))}
                 </Command.Group>
