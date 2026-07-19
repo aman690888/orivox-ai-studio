@@ -107,15 +107,15 @@ serve(async (req) => {
       required: ["slides"],
     };
 
-    const promptText = `
-Based on the following presentation outline, generate the content for all the slides.
+    // ponytail: honour every item in the outline — no merging, no skipping
+    const promptText = `You are a professional slide writer.
 
-Presentation Title: "${outline.title}"
-Outline Items:
+Presentation: "${outline.title}"
+Outline (${outline.outline?.length ?? 0} slides — generate exactly this many):
 ${JSON.stringify(outline.outline, null, 2)}
 
-Make sure to match the requested slide 'kind' for each slide. Include 2-4 bullets per slide when layout allows (like content, cover, closing). Return notes for the speaker as well.
-`;
+Generate one slide object per outline item, in order. Match the 'kind' exactly. Include 2-4 bullets for content/cover/closing slides. Add speaker notes. Return only valid JSON.`;
+
 
     // 4. Generate content
     const response = await ai.models.generateContent({

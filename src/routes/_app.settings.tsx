@@ -105,17 +105,24 @@ function Row({
   );
 }
 
-function Field({ defaultValue }: { defaultValue: string }) {
+function Field({ defaultValue, readOnly }: { defaultValue: string; readOnly?: boolean }) {
   return (
     <input
       defaultValue={defaultValue}
-      className="w-64 rounded-lg border border-border bg-white/[0.03] px-3 py-2 text-sm outline-none focus:border-white/25"
+      readOnly={readOnly}
+      className={`w-64 rounded-lg border border-border px-3 py-2 text-sm outline-none ${
+        readOnly
+          ? "cursor-default bg-white/[0.01] text-muted-foreground"
+          : "bg-white/[0.03] focus:border-white/25"
+      }`}
     />
   );
 }
 
 function Account() {
-  const { signOut } = useAuth();
+  const { signOut, session } = useAuth();
+  const fullName = session?.user?.user_metadata?.full_name ?? "";
+  const email = session?.user?.email ?? "";
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -130,10 +137,10 @@ function Account() {
   return (
     <Section title="Account" desc="Manage your identity on Orivox.">
       <Row label="Name">
-        <Field defaultValue="Alex Rivera" />
+        <Field defaultValue={fullName} />
       </Row>
       <Row label="Email">
-        <Field defaultValue="alex@company.com" />
+        <Field defaultValue={email} readOnly />
       </Row>
       <Row label="Sign out" hint="Log out of your current session">
         <button

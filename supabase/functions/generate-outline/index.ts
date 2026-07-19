@@ -109,19 +109,19 @@ serve(async (req) => {
       required: ["title", "outline"],
     };
 
-    const promptText = `
-You are a professional presentation architect. Create a detailed outline for a presentation on the topic: "${prompt}".
-Identify:
-1. Cover slide details
-2. Core message slides
-3. Charts, diagrams, quotes, or closing slide layouts
-For each slide in the outline, specify:
-- Title
-- Detailed explanation / description of key content
-- Slide layout type (cover, content, chart, diagram, quote, closing)
+    // ponytail: user's exact request is the instruction — never bury it in a template label
+    const promptText = `You are a professional presentation architect.
 
-Ensure the deck flows logically and flows towards a cohesive conclusion.
-`;
+User request: "${prompt.trim()}"
+
+Create a slide-by-slide outline that fulfils the request above exactly (including any slide count, tone, or format the user specified).
+For each slide specify:
+- title
+- description (key content / talking points)
+- kind: one of cover | content | chart | diagram | quote | closing
+
+The first slide must be kind "cover". The last must be kind "closing". Return only valid JSON.`;
+
 
     // 4. Generate content
     const response = await ai.models.generateContent({

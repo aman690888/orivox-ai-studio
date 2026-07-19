@@ -161,22 +161,14 @@ function Workspace() {
 
   // ─── Real AI generation pipeline ────────────────────────────────────────────
   useEffect(() => {
-    // Only fire once, only after redirect to a real UUID (not "new"),
-    // only when there is a prompt, and ONLY when there are no slides yet.
-    const hasExistingSlides = dbSlides !== undefined && dbSlides.length > 0;
-    if (
-      !effectivePrompt ||
-      id === "new" ||
-      !user?.id ||
-      !dbPresentation ||
-      hasExistingSlides ||
-      generationStarted.current
-    ) {
-      if (hasExistingSlides) {
-        console.log("[Skip] Slides already exist — skipping generation on this load");
-      }
+    // Wait for the slides query to settle — undefined means still loading.
+    // ponytail: one extra guard prevents the race on refresh.
+    if (isSlidesLoading || !dbPresentation || !effectivePrompt || id === "new" || !user?.id) return;
+    if (dbSlides && dbSlides.length > 0) {
+      console.log("[Skip] Slides already exist — skipping generation on this load");
       return;
     }
+    if (generationStarted.current) return;
 
     generationStarted.current = true;
 
@@ -224,7 +216,7 @@ function Workspace() {
     };
 
     startGeneration();
-  }, [id, effectivePrompt, user?.id, dbPresentation, dbSlides, queryClient]);
+  }, [id, effectivePrompt, user?.id, dbPresentation, dbSlides, isSlidesLoading, queryClient]);
   // ────────────────────────────────────────────────────────────────────────────
 
   // Handle new presentation creation on mount
@@ -528,33 +520,9 @@ function Workspace() {
                         {m.stream ? <StreamText text={m.text} /> : m.text}
                       </div>
 
-                      {/* Citation chips on the first AI message */}
-                      {i === 1 && gen.showResearch && (
-                        <div className="mt-2.5 flex flex-wrap gap-1">
-                          {research.slice(0, 3).map((r) => (
-                            <span
-                              key={r.title}
-                              className="rounded-md border border-border bg-white/[0.03] px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                            >
-                              {r.source}
-                            </span>
-                          ))}
-                        </div>
-                      )}
 
-                      {i === messages.length - 1 && gen.isReady && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {followUps.map((f) => (
-                            <button
-                              key={f}
-                              onClick={() => send(f)}
-                              className="rounded-full border border-border bg-white/[0.02] px-2.5 py-1 text-[11px] text-muted-foreground transition hover:border-electric/40 hover:bg-electric/5 hover:text-foreground"
-                            >
-                              {f}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+
+
                     </div>
                   ) : (
                     <div className="max-w-[92%]">
@@ -633,38 +601,7 @@ function Workspace() {
                 </motion.div>
               )}
 
-              {/* Research phase */}
-              <AnimatePresence>
-                {gen.showResearch && !gen.showSlides && (
-                  <motion.div
-                    key="research"
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="mb-6"
-                  >
-                    <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
-                      Sources
-                    </div>
-                    <div className="grid gap-2 md:grid-cols-2">
-                      {research.map((r, i) => (
-                        <motion.div
-                          key={r.title}
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.12 }}
-                          className="glass rounded-xl p-3"
-                        >
-                          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                            {r.source} · {r.year}
-                          </div>
-                          <div className="mt-1 text-sm">{r.title}</div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+
 
               {/* Outline phase */}
               <AnimatePresence>
@@ -814,8 +751,7 @@ function Workspace() {
                         <div className="mt-4 grid grid-cols-3 gap-3 text-center">
                           {[
                             { label: "Slides", value: renderSlidesList.length.toString() },
-                            { label: "Sources", value: research.length.toString() },
-                            { label: "Charts", value: "2" },
+                            { label: "Charts", value: renderSlidesList.filter(s => s.kind === "chart").length.toString() },
                           ].map((s) => (
                             <div
                               key={s.label}
