@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { User, Palette, Bell, Sparkles, CreditCard, Lock, Loader2 } from "lucide-react";
@@ -272,14 +273,19 @@ function Account() {
 }
 
 function Appearance() {
+  const { theme, setTheme, accent, setAccent } = useTheme();
+
   return (
     <Section title="Appearance" desc="Personalize how Orivox looks.">
       <Row label="Theme" hint="Dark mode is optimized for long sessions.">
         <div className="flex rounded-lg border border-border p-0.5 text-xs">
-          {["Dark", "Light", "System"].map((t) => (
+          {(["dark", "light", "system"] as const).map((t) => (
             <button
               key={t}
-              className={`rounded-md px-3 py-1.5 ${t === "Dark" ? "bg-white/10" : "text-muted-foreground"}`}
+              onClick={() => setTheme(t)}
+              className={`rounded-md px-3 py-1.5 capitalize transition-colors ${
+                theme === t ? "bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               {t}
             </button>
@@ -288,9 +294,30 @@ function Appearance() {
       </Row>
       <Row label="Accent" hint="Used in prompts, focus rings, and highlights.">
         <div className="flex gap-2">
-          <div className="glow-electric h-6 w-6 rounded-full bg-electric ring-2 ring-white/20" />
-          <div className="h-6 w-6 rounded-full bg-violet" />
-          <div className="h-6 w-6 rounded-full bg-emerald-500" />
+          <button
+            onClick={() => setAccent("blue")}
+            className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
+              accent === "blue" ? "glow-electric ring-2 ring-white/20" : "ring-1 ring-white/10 opacity-70 hover:opacity-100"
+            }`}
+            style={{ backgroundColor: "oklch(0.68 0.19 255)" }}
+            aria-label="Blue"
+          />
+          <button
+            onClick={() => setAccent("purple")}
+            className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
+              accent === "purple" ? "glow-electric ring-2 ring-white/20" : "ring-1 ring-white/10 opacity-70 hover:opacity-100"
+            }`}
+            style={{ backgroundColor: "oklch(0.72 0.17 300)" }}
+            aria-label="Purple"
+          />
+          <button
+            onClick={() => setAccent("green")}
+            className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
+              accent === "green" ? "glow-electric ring-2 ring-white/20" : "ring-1 ring-white/10 opacity-70 hover:opacity-100"
+            }`}
+            style={{ backgroundColor: "oklch(0.69 0.15 160)" }}
+            aria-label="Green"
+          />
         </div>
       </Row>
     </Section>
