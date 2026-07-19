@@ -14,8 +14,15 @@ export type GenPhase =
   | "ready";
 
 const order: GenPhase[] = [
-  "understanding", "researching", "outlining", "designing",
-  "charting", "diagramming", "noting", "reviewing", "ready",
+  "understanding",
+  "researching",
+  "outlining",
+  "designing",
+  "charting",
+  "diagramming",
+  "noting",
+  "reviewing",
+  "ready",
 ];
 
 // Map generation phases to step indexes in thinkingSteps
@@ -34,24 +41,33 @@ const phaseToStepIndex: Record<GenPhase, number> = {
   ready: 10,
 };
 
-export function useGenerationTimeline(active: boolean) {
+export function useGenerationTimeline(active: boolean, done?: boolean) {
   const [phase, setPhase] = useState<GenPhase>("idle");
   const started = useRef(false);
+
+  // When done becomes true, immediately jump to "ready" phase
+  useEffect(() => {
+    if (done && phase !== "idle") {
+      setPhase("ready");
+    }
+  }, [done, phase]);
 
   useEffect(() => {
     if (!active || started.current) return;
     started.current = true;
 
+    // Run through phases quickly (visual progress indicator).
+    // The "ready" phase is overridden by the `done` signal above.
     const timings: [GenPhase, number][] = [
       ["understanding", 400],
-      ["researching", 1400],
-      ["outlining", 1600],
-      ["designing", 1600],
-      ["charting", 1200],
-      ["diagramming", 1200],
-      ["noting", 1000],
-      ["reviewing", 900],
-      ["ready", 700],
+      ["researching", 1800],
+      ["outlining", 2200],
+      ["designing", 2500],
+      ["charting", 1800],
+      ["diagramming", 1800],
+      ["noting", 1500],
+      ["reviewing", 1200],
+      // "ready" is NOT triggered here — it fires when done=true
     ];
 
     let cumulative = 0;
@@ -82,5 +98,16 @@ export function useGenerationTimeline(active: boolean) {
   const showDiagrams = orderIndex >= order.indexOf("diagramming");
   const showNotes = orderIndex >= order.indexOf("noting");
 
-  return { phase, isReady, stepStatus, steps: thinkingSteps, showResearch, showOutline, showSlides, showCharts, showDiagrams, showNotes };
+  return {
+    phase,
+    isReady,
+    stepStatus,
+    steps: thinkingSteps,
+    showResearch,
+    showOutline,
+    showSlides,
+    showCharts,
+    showDiagrams,
+    showNotes,
+  };
 }
