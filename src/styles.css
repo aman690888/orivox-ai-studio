@@ -119,6 +119,27 @@
   --sidebar-ring: oklch(0.65 0.19 255);
 }
 
+[data-accent="blue"] {
+  --electric: oklch(0.68 0.19 255);
+  --ring: oklch(0.65 0.19 255);
+  --sidebar-primary: oklch(0.68 0.19 255);
+  --sidebar-ring: oklch(0.65 0.19 255);
+}
+
+[data-accent="purple"] {
+  --electric: oklch(0.72 0.17 300);
+  --ring: oklch(0.72 0.17 300);
+  --sidebar-primary: oklch(0.72 0.17 300);
+  --sidebar-ring: oklch(0.72 0.17 300);
+}
+
+[data-accent="green"] {
+  --electric: oklch(0.69 0.15 160);
+  --ring: oklch(0.69 0.15 160);
+  --sidebar-primary: oklch(0.69 0.15 160);
+  --sidebar-ring: oklch(0.69 0.15 160);
+}
+
 @utility glass {
   background: color-mix(in oklab, var(--card) 65%, transparent);
   backdrop-filter: blur(20px) saturate(140%);
@@ -157,6 +178,12 @@
     font-family: var(--font-sans);
     font-feature-settings: "cv11", "ss01", "ss03";
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Make sure inputs and borders transition nicely */
+  * {
+    transition: border-color 0.3s ease;
   }
 
   ::selection {
