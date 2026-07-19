@@ -23,7 +23,7 @@ import { AIThinking } from "@/components/workspace/AIThinking";
 import { AIAssistant, ElementSelectedPanel } from "@/components/workspace/RightPanels";
 import { SlideCanvas } from "@/components/workspace/SlideCanvas";
 import { useGenerationTimeline } from "@/hooks/useGenerationTimeline";
-import { demoSlides, research, followUps, Slide } from "@/lib/mock";
+import { Slide } from "@/lib/mock";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getPresentation,
@@ -32,6 +32,7 @@ import {
 } from "@/lib/database/presentations";
 import { getSlides, saveSlides } from "@/lib/database/slides";
 import { usePresentationSync } from "@/hooks/usePresentationSync";
+import { generateFullPresentation } from "@/lib/ai";
 
 const searchSchema = z.object({ prompt: z.string().optional() });
 
@@ -103,8 +104,7 @@ function Workspace() {
   const { id } = Route.useParams();
   const { prompt } = Route.useSearch();
 
-  const seededPrompt =
-    prompt || (id === "new" ? "" : "AI in healthcare, 2026 outlook, executive tone");
+  const seededPrompt = prompt || "";
 
   // Real-time queries
   const {
@@ -124,11 +124,17 @@ function Workspace() {
   });
 
   const [slides, setSlides] = useState<Slide[]>([]);
-  const [title, setTitle] = useState(seededPrompt ? "Untitled deck" : "New presentation");
+  const [title, setTitle] = useState("New presentation");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const generationStarted = useRef(false);
+  // The prompt is either from the URL (first load) or from the DB description field (on refresh)
+  const [effectivePrompt, setEffectivePrompt] = useState(seededPrompt);
 
   const { sync, retry, status: saveStatus, isOnline } = usePresentationSync(id);
 
-  const renderSlidesList = slides.length > 0 ? slides : demoSlides;
+  // Show real slides only; never fall back to demo data
+  const renderSlidesList = slides;
 
   useEffect(() => {
     if (dbSlides) {
@@ -139,8 +145,87 @@ function Workspace() {
   useEffect(() => {
     if (dbPresentation) {
       setTitle(dbPresentation.title);
+      // Recover the prompt stored in description JSON on refresh
+      if (!seededPrompt) {
+        try {
+          const meta = JSON.parse(dbPresentation.description ?? "");
+          if (typeof meta?.prompt === "string" && meta.prompt) {
+            setEffectivePrompt(meta.prompt);
+          }
+        } catch {
+          // description is not JSON or has no prompt — generation won't run
+        }
+      }
     }
-  }, [dbPresentation]);
+  }, [dbPresentation, seededPrompt]);
+
+  // ─── Real AI generation pipeline ────────────────────────────────────────────
+  useEffect(() => {
+    // Only fire once, only after redirect to a real UUID (not "new"),
+    // only when there is a prompt, and ONLY when there are no slides yet.
+    const hasExistingSlides = dbSlides !== undefined && dbSlides.length > 0;
+    if (
+      !effectivePrompt ||
+      id === "new" ||
+      !user?.id ||
+      !dbPresentation ||
+      hasExistingSlides ||
+      generationStarted.current
+    ) {
+      if (hasExistingSlides) {
+        console.log("[Skip] Slides already exist — skipping generation on this load");
+      }
+      return;
+    }
+
+    generationStarted.current = true;
+
+    const startGeneration = async () => {
+      console.log("[1] Workspace: startGeneration() triggered");
+      console.log("[2] Prompt:", effectivePrompt, "| Presentation ID:", id);
+      setIsGenerating(true);
+      setGenerationError(null);
+
+      try {
+        console.log("[3] Before generateFullPresentation()");
+        const result = await generateFullPresentation(effectivePrompt, {
+          config: { provider: "gemini" },
+        });
+        console.log("[4] After generateFullPresentation() — title:", result.title, "slides:", result.slides.length);
+
+        // Persist generated slides to the database
+        console.log("[5] Before saveSlides()");
+        const savedSlides = await saveSlides(id, result.slides);
+        console.log("[6] After saveSlides() — saved", savedSlides.length, "slides");
+
+        // Update title if the AI returned one
+        if (result.title) {
+          console.log("[7] Updating presentation title to:", result.title);
+          setTitle(result.title);
+          await updatePresentation(id, { title: result.title });
+        }
+
+        // Update local slides state from DB response
+        setSlides(savedSlides);
+
+        // Refresh queries so other components stay in sync
+        queryClient.invalidateQueries({ queryKey: ["slides", id] });
+        queryClient.invalidateQueries({ queryKey: ["presentation", id] });
+
+        console.log("[8] Generation complete — slides rendered in canvas");
+      } catch (err) {
+        console.error("[Generation error]", err);
+        setGenerationError(
+          err instanceof Error ? err.message : "Generation failed. Please retry."
+        );
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
+    startGeneration();
+  }, [id, effectivePrompt, user?.id, dbPresentation, dbSlides, queryClient]);
+  // ────────────────────────────────────────────────────────────────────────────
 
   // Handle new presentation creation on mount
   useEffect(() => {
@@ -148,19 +233,23 @@ function Workspace() {
       if (id === "new" && user?.id) {
         try {
           const presentationTitle = seededPrompt
-            ? seededPrompt.length > 25
-              ? seededPrompt.slice(0, 25) + "..."
+            ? seededPrompt.length > 50
+              ? seededPrompt.slice(0, 50) + "..."
               : seededPrompt
             : "Untitled Presentation";
+
+          // Store the original user prompt in description so it survives refresh
+          const descriptionMeta = JSON.stringify({ prompt: seededPrompt || null });
 
           const newPres = await createPresentation(
             user.id,
             presentationTitle,
             "Research",
             "electric",
+            descriptionMeta,
           );
 
-          await saveSlides(newPres.id, demoSlides);
+          // Do NOT seed demoSlides — generation will populate slides after redirect
 
           // Redirect immediately to the new UUID workspace
           navigate({
@@ -176,6 +265,7 @@ function Workspace() {
     initNew();
   }, [id, user, seededPrompt, prompt, navigate]);
 
+
   // Route protection
   useEffect(() => {
     if (!loading && !user) {
@@ -184,12 +274,20 @@ function Workspace() {
   }, [user, loading, navigate]);
 
   const nextIdRef = useRef(1);
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (!seededPrompt) return [];
+  const conversationRef = useRef<HTMLDivElement>(null);
+
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  // Seed the initial chat messages once effectivePrompt is available
+  // (from URL on first load, or from DB description on refresh)
+  const messagesSeeded = useRef(false);
+  useEffect(() => {
+    if (!effectivePrompt || messagesSeeded.current) return;
+    messagesSeeded.current = true;
     const uId = nextIdRef.current++;
     const aiId = nextIdRef.current++;
-    return [
-      { id: uId, role: "user", text: seededPrompt, ts: Date.now() },
+    setMessages([
+      { id: uId, role: "user", text: effectivePrompt, ts: Date.now() },
       {
         id: aiId,
         role: "ai",
@@ -197,24 +295,25 @@ function Workspace() {
         ts: Date.now() + 1,
         stream: true,
       },
-    ];
-  });
+    ]);
+  }, [effectivePrompt]);
+
+  // Scroll conversation to bottom on new messages
+  useEffect(() => {
+    if (conversationRef.current) {
+      conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+    }
+  }, [messages]);
   const [selectedEl, setSelectedEl] = useState<string | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const [composer, setComposer] = useState("");
   const [timelineOpen, setTimelineOpen] = useState(true);
 
-  const active = messages.length > 0;
-  const gen = useGenerationTimeline(active);
-
-  useEffect(() => {
-    if (gen.isReady && id !== "new" && dbPresentation?.title === "Untitled Presentation") {
-      setTitle("AI in Healthcare");
-      updatePresentation(id, { title: "AI in Healthcare" }).then(() => {
-        queryClient.invalidateQueries({ queryKey: ["presentation", id] });
-      });
-    }
-  }, [gen.isReady, id, dbPresentation, queryClient]);
+  // active: there is a prompt in play (URL or restored from DB)
+  const active = effectivePrompt.length > 0;
+  // Timeline: runs while AI is generating; completes when isGenerating flips to false
+  const generationCompleted = active && !isGenerating && generationStarted.current;
+  const gen = useGenerationTimeline(active && isGenerating, generationCompleted);
 
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle);
@@ -520,6 +619,18 @@ function Workspace() {
                     <div className="mt-1 text-sm">Your deck will grow here as Orivox works.</div>
                   </div>
                 </div>
+              )}
+
+              {/* Generation error banner */}
+              {generationError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
+                >
+                  <span className="font-medium">Generation failed: </span>
+                  {generationError}
+                </motion.div>
               )}
 
               {/* Research phase */}

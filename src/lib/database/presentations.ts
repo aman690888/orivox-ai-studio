@@ -13,6 +13,7 @@ export interface PresentationUi {
   slides: number;
   progress?: number;
   accent: "electric" | "violet" | "emerald" | "amber";
+  description?: string;
 }
 
 function timeAgo(dateString: string): string {
@@ -61,6 +62,7 @@ export function mapToUi(
     slides: slideCount,
     progress,
     accent: (dbPres.accent as PresentationUi["accent"]) || "electric",
+    description: dbPres.description ?? undefined,
   };
 }
 
