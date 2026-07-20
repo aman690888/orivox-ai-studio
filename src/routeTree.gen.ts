@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RendererRouteImport } from './routes/renderer'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -19,6 +20,11 @@ import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppPresentationsRouteImport } from './routes/_app.presentations'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
 
+const RendererRoute = RendererRouteImport.update({
+  id: '/renderer',
+  path: '/renderer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -67,6 +73,7 @@ const AppHomeRoute = AppHomeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/renderer': typeof RendererRoute
   '/home': typeof AppHomeRoute
   '/presentations': typeof AppPresentationsRoute
   '/settings': typeof AppSettingsRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/renderer': typeof RendererRoute
   '/home': typeof AppHomeRoute
   '/presentations': typeof AppPresentationsRoute
   '/settings': typeof AppSettingsRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/renderer': typeof RendererRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/presentations': typeof AppPresentationsRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/renderer'
     | '/home'
     | '/presentations'
     | '/settings'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/renderer'
     | '/home'
     | '/presentations'
     | '/settings'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/auth'
+    | '/renderer'
     | '/_app/home'
     | '/_app/presentations'
     | '/_app/settings'
@@ -134,6 +146,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  RendererRoute: typeof RendererRoute
   ExportIdRoute: typeof ExportIdRoute
   PresentIdRoute: typeof PresentIdRoute
   WorkspaceIdRoute: typeof WorkspaceIdRoute
@@ -141,6 +154,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/renderer': {
+      id: '/renderer'
+      path: '/renderer'
+      fullPath: '/renderer'
+      preLoaderRoute: typeof RendererRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  RendererRoute: RendererRoute,
   ExportIdRoute: ExportIdRoute,
   PresentIdRoute: PresentIdRoute,
   WorkspaceIdRoute: WorkspaceIdRoute,
