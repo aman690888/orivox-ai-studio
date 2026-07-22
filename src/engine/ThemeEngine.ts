@@ -243,4 +243,28 @@ export class ThemeEngine {
 
     return PRESET_THEMES["modern-dark"];
   }
+
+  public static getThemeCSSVariables(theme: PresentationTheme): Record<string, string> {
+    return {
+      "--color-background": theme.colors.background,
+      "--color-surface": theme.colors.surface,
+      "--color-surface-border": theme.colors.surfaceBorder,
+      "--color-text-primary": theme.colors.textPrimary,
+      "--color-text-secondary": theme.colors.textSecondary,
+      "--color-text-muted": theme.colors.textMuted,
+      "--color-primary": theme.colors.primary,
+      "--color-secondary": theme.colors.secondary,
+      "--color-accent": theme.colors.accent,
+      "--color-accent-gradient": theme.colors.accentGradient,
+      "--color-card-bg": theme.colors.cardBg,
+      "--color-card-border": theme.colors.cardBorder,
+      "--color-badge-bg": theme.colors.badgeBg,
+      "--color-badge-text": theme.colors.badgeText,
+      "--font-heading": theme.typography.headingFont,
+      "--font-body": theme.typography.bodyFont,
+      "--font-code": theme.typography.codeFont,
+      "--radius": theme.borderRadius,
+      "--shadow": theme.shadow,
+    };
+  }
 }

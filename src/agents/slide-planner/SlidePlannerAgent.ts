@@ -162,7 +162,9 @@ OUTPUT STRICT JSON SCHEMA:
 CRITICAL RULES:
 1. For every section in the upstream plan, you MUST generate EXACTLY the number of slides defined in 'estimated_slide_count'.
 2. The 'slide_number' must be sequentially 1-indexed across the ENTIRE presentation.
-3. If the plan is contradictory, return a clarificationRequired object.
+3. If the presentation involves data comparisons, statistics, or metrics, you MUST set 'requires_chart: true' for relevant slides.
+4. If the presentation involves processes, architectures, workflows, or historical flow, you MUST set 'requires_diagram: true' for relevant slides.
+5. If the plan is contradictory, return a clarificationRequired object.
 `;
   }
 }

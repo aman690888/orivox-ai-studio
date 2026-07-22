@@ -4,6 +4,9 @@ import { ComponentNode } from "@/agents/component-planner/types";
 import { DetailedContentPlaceholder } from "@/agents/content-planner/types";
 import { PopulatedPlaceholder } from "@/agents/content-writer/types";
 
+import { ChartEngine } from "../engine/ChartEngine";
+import { DiagramEngine } from "../engine/DiagramEngine";
+
 export function compileSlide(slideId: string, input: CompilerInput): SlideIR {
   const slidePlan = input.slidePlan.slides.find(s => s.slide_id === slideId);
   const layoutPlan = input.layoutPlan.layouts.find(l => l.slide_id === slideId);
@@ -25,12 +28,13 @@ export function compileSlide(slideId: string, input: CompilerInput): SlideIR {
   const populatedMap = new Map<string, PopulatedPlaceholder>();
   contentOutput.populated_placeholders.forEach(ph => populatedMap.set(ph.placeholder_id, ph));
 
-  // Helper to recursively resolve a component node into a ComponentIR
   function resolveComponent(node: ComponentNode): ComponentIR {
     const compIR: ComponentIR = {
       id: node.id,
       type: node.type,
-      data: {}
+      data: {},
+      slot_assignment: node.slot_assignment,
+      semantic_role: node.semantic_role
     };
 
     // Gather all placeholders owned by this component
@@ -61,6 +65,24 @@ export function compileSlide(slideId: string, input: CompilerInput): SlideIR {
         compIR.data.asset_id = asset.asset_id;
       }
     });
+
+    // Invoke Visual Engines
+    if (node.type === "Chart") {
+      const topic = input.intent?.topic?.value || input.director?.objective || "Overview";
+      const stats = input.research?.suggested_statistics || [];
+      const spec = ChartEngine.createChartFromResearch(topic, stats);
+      if (spec) {
+        compIR.data.title = spec.title;
+        compIR.data.variant = spec.variant;
+        compIR.data.labels = spec.labels;
+        compIR.data.datasets = spec.datasets;
+      }
+    } else if (node.type === "Diagram" || node.type === "Flowchart" || node.type === "MindMap") {
+      const topic = input.intent?.topic?.value || "System Process";
+      const spec = DiagramEngine.generateDiagram(topic, slidePlan!.slide_purpose);
+      compIR.data.variant = spec.variant;
+      compIR.data.mermaid_string = spec.mermaid_string;
+    }
 
     return compIR;
   }

@@ -1,6 +1,7 @@
 import React from "react";
 import type { ComponentIR, AssetIR } from "../types/presentation-ir.types";
 import { RendererRegistry } from "./RendererRegistry";
+import { motion } from "motion/react";
 
 export const ComponentRenderer: React.FC<{ component: ComponentIR; slideId: string; theme: any; assets: Record<string, AssetIR> }> = React.memo(({ component, slideId, theme, assets }) => {
   const ComponentImpl = RendererRegistry[component.type];
@@ -15,9 +16,16 @@ export const ComponentRenderer: React.FC<{ component: ComponentIR; slideId: stri
   }
 
   return (
-    <div style={component.style_overrides as React.CSSProperties} className="flex-1 w-full flex flex-col justify-center relative group">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      style={component.style_overrides as React.CSSProperties} 
+      className="flex-1 w-full flex flex-col justify-center relative group"
+    >
       <ComponentImpl data={component.data} theme={theme} styleOverrides={component.style_overrides} assets={assets} slideId={slideId} componentId={component.id} />
-    </div>
+    </motion.div>
   );
 });
 

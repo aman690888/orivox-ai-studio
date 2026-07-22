@@ -27,7 +27,8 @@ export class LayoutPlannerAgent implements IAgent<LayoutPlannerInput, LayoutPlan
         slide.slide_purpose,
         slide.estimated_word_budget,
         slide.requires_visual,
-        slide.requires_chart
+        slide.requires_chart,
+        slide.requires_diagram
       ).slice(0, 3); // Only top 3 candidates
     });
 

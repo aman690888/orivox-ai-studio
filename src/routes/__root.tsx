@@ -97,11 +97,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap",
-      },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -149,6 +146,29 @@ function RootShell({ children }: { children: ReactNode }) {
 
 import { AuthProvider } from "../lib/auth-context";
 import { ThemeProvider } from "../lib/theme-context";
+import { useState } from "react";
+
+function DynamicFontLoader() {
+  const [fonts, setFonts] = useState<string[]>(['Geist', 'Geist Mono']);
+
+  useEffect(() => {
+    const handleLoadFonts = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.fonts) {
+        setFonts(prev => {
+          const set = new Set([...prev, ...customEvent.detail.fonts]);
+          return Array.from(set);
+        });
+      }
+    };
+    window.addEventListener('orivox:load-fonts', handleLoadFonts);
+    return () => window.removeEventListener('orivox:load-fonts', handleLoadFonts);
+  }, []);
+
+  const familyParam = fonts.map(f => `family=${f.replace(/ /g, '+')}:wght@300;400;500;600;700;800`).join('&');
+  return <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${familyParam}&display=swap`} />;
+}
+
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -170,6 +190,7 @@ function RootComponent() {
             </motion.div>
           </AnimatePresence>
           <Toaster />
+          <DynamicFontLoader />
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

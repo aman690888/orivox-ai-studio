@@ -199,7 +199,7 @@ export const LayoutRegistry: Record<string, LayoutDefinition> = {
     name: "Chart Left",
     family: "data",
     constraints: {
-      max_words_total: 30,
+      max_words_total: 150,
       max_images: 0,
       max_charts: 1,
       max_diagrams: 0,
@@ -221,7 +221,7 @@ export const LayoutRegistry: Record<string, LayoutDefinition> = {
     name: "Process Flow",
     family: "diagram",
     constraints: {
-      max_words_total: 45,
+      max_words_total: 150,
       max_images: 0,
       max_charts: 0,
       max_diagrams: 1,

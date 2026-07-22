@@ -92,6 +92,8 @@ export interface ComponentIR {
   type: ComponentType;
   data: any; // Strictly typed below in specific payloads
   style_overrides?: Record<string, string | number>;
+  slot_assignment?: string;
+  semantic_role?: string;
 }
 
 export type ComponentType = 
