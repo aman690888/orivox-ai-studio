@@ -61,9 +61,17 @@ serve(async (req) => {
       );
     }
 
-    // 3. Initialize Gemini
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!apiKey) {
+    // 3. Initialize Gemini with Multi-Key Pool support
+    const apiKeys: string[] = [];
+    const primaryKey = Deno.env.get("GEMINI_API_KEY");
+    if (primaryKey) apiKeys.push(primaryKey);
+
+    for (let i = 2; i <= 20; i++) {
+      const key = Deno.env.get(`GEMINI_API_KEY_${i}`);
+      if (key) apiKeys.push(key);
+    }
+
+    if (apiKeys.length === 0) {
       console.error("[generate-slides] missing GEMINI_API_KEY environment variable");
       return new Response(
         JSON.stringify({ error: "Gemini provider is not configured on the server." }),
@@ -74,11 +82,12 @@ serve(async (req) => {
       );
     }
 
-    const ai = new GoogleGenAI({ apiKey });
+    console.log(`[AIKeyManager] [generate-slides] Initialized — ${apiKeys.length} Gemini API key(s) discovered.`);
+
     const modelName = config?.modelName || "gemini-2.5-flash";
 
     console.log(
-      `[generate-slides] User ID: ${user.id} | Model: ${modelName} | Outline Title: "${outline.title}"`,
+      `[generate-slides] User ID: ${user.id} | Model: ${modelName} | Outline Title: "${outline.title}" | Keys Available: ${apiKeys.length}`,
     );
 
     const slidesSchema = {
@@ -117,20 +126,43 @@ ${JSON.stringify(outline.outline, null, 2)}
 Generate one slide object per outline item, in order. Match the 'kind' exactly. Include 2-4 bullets for content/cover/closing slides. Add speaker notes. Return only valid JSON.`;
 
 
-    // 4. Generate content
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: promptText,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: slidesSchema,
-        temperature: config?.temperature ?? 0.7,
-        maxOutputTokens: config?.maxTokens ?? 8192,
-      },
-    });
+    // 4. Generate content with key fallback
+    let responseText = "";
+    let lastError: unknown = null;
 
-    const executionDuration = Date.now() - startTime;
-    let responseText = response.text || "";
+    for (let keyIdx = 0; keyIdx < apiKeys.length; keyIdx++) {
+      const apiKey = apiKeys[keyIdx];
+      const ai = new GoogleGenAI({ apiKey });
+
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: promptText,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: slidesSchema,
+            temperature: config?.temperature ?? 0.7,
+            maxOutputTokens: config?.maxTokens ?? 8192,
+          },
+        });
+        responseText = response.text || "";
+        lastError = null;
+        break; // Success!
+      } catch (err: any) {
+        lastError = err;
+        const errStatus = err?.status ?? err?.statusCode;
+        const errStr = String(err);
+        if (errStatus === 429 || errStr.includes("429") || errStr.includes("quota") || errStr.includes("RESOURCE_EXHAUSTED")) {
+          console.warn(`[generate-slides] Key ${keyIdx + 1}/${apiKeys.length} rate limited (429). Trying next key...`);
+          continue;
+        }
+        throw err; // Non-rate-limit error, throw immediately
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
+    }
 
     // Sanitize: strip markdown code fences Gemini sometimes wraps JSON in
     responseText = responseText.trim();

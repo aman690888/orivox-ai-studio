@@ -1,30 +1,39 @@
 import { PipelineRunner } from "../src/pipeline/PipelineRunner";
 import { GeminiModelRouter } from "../src/orchestrator/GeminiModelRouter";
+import { AIKeyManager } from "../src/orchestrator/key-manager";
 import * as fs from "fs";
 import * as path from "path";
 
-async function main() {
-  const envPath = path.join(process.cwd(), ".env");
-  if (fs.existsSync(envPath)) {
-    const envFile = fs.readFileSync(envPath, "utf-8");
+function loadEnvFile(filePath: string) {
+  if (fs.existsSync(filePath)) {
+    const envFile = fs.readFileSync(filePath, "utf-8");
     envFile.split('\n').forEach(line => {
-      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
-      if (match) {
+      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?$/);
+      if (match && !process.env[match[1]]) {
         process.env[match[1]] = match[2];
       }
     });
   }
+}
+
+async function main() {
+  // Load environment files (.env.local takes priority via "don't overwrite" logic above)
+  loadEnvFile(path.join(process.cwd(), ".env.local"));
+  loadEnvFile(path.join(process.cwd(), ".env"));
 
   const promptArg = process.argv.slice(2).join(" ") || "Create a 10-slide presentation on Artificial Intelligence in Healthcare.";
 
-  console.log(`Starting real AI pipeline generation with prompt: "${promptArg}"`);
-
-  if (!process.env.GEMINI_API_KEY) {
-    console.error("FATAL ERROR: GEMINI_API_KEY is not set. Please set the environment variable.");
+  // Discover keys via AIKeyManager
+  const discoveredKeys = AIKeyManager.discoverKeys("GEMINI_API_KEY");
+  if (discoveredKeys.length === 0) {
+    console.error("FATAL ERROR: No GEMINI_API_KEY found. Set GEMINI_API_KEY (and optionally _2 through _20) in .env.local.");
     process.exit(1);
   }
 
-  const router = new GeminiModelRouter();
+  console.log(`[AIKeyManager] Initialized — ${discoveredKeys.length} Gemini API key(s) discovered.`);
+  console.log(`Starting real AI pipeline generation with prompt: "${promptArg}"`);
+
+  const router = new GeminiModelRouter(discoveredKeys);
   const runner = new PipelineRunner(router);
 
   const startTime = Date.now();
