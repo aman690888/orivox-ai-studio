@@ -1,6 +1,7 @@
-import { PresentationIR, ValidatedIR, SlideIR, AssetIR } from "@/types/presentation-ir.types";
+import { ValidatedIR, SlideIR, AssetIR } from "@/types/presentation-ir.types";
 import { CompilerInput } from "./types";
 import { compileSlide } from "./compileSlide";
+import { ThemeEngine } from "../engine/ThemeEngine";
 
 export function compilePresentation(input: CompilerInput): ValidatedIR {
   const presentationId = input.presentation_id || `pres-${Math.random().toString(36).substring(2, 9)}`;
@@ -22,39 +23,43 @@ export function compilePresentation(input: CompilerInput): ValidatedIR {
     assetsDict[asset.asset_id] = {
       id: asset.asset_id,
       type: asset.asset_type === "image" ? "image" : (asset.asset_type === "animation" as any) ? "video" : "icon",
-      url: "", // Pending generation or fetching
+      url: "",
       generation_prompt: asset.image_style ? `${asset.image_style} ${asset.composition}` : undefined,
     };
   });
+
+  // 3. Resolve Theme via ThemeEngine
+  const selectedTheme = ThemeEngine.getTheme(input.director?.theme_id) || 
+    ThemeEngine.selectBestTheme({
+      topic: input.intent?.topic?.value,
+      tone: input.intent?.tone?.value,
+      audience: input.intent?.audience?.value,
+    });
 
   const presentation: ValidatedIR = {
     id: presentationId,
     version: "3.0.0",
     stage: "validated",
     metadata: {
-      title: input.intent.topic?.value || "Untitled Presentation",
-      author_id: "system", // Should be injected by context
+      title: input.intent?.topic?.value || input.director?.objective || "Untitled Presentation",
+      author_id: "system",
       created_at: now,
       updated_at: now,
-      audience: input.intent.audience?.value || "General",
-      tone: input.intent.tone?.value || "Professional",
+      audience: input.director?.target_audience || input.intent?.audience?.value || "General",
+      tone: input.director?.tone || input.intent?.tone?.value || "Professional",
     },
     theme: {
-      id: "theme-default",
-      colors: {
-        primary: "#000000",
-        accent: "#0052CC",
-        background: "#FFFFFF",
-        text: "#172B4D"
-      },
-      typography: {
-        heading: "Inter",
-        body: "Inter"
-      }
+      id: selectedTheme.id,
+      name: selectedTheme.name,
+      style: selectedTheme.style,
+      colors: selectedTheme.colors as any,
+      typography: selectedTheme.typography as any,
+      borderRadius: selectedTheme.borderRadius,
+      shadow: selectedTheme.shadow,
     },
     slide_order: slideOrder,
     slides: slidesDict,
-    assets: assetsDict
+    assets: assetsDict,
   };
 
   return presentation;

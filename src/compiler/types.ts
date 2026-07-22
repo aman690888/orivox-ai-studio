@@ -7,6 +7,9 @@ import { ComponentPlanOutput } from "@/agents/component-planner/types";
 import { AssetPlanOutput } from "@/agents/asset-planner/types";
 import { ContentPlanOutput } from "@/agents/content-planner/types";
 import { ContentOutput } from "@/agents/content-writer/types";
+import { DirectorOutput } from "@/agents/director/types";
+import { ResearchOutput } from "@/agents/research/types";
+import { CriticOutput } from "@/agents/critic/types";
 
 export interface CompilerInput {
   presentation_id?: string;
@@ -19,4 +22,7 @@ export interface CompilerInput {
   assetPlan: AssetPlanOutput;
   contentPlan: ContentPlanOutput;
   contentOutput: ContentOutput;
+  director?: DirectorOutput;
+  research?: ResearchOutput;
+  critic?: CriticOutput;
 }
