@@ -84,7 +84,7 @@ serve(async (req) => {
 
     console.log(`[AIKeyManager] [generate-slides] Initialized — ${apiKeys.length} Gemini API key(s) discovered.`);
 
-    const modelName = config?.modelName || "gemini-2.5-flash";
+    const modelName = config?.modelName || "gemini-3.1-flash-lite";
 
     console.log(
       `[generate-slides] User ID: ${user.id} | Model: ${modelName} | Outline Title: "${outline.title}" | Keys Available: ${apiKeys.length}`,
@@ -178,6 +178,7 @@ Generate one slide object per outline item, in order. Match the 'kind' exactly. 
       throw new Error(`Gemini returned malformed JSON: ${String(parseErr)}`);
     }
 
+    const executionDuration = Date.now() - startTime;
     console.log(
       `[generate-slides] Done in ${executionDuration}ms | Response Size: ${responseText.length}`,
     );

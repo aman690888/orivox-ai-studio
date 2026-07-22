@@ -10,6 +10,7 @@ import { GoogleGenAI } from "@google/genai";
 import { IModelRouter } from "./ModelRouter";
 import { ModelCapabilities } from "./types";
 import { AIKeyManager } from "./key-manager";
+import { CANONICAL_GEMINI_MODEL } from "@/lib/ai/config";
 
 export class GeminiModelRouter implements IModelRouter {
   private keyManager: AIKeyManager<GoogleGenAI>;
@@ -31,7 +32,7 @@ export class GeminiModelRouter implements IModelRouter {
    * On 429: cools the key and retries with the next available key.
    */
   public async routeToJSON<T>(prompt: string, capabilities: ModelCapabilities, signal: AbortSignal): Promise<T> {
-    const model = "gemini-3.1-flash-lite";
+    const model = CANONICAL_GEMINI_MODEL;
     const maxAttempts = this.keyManager.getPoolStatus().totalKeys + 1;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {

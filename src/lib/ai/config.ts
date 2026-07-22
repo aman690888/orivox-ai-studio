@@ -1,8 +1,10 @@
 import { AIModelConfig } from "./types";
 
+export const CANONICAL_GEMINI_MODEL = "gemini-3.1-flash-lite";
+
 export const DEFAULT_GEMINI_CONFIG: AIModelConfig = {
   provider: "gemini",
-  modelName: "gemini-2.5-flash",
+  modelName: CANONICAL_GEMINI_MODEL,
   temperature: 0.7,
   maxTokens: 2048,
 };
@@ -11,8 +13,8 @@ export const AI_CONFIGS = {
   defaultProvider: "gemini" as const,
   models: {
     gemini: {
-      flash: "gemini-2.5-flash",
-      pro: "gemini-2.5-pro",
+      flash: CANONICAL_GEMINI_MODEL,
+      pro: CANONICAL_GEMINI_MODEL,
     },
     openai: {
       gpt4o: "gpt-4o",

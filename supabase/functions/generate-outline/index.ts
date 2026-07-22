@@ -89,7 +89,7 @@ serve(async (req) => {
 
     console.log(`[AIKeyManager] [generate-outline] Initialized — ${apiKeys.length} Gemini API key(s) discovered.`);
 
-    const modelName = config?.modelName || "gemini-2.5-flash";
+    const modelName = config?.modelName || "gemini-3.1-flash-lite";
 
     console.log(
       `[generate-outline] User ID: ${user.id} | Model: ${modelName} | Prompt Size: ${prompt.length} | Keys Available: ${apiKeys.length}`,
@@ -184,6 +184,7 @@ The first slide must be kind "cover". The last must be kind "closing". Return on
       throw new Error(`Gemini returned malformed JSON: ${String(parseErr)}`);
     }
 
+    const executionDuration = Date.now() - startTime;
     console.log(
       `[generate-outline] Done in ${executionDuration}ms | Response Size: ${responseText.length}`,
     );

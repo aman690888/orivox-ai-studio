@@ -53,7 +53,7 @@ async function main() {
     const reportPath = path.join(outputDir, "pipeline-report.json");
     const report = {
       execution_time_ms: Date.now() - startTime,
-      model_used: "gemini-2.5-pro / gemini-2.5-flash",
+      model_used: "gemini-3.1-flash-lite",
       status: "SUCCESS"
     };
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), "utf-8");

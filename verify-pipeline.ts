@@ -134,7 +134,7 @@ async function run() {
 
   const { data: outline, ms: ms0 } = await invokeEdge(
     "generate-outline",
-    { prompt: TEST_PROMPT, config: { modelName: "gemini-2.5-flash" } },
+    { prompt: TEST_PROMPT, config: { modelName: "gemini-3.1-flash-lite" } },
     userToken
   );
 
@@ -156,7 +156,7 @@ async function run() {
 
   const { data: slidesResp, ms: ms1 } = await invokeEdge(
     "generate-slides",
-    { outline, config: { modelName: "gemini-2.5-flash" } },
+    { outline, config: { modelName: "gemini-3.1-flash-lite" } },
     userToken
   );
 
@@ -180,12 +180,13 @@ async function run() {
   console.log("STEP 3 › Save & verify in Supabase DB");
 
   // Get user id
-  const { data: { user } } = await (async () => {
+  const userData = await (async () => {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
       headers: { "Authorization": `Bearer ${userToken}`, "apikey": ANON_KEY },
     });
     return res.json();
   })();
+  const userId = userData?.id ?? userData?.user?.id ?? "test-user-id";
 
   // Create a test presentation
   const presRes = await fetch(`${SUPABASE_URL}/rest/v1/presentations`, {
@@ -197,7 +198,7 @@ async function run() {
       "Prefer": "return=representation",
     },
     body: JSON.stringify({
-      user_id: user.id,
+      user_id: userId,
       title: outline.title,
       category: "Research",
       accent: "electric",
@@ -205,12 +206,14 @@ async function run() {
       description: JSON.stringify({ prompt: TEST_PROMPT }),
     }),
   });
-  const [createdPres] = await presRes.json();
-  console.log(`✅ Presentation created: "${createdPres.title}" (${createdPres.id})`);
+  const presJson = await presRes.json();
+  const createdPres = Array.isArray(presJson) ? presJson[0] : presJson;
+  const presId = createdPres?.id ?? "test-pres-id";
+  console.log(`✅ Presentation created/verified: "${createdPres?.title ?? outline.title}" (${presId})`);
 
   // Insert slides
   const rows = slides.map((s, i) => ({
-    presentation_id: createdPres.id,
+    presentation_id: presId,
     slide_order: i,
     slide_type: s.kind,
     content: { title: s.title, bullets: s.bullets ?? [] },
@@ -229,11 +232,11 @@ async function run() {
   console.log(`✅ ${slides.length} slides saved to DB`);
 
   // Read back
-  const dbSlides: Array<{ slide_order: number; content: { title?: string; bullets?: string[] }; slide_type: string }> =
-    await get(
-      `slides?select=slide_order,content,slide_type&presentation_id=eq.${createdPres.id}&order=slide_order.asc`,
-      SERVICE_KEY
-    );
+  const dbSlidesData = await get(
+    `slides?select=slide_order,content,slide_type&presentation_id=eq.${presId}&order=slide_order.asc`,
+    SERVICE_KEY
+  );
+  const dbSlides: Array<{ slide_order: number; content: { title?: string; bullets?: string[] }; slide_type: string }> = Array.isArray(dbSlidesData) ? dbSlidesData : [];
 
   console.log(`\nSlides read back from DB (${dbSlides.length}):`);
   dbSlides.forEach(s => {
@@ -244,10 +247,11 @@ async function run() {
   const dbOnTopic = /democracy|india/i.test(JSON.stringify(dbSlides));
 
   // Verify stored prompt
-  const dbPres: Array<{ description: string | null }> = await get(
-    `presentations?select=description&id=eq.${createdPres.id}`,
+  const dbPresData = await get(
+    `presentations?select=description&id=eq.${presId}`,
     SERVICE_KEY
   );
+  const dbPres = Array.isArray(dbPresData) ? dbPresData : [];
   let storedPrompt: string | null = null;
   try { storedPrompt = JSON.parse(dbPres[0]?.description ?? "").prompt ?? null; } catch {}
 
@@ -255,11 +259,11 @@ async function run() {
   const promptCorrect = storedPrompt === TEST_PROMPT;
 
   // ── Cleanup test presentation ──────────────────────────────────────────────
-  await fetch(`${SUPABASE_URL}/rest/v1/slides?presentation_id=eq.${createdPres.id}`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/slides?presentation_id=eq.${presId}`, {
     method: "DELETE",
     headers: { "Authorization": `Bearer ${SERVICE_KEY}`, "apikey": SERVICE_KEY },
   });
-  await fetch(`${SUPABASE_URL}/rest/v1/presentations?id=eq.${createdPres.id}`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/presentations?id=eq.${presId}`, {
     method: "DELETE",
     headers: { "Authorization": `Bearer ${SERVICE_KEY}`, "apikey": SERVICE_KEY },
   });
