@@ -170,10 +170,8 @@ function Auth() {
 
         {/* Right Side - Form */}
         <div className="flex items-center justify-center p-8 md:p-16 bg-[#F9F9F7]">
-            <motion.div
-                layout
-                transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                className="w-full max-w-[400px] border border-black bg-[#F9F9F7] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+            <div
+                className="w-full max-w-[400px] min-h-[520px] flex flex-col border border-black bg-[#F9F9F7] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
             >
                 {authError && (
                     <div className="mb-6 border-l-4 border-black bg-neutral-200 p-4 text-sm font-medium">
@@ -362,7 +360,7 @@ function Auth() {
                     </StepShell>
                     )}
                 </AnimatePresence>
-            </motion.div>
+            </div>
         </div>
       </div>
     </div>
