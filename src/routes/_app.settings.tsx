@@ -28,32 +28,26 @@ function Settings() {
   const activeTabDetails = tabs.find(t => t.id === tab);
 
   return (
-    <div className="h-full w-full overflow-y-auto px-6 py-12 md:px-12 md:py-16 bg-background">
+    <div className="h-full w-full overflow-y-auto px-6 py-12 md:px-12 md:py-16 bg-white text-black">
       <div className="mx-auto max-w-5xl">
-        <header className="mb-12 space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
-          <p className="text-sm text-muted-foreground">Manage your account settings and preferences.</p>
+        <header className="mb-12 space-y-2 border-b border-black pb-6">
+          <h1 className="text-3xl font-mono font-bold tracking-tight text-black uppercase">Settings</h1>
+          <p className="text-sm font-mono text-black">Manage your account settings and preferences.</p>
         </header>
 
         <div className="flex flex-col lg:flex-row gap-12">
           <aside className="w-full lg:w-[260px] shrink-0">
-            <nav className="flex flex-col space-y-1">
+            <nav className="flex flex-col space-y-2">
               {tabs.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`group relative flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-300 ${
-                    tab === t.id ? "bg-white/[0.04] text-foreground shadow-sm" : "text-muted-foreground hover:bg-white/[0.02] hover:text-foreground"
+                  className={`group relative flex items-center gap-3 border border-black px-4 py-3 text-left transition-all hard-shadow-hover ${
+                    tab === t.id ? "bg-black text-white" : "bg-white text-black hover:bg-black hover:text-white"
                   }`}
                 >
-                  {tab === t.id && (
-                    <motion.div
-                      layoutId="settings-tab-indicator"
-                      className="absolute left-0 top-1/4 bottom-1/4 w-[3px] rounded-r-full bg-electric shadow-[0_0_8px_var(--electric)]"
-                    />
-                  )}
-                  <t.icon className={`h-[18px] w-[18px] transition-colors ${tab === t.id ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`} />
-                  <span className="text-sm font-medium">{t.label}</span>
+                  <t.icon className={`h-[18px] w-[18px] transition-colors ${tab === t.id ? "text-white" : "text-black group-hover:text-white"}`} />
+                  <span className="text-sm font-mono font-bold uppercase">{t.label}</span>
                 </button>
               ))}
             </nav>
@@ -69,9 +63,9 @@ function Settings() {
                 transition={{ duration: 0.2 }}
                 className="space-y-8"
               >
-                <div className="border-b border-white/5 pb-6">
-                  <h2 className="text-xl font-semibold text-foreground">{activeTabDetails?.label}</h2>
-                  <p className="mt-1.5 text-sm text-muted-foreground">{activeTabDetails?.desc}</p>
+                <div className="border-b border-black pb-6">
+                  <h2 className="text-xl font-mono font-bold text-black uppercase">{activeTabDetails?.label}</h2>
+                  <p className="mt-1.5 text-sm font-mono text-black">{activeTabDetails?.desc}</p>
                 </div>
                 
                 {tab === "account" && <Account />}
@@ -90,7 +84,7 @@ function Settings() {
 
 function SectionCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.01] shadow-sm overflow-hidden">
+    <div className="border border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
       {children}
     </div>
   );
@@ -108,10 +102,10 @@ function Row({
   border?: boolean;
 }) {
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 ${border ? "border-b border-white/5" : ""}`}>
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 ${border ? "border-b border-black" : ""}`}>
       <div className="flex-1 pr-8">
-        <div className="text-sm font-semibold text-foreground">{label}</div>
-        {hint && <div className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{hint}</div>}
+        <div className="text-sm font-mono font-bold text-black">{label}</div>
+        {hint && <div className="mt-1.5 text-xs font-mono text-black leading-relaxed">{hint}</div>}
       </div>
       <div className="shrink-0">
         {children}
@@ -134,10 +128,10 @@ function Field({
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       readOnly={readOnly}
-      className={`w-full sm:w-72 rounded-xl border px-4 py-2.5 text-sm outline-none transition-all ${
+      className={`w-full sm:w-72 border border-black px-4 py-2.5 text-sm font-mono outline-none transition-all ${
         readOnly
-          ? "border-white/5 bg-white/[0.02] text-muted-foreground cursor-not-allowed"
-          : "border-white/10 bg-white/[0.04] text-foreground focus:border-white/30 focus:bg-white/[0.06] focus:ring-4 focus:ring-white/5"
+          ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+          : "bg-white text-black focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
       }`}
     />
   );
@@ -385,27 +379,27 @@ function Billing() {
         ].map((p) => (
           <div
             key={p.name}
-            className={`relative rounded-3xl border p-6 transition-all duration-300 ${p.active ? "border-electric/50 bg-electric/5 shadow-[0_0_30px_rgba(var(--electric-rgb),0.1)] scale-[1.02]" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}
+            className={`relative border-2 border-black bg-white p-6 transition-all hard-shadow-hover ${p.active ? "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" : "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"}`}
           >
             {p.active && (
-              <div className="absolute top-0 right-6 -translate-y-1/2 rounded-full bg-electric px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-background">
+              <div className="absolute top-0 right-6 -translate-y-1/2 border border-black bg-white px-3 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                 Current Plan
               </div>
             )}
-            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{p.name}</div>
+            <div className="text-xs font-mono font-bold uppercase tracking-widest text-black">{p.name}</div>
             <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-4xl font-bold text-foreground">{p.price}</span>
-              <span className="text-sm font-medium text-muted-foreground">/mo</span>
+              <span className="text-4xl font-mono font-bold text-black">{p.price}</span>
+              <span className="text-sm font-mono font-medium text-black">/mo</span>
             </div>
             <ul className="mt-6 space-y-3">
               {p.features.map((f) => (
-                <li key={f} className="flex items-center gap-3 text-sm text-foreground/80">
-                  <div className={`h-1.5 w-1.5 rounded-full ${p.active ? "bg-electric" : "bg-white/20"}`} />
+                <li key={f} className="flex items-center gap-3 text-sm font-mono text-black">
+                  <div className={`h-1.5 w-1.5 border border-black ${p.active ? "bg-black" : "bg-transparent"}`} />
                   {f}
                 </li>
               ))}
             </ul>
-            <button className={`mt-8 w-full rounded-xl py-2.5 text-sm font-semibold transition-all ${p.active ? "bg-white/10 text-foreground hover:bg-white/20" : "bg-white text-black hover:bg-white/90"}`}>
+            <button className={`mt-8 w-full border border-black py-2.5 text-sm font-mono font-bold transition-all hard-shadow-hover ${p.active ? "bg-white text-black hover:bg-black hover:text-white" : "bg-black text-white hover:bg-white hover:text-black"}`}>
                {p.active ? "Manage Plan" : "Upgrade"}
             </button>
           </div>

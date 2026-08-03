@@ -404,13 +404,13 @@ function Workspace() {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-[#E5E5E5] dark:bg-[#0E0E10]">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-white text-black">
       {/* Studio Top Toolbar */}
-      <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-xl px-4 z-20">
+      <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-black bg-white px-4 z-20">
         <div className="flex items-center gap-6">
           <Link
             to="/home"
-            className="flex items-center justify-center h-8 w-8 rounded-lg text-black/50 hover:text-black dark:text-white/50 hover:bg-black/5 dark:hover:text-white dark:hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center h-8 w-8 border border-black text-black bg-white transition-all hard-shadow-hover hover:bg-black hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -419,7 +419,7 @@ function Workspace() {
             <input
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
-              className="rounded-md bg-transparent px-2 py-1 text-sm font-semibold text-black dark:text-white outline-none hover:bg-black/5 dark:hover:bg-white/5 focus:bg-black/5 dark:focus:bg-white/5 transition-colors max-w-[200px] sm:max-w-[300px]"
+              className="border-none bg-transparent px-2 py-1 text-sm font-mono font-bold text-black outline-none hover:bg-gray-100 focus:bg-gray-100 transition-colors max-w-[200px] sm:max-w-[300px]"
             />
             {id !== "new" && (
               <SaveStatusIndicator status={saveStatus} isOnline={isOnline} onRetry={retry} />
@@ -428,17 +428,17 @@ function Workspace() {
         </div>
 
         {/* Central Tools */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 bg-black/5 dark:bg-white/5 rounded-lg p-1 border border-black/5 dark:border-white/5">
-           <button className="p-1.5 rounded-md hover:bg-white dark:hover:bg-black text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white shadow-sm transition-all">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 border-x border-black px-2 h-full bg-white">
+           <button className="p-1.5 border border-transparent hover:border-black text-black transition-all">
              <MousePointer2 className="w-4 h-4" />
            </button>
-           <button className="p-1.5 rounded-md hover:bg-white dark:hover:bg-black text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-all">
+           <button className="p-1.5 border border-transparent hover:border-black text-black transition-all">
              <Layout className="w-4 h-4" />
            </button>
-           <button className="p-1.5 rounded-md hover:bg-white dark:hover:bg-black text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-all">
+           <button className="p-1.5 border border-transparent hover:border-black text-black transition-all">
              <Type className="w-4 h-4" />
            </button>
-           <button className="p-1.5 rounded-md hover:bg-white dark:hover:bg-black text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-all">
+           <button className="p-1.5 border border-transparent hover:border-black text-black transition-all">
              <ImageIcon className="w-4 h-4" />
            </button>
         </div>
@@ -447,15 +447,14 @@ function Workspace() {
           <StatusPill ready={gen.isReady} generating={active && !gen.isReady} />
           <button 
              onClick={() => setIsChatOpen(!isChatOpen)}
-             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${isChatOpen ? 'bg-electric/10 text-electric border border-electric/20' : 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10'}`}
+             className={`flex items-center gap-2 px-3 py-1.5 border border-black text-xs font-mono font-bold transition-all hard-shadow-hover ${isChatOpen ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'}`}
           >
              <MessageSquare className="w-3.5 h-3.5" /> AI Chat
           </button>
           <motion.button
-            whileHover={{ scale: gen.isReady ? 1.02 : 1 }}
             onClick={() => navigate({ to: "/present/$id", params: { id } })}
             disabled={!gen.isReady}
-            className="flex items-center gap-1.5 rounded-lg bg-black dark:bg-white px-4 py-1.5 text-xs font-semibold text-white dark:text-black transition hover:opacity-90 disabled:opacity-40 shadow-md"
+            className="flex items-center gap-1.5 border border-black bg-white px-4 py-1.5 text-xs font-mono font-bold text-black uppercase transition-all hard-shadow-hover hover:bg-black hover:text-white disabled:opacity-40 disabled:hover:shadow-none disabled:hover:bg-white disabled:hover:text-black"
           >
             <Play className="h-3 w-3" /> Present
           </motion.button>
@@ -471,11 +470,11 @@ function Workspace() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -320, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="absolute left-4 top-4 bottom-4 w-[280px] z-10 flex flex-col rounded-2xl bg-white/90 dark:bg-[#151515]/90 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl overflow-hidden"
+              className="absolute left-0 top-0 bottom-0 w-[300px] z-10 flex flex-col bg-white border-r border-black"
             >
               <div className="flex-1 overflow-y-auto px-4 py-5" ref={conversationRef}>
                 {active && (
-                  <div className="mb-4 overflow-hidden rounded-xl border border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5">
+                  <div className="mb-4 border border-black bg-white">
                     <button
                       onClick={() => setTimelineOpen((o) => !o)}
                       className="flex w-full items-center justify-between px-3 py-2.5 text-left"
@@ -617,10 +616,10 @@ function Workspace() {
             <div className="w-full max-w-5xl">
               {messages.length === 0 && (
                 <div className="flex h-[60vh] items-center justify-center text-center">
-                  <div className="bg-white/50 dark:bg-black/50 backdrop-blur-xl p-8 rounded-3xl border border-black/5 dark:border-white/5 shadow-xl">
-                    <Sparkles className="mx-auto mb-4 h-8 w-8 text-electric" />
-                    <div className="text-xl font-bold text-black dark:text-white">Start creating</div>
-                    <div className="mt-2 text-sm text-black/60 dark:text-white/60 max-w-xs">Your presentation canvas is ready. Use the AI chat to generate your first draft.</div>
+                  <div className="bg-white p-8 border border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                    <Sparkles className="mx-auto mb-4 h-8 w-8 text-black" />
+                    <div className="text-xl font-mono font-bold text-black uppercase">Start creating</div>
+                    <div className="mt-2 text-sm font-mono text-black max-w-xs">Your presentation canvas is ready. Use the AI chat to generate your first draft.</div>
                   </div>
                 </div>
               )}
@@ -642,13 +641,13 @@ function Workspace() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="mb-8 bg-white/80 dark:bg-black/40 backdrop-blur-xl rounded-3xl border border-black/5 dark:border-white/5 p-6 shadow-xl"
+                    className="mb-8 bg-white border border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
                   >
                     <div className="mb-6 flex items-center justify-between">
                       <div className="text-xs font-bold uppercase tracking-widest text-black/50 dark:text-white/50">
                         Proposed Outline
                       </div>
-                      <button className="rounded-lg bg-electric/10 px-3 py-1.5 text-[11px] font-bold text-electric transition hover:bg-electric/20">
+                      <button className="border border-black bg-white px-3 py-1.5 text-[11px] font-mono font-bold text-black uppercase transition-all hard-shadow-hover hover:bg-black hover:text-white">
                         Approve
                       </button>
                     </div>
@@ -660,7 +659,7 @@ function Workspace() {
                           initial={{ opacity: 0, x: -6 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.06 }}
-                          className="flex items-center gap-4 rounded-xl border border-black/5 dark:border-white/5 bg-white dark:bg-white/[0.02] px-4 py-3.5 shadow-sm"
+                          className="flex items-center gap-4 border-b border-black bg-white px-4 py-3.5"
                         >
                           <div className="w-8 font-mono text-xs font-bold text-black/30 dark:text-white/30">
                             {String(i + 1).padStart(2, "0")}
@@ -688,7 +687,7 @@ function Workspace() {
                     <motion.div
                       key={visibleSlides[activeSlide]?.id}
                       layoutId={`slide-${visibleSlides[activeSlide]?.id}`}
-                      className="shadow-2xl rounded-xl overflow-hidden border border-black/10 dark:border-white/10 ring-4 ring-black/5 dark:ring-white/5 bg-white"
+                      className="border-2 border-black bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]"
                     >
                       <SlideCanvas
                         slide={visibleSlides[activeSlide]}
@@ -699,8 +698,8 @@ function Workspace() {
                     </motion.div>
                   </div>
 
-                  {/* Modern Filmstrip */}
-                  <div className="mt-12 w-full max-w-5xl bg-white/50 dark:bg-black/30 backdrop-blur-xl border border-black/5 dark:border-white/5 rounded-2xl p-4 shadow-xl">
+                  {/* Editorial Filmstrip */}
+                  <div className="mt-12 w-full max-w-5xl bg-white border-t border-black p-4">
                     <div className="no-scrollbar flex gap-4 overflow-x-auto pb-2 px-2 snap-x">
                       {renderSlidesList.map((s, i) => {
                         const shown = i < visibleSlides.length;
@@ -711,9 +710,9 @@ function Workspace() {
                               e.stopPropagation();
                               if (shown) setActiveSlide(i);
                             }}
-                            className={`relative aspect-video w-40 shrink-0 snap-center overflow-hidden rounded-xl border-2 transition-all duration-300 ${
-                              i === activeSlide && shown ? "border-electric scale-105 shadow-[0_0_15px_rgba(var(--electric-rgb),0.3)]" : "border-transparent hover:border-black/20 dark:hover:border-white/20"
-                            } ${shown ? "opacity-100 bg-white dark:bg-white/5" : "opacity-40 bg-black/5 dark:bg-white/5"}`}
+                            className={`relative aspect-video w-40 shrink-0 snap-center border-2 transition-all ${
+                              i === activeSlide && shown ? "border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-y-1 -translate-x-1" : "border-black/20 hover:border-black"
+                            } ${shown ? "opacity-100 bg-white" : "opacity-40 bg-gray-100"}`}
                           >
                             {shown ? (
                               <div className="flex h-full items-center justify-center p-3">

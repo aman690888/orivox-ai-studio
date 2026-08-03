@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, Check, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
+import Marquee from "react-fast-marquee";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -122,238 +123,240 @@ function Auth() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0A0A0A]">
-        <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+      <div className="flex min-h-screen items-center justify-center bg-[#F9F9F7] text-black">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="relative flex min-h-screen font-sans items-center justify-center overflow-hidden bg-[#0A0A0A] px-4 selection:bg-neutral-800 selection:text-white">
-      {/* Deep blurred abstract background */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[150px] mix-blend-screen" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-violet-500/10 blur-[150px] mix-blend-screen" />
-      </div>
-
-      <div className="absolute top-8 left-8 z-20">
+    <div className="flex min-h-screen flex-col font-sans bg-[#F9F9F7] text-black selection:bg-black selection:text-white border-x border-black max-w-[1440px] mx-auto">
+      <header className="border-b border-black p-4 flex items-center justify-between">
         <Link to="/">
           <Logo />
         </Link>
-      </div>
+        <div className="font-mono text-xs uppercase tracking-widest font-bold">Authentication</div>
+      </header>
 
-      <motion.div
-        layout
-        transition={{ type: "spring", stiffness: 400, damping: 40 }}
-        className="relative z-10 w-full max-w-[400px]"
-      >
-        <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-8 shadow-2xl backdrop-blur-2xl backdrop-saturate-150">
-          {authError && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
-            >
-              {authError}
-            </motion.div>
-          )}
-
-          {((mode === "signup" && signupStep === "email") ||
-            (mode === "login" && loginStep === "credentials")) && (
-            <div className="mb-8 flex space-x-4 border-b border-white/[0.08] pb-4">
-              {(["login", "signup"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => resetAll(t)}
-                  className={`relative pb-4 -mb-4 text-sm font-medium transition-colors ${
-                    mode === t ? "text-white" : "text-neutral-500 hover:text-neutral-300"
-                  }`}
-                >
-                  {t === "login" ? "Sign In" : "Sign Up"}
-                  {mode === t && (
-                    <motion.div
-                      layoutId="active-tab"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"
-                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                    />
-                  )}
-                </button>
-              ))}
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-black">
+        
+        {/* Left Side - Typography/Ticker */}
+        <div className="flex flex-col border-b md:border-b-0 border-black bg-black text-[#F9F9F7] justify-between relative overflow-hidden">
+            <div className="p-12 z-10">
+                <h1 className="font-serif text-6xl md:text-8xl leading-[0.9] tracking-tighter uppercase mb-6">
+                    Enter the System
+                </h1>
+                <p className="font-mono text-lg uppercase tracking-widest opacity-80">
+                    Secure Access Required.
+                </p>
             </div>
-          )}
-
-          <AnimatePresence mode="wait">
-            {mode === "signup" && signupStep === "email" && (
-              <StepShell key="signup-email">
-                <div className="mb-6">
-                  <h1 className="text-xl font-medium tracking-tight text-white">
-                    Create an account
-                  </h1>
-                  <p className="mt-1.5 text-sm text-neutral-400">
-                    Enter your email to get started.
-                  </p>
-                </div>
-
-                <EmailInput email={email} setEmail={setEmail} />
-                <PrimaryButton
-                  disabled={!isValidEmail(email) || actionLoading}
-                  onClick={handleEmailStep}
-                  label="Continue with email"
-                />
-
-                <Divider />
-                <GoogleButton onClick={handleOAuth} label="Continue with Google" />
-              </StepShell>
-            )}
-
-            {mode === "signup" && signupStep === "password" && (
-              <StepShell key="signup-password">
-                <div className="mb-6">
-                  <h1 className="text-xl font-medium tracking-tight text-white">Set a password</h1>
-                  <p className="mt-1.5 text-sm text-neutral-400">
-                    Choose a secure password for your account.
-                  </p>
-                </div>
-                <PasswordFields
-                  pw={password}
-                  setPw={setPassword}
-                  confirm={confirmPassword}
-                  setConfirm={setConfirmPassword}
-                  onSubmit={handleSignUp}
-                  disabled={actionLoading}
-                />
-                <button
-                  onClick={() => setSignupStep("email")}
-                  className="mt-6 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
-                >
-                  Back
-                </button>
-              </StepShell>
-            )}
-
-            {mode === "signup" && signupStep === "confirm-sent" && (
-              <StepShell key="confirm-sent">
-                <div className="flex flex-col items-center py-6 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10">
-                    <Check className="h-5 w-5 text-neutral-300" />
-                  </div>
-                  <h1 className="mt-5 text-lg font-medium text-white">Check your email</h1>
-                  <p className="mt-2 text-sm leading-relaxed text-neutral-400">
-                    We sent a verification link to <br />
-                    <span className="font-medium text-white">{email}</span>
-                  </p>
-                  <button
-                    onClick={() => resetAll("login")}
-                    className="mt-8 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
-                  >
-                    Return to sign in
-                  </button>
-                </div>
-              </StepShell>
-            )}
-
-            {mode === "login" && loginStep === "credentials" && (
-              <StepShell key="login">
-                <div className="mb-6">
-                  <h1 className="text-xl font-medium tracking-tight text-white">Welcome back</h1>
-                  <p className="mt-1.5 text-sm text-neutral-400">Sign in to your account.</p>
-                </div>
-
-                <div className="space-y-4">
-                  <EmailInput email={email} setEmail={setEmail} />
-                  <div>
-                    <div className="mb-2 flex items-center justify-between">
-                      <label className="text-sm font-medium text-neutral-300">Password</label>
-                      <button
-                        onClick={() => setLoginStep("forgot")}
-                        className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
-                      >
-                        Forgot?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none transition focus:border-white/20 focus:bg-white/10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((s) => !s)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-neutral-500 hover:text-neutral-300 transition-colors"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <PrimaryButton
-                    disabled={!isValidEmail(email) || !password || actionLoading}
-                    onClick={handleLogin}
-                    label="Sign in"
-                  />
-                </div>
-
-                <Divider />
-                <GoogleButton onClick={handleOAuth} label="Continue with Google" />
-              </StepShell>
-            )}
-
-            {mode === "login" && loginStep === "forgot" && (
-              <StepShell key="forgot">
-                <div className="mb-6">
-                  <h1 className="text-xl font-medium tracking-tight text-white">Reset password</h1>
-                  <p className="mt-1.5 text-sm text-neutral-400">
-                    We'll email you a secure reset link.
-                  </p>
-                </div>
-                <EmailInput email={email} setEmail={setEmail} />
-                <div className="mt-6">
-                  <PrimaryButton
-                    disabled={!isValidEmail(email) || actionLoading}
-                    onClick={handleResetPassword}
-                    label="Send link"
-                  />
-                </div>
-                <button
-                  onClick={() => setLoginStep("credentials")}
-                  className="mt-6 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
-                >
-                  Back
-                </button>
-              </StepShell>
-            )}
-
-            {mode === "login" && loginStep === "forgot-sent" && (
-              <StepShell key="forgot-sent">
-                <div className="flex flex-col items-center py-6 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10">
-                    <Check className="h-5 w-5 text-neutral-300" />
-                  </div>
-                  <h1 className="mt-5 text-lg font-medium text-white">Check your email</h1>
-                  <p className="mt-2 text-sm leading-relaxed text-neutral-400">
-                    If an account exists for <br />
-                    <span className="font-medium text-white">{email}</span>, a link is on its way.
-                  </p>
-                  <button
-                    onClick={() => setLoginStep("credentials")}
-                    className="mt-8 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
-                  >
-                    Return to sign in
-                  </button>
-                </div>
-              </StepShell>
-            )}
-          </AnimatePresence>
+            
+            <div className="py-4 border-t border-white/20 font-mono text-xs uppercase tracking-widest whitespace-nowrap overflow-hidden">
+                <Marquee speed={40} gradient={false}>
+                    <span className="mx-4">UNAUTHORIZED ACCESS PROHIBITED</span> •
+                    <span className="mx-4">SECURE YOUR ACCOUNT</span> •
+                    <span className="mx-4">ENCRYPTED CONNECTION ESTABLISHED</span> •
+                </Marquee>
+            </div>
         </div>
-      </motion.div>
+
+        {/* Right Side - Form */}
+        <div className="flex items-center justify-center p-8 md:p-16 bg-[#F9F9F7]">
+            <motion.div
+                layout
+                transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                className="w-full max-w-[400px] border border-black bg-[#F9F9F7] p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+            >
+                {authError && (
+                    <div className="mb-6 border-l-4 border-black bg-neutral-200 p-4 text-sm font-medium">
+                        {authError}
+                    </div>
+                )}
+
+                {((mode === "signup" && signupStep === "email") ||
+                    (mode === "login" && loginStep === "credentials")) && (
+                    <div className="mb-8 flex border-b border-black">
+                        {(["login", "signup"] as const).map((t) => (
+                        <button
+                            key={t}
+                            onClick={() => resetAll(t)}
+                            className={`flex-1 pb-4 text-sm font-bold uppercase tracking-widest transition-colors ${
+                            mode === t ? "text-black border-b-2 border-black -mb-[1px]" : "text-neutral-500 hover:text-black"
+                            }`}
+                        >
+                            {t === "login" ? "Sign In" : "Subscribe"}
+                        </button>
+                        ))}
+                    </div>
+                )}
+
+                <AnimatePresence mode="wait">
+                    {mode === "signup" && signupStep === "email" && (
+                    <StepShell key="signup-email">
+                        <div className="mb-8">
+                            <h2 className="font-serif text-3xl font-bold uppercase">Subscribe</h2>
+                            <p className="mt-2 text-sm font-mono uppercase text-neutral-600">
+                                Enter credentials below.
+                            </p>
+                        </div>
+                        <EmailInput email={email} setEmail={setEmail} />
+                        <div className="mt-6">
+                            <PrimaryButton
+                                disabled={!isValidEmail(email) || actionLoading}
+                                onClick={handleEmailStep}
+                                label="Continue with Email"
+                            />
+                        </div>
+                        <Divider />
+                        <GoogleButton onClick={handleOAuth} label="Authenticate via Google" />
+                    </StepShell>
+                    )}
+
+                    {mode === "signup" && signupStep === "password" && (
+                    <StepShell key="signup-password">
+                        <div className="mb-8">
+                            <h2 className="font-serif text-3xl font-bold uppercase">Set Password</h2>
+                            <p className="mt-2 text-sm font-mono uppercase text-neutral-600">
+                                Secure your access.
+                            </p>
+                        </div>
+                        <PasswordFields
+                            pw={password}
+                            setPw={setPassword}
+                            confirm={confirmPassword}
+                            setConfirm={setConfirmPassword}
+                            onSubmit={handleSignUp}
+                            disabled={actionLoading}
+                        />
+                        <button
+                            onClick={() => setSignupStep("email")}
+                            className="mt-6 text-sm font-bold uppercase tracking-widest text-neutral-500 hover:text-black"
+                        >
+                            ← Return
+                        </button>
+                    </StepShell>
+                    )}
+
+                    {mode === "signup" && signupStep === "confirm-sent" && (
+                    <StepShell key="confirm-sent">
+                        <div className="flex flex-col items-center py-6 text-center border border-black p-8">
+                            <div className="flex h-16 w-16 items-center justify-center border-2 border-black rounded-full mb-6">
+                                <Check className="h-8 w-8" />
+                            </div>
+                            <h2 className="text-2xl font-serif uppercase font-bold mb-2">Check Email</h2>
+                            <p className="text-sm font-mono text-neutral-600">
+                                Link dispatched to <br />
+                                <span className="font-bold text-black">{email}</span>
+                            </p>
+                            <button
+                                onClick={() => resetAll("login")}
+                                className="mt-8 border border-black px-6 py-2 text-sm font-bold uppercase hover:bg-black hover:text-white transition-colors"
+                            >
+                                Return to Sign In
+                            </button>
+                        </div>
+                    </StepShell>
+                    )}
+
+                    {mode === "login" && loginStep === "credentials" && (
+                    <StepShell key="login">
+                        <div className="mb-8">
+                            <h2 className="font-serif text-3xl font-bold uppercase">Authenticate</h2>
+                            <p className="mt-2 text-sm font-mono uppercase text-neutral-600">Provide credentials.</p>
+                        </div>
+
+                        <div className="space-y-6">
+                            <EmailInput email={email} setEmail={setEmail} />
+                            <div>
+                                <div className="mb-2 flex items-center justify-between">
+                                    <label className="text-sm font-bold uppercase tracking-widest">Password</label>
+                                    <button
+                                        onClick={() => setLoginStep("forgot")}
+                                        className="text-xs font-bold uppercase text-neutral-500 hover:text-black"
+                                    >
+                                        Forgot?
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full border-2 border-black bg-transparent px-4 py-3 text-sm font-medium outline-none transition focus:bg-neutral-200 rounded-none"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((s) => !s)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:opacity-70"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-8">
+                            <PrimaryButton
+                                disabled={!isValidEmail(email) || !password || actionLoading}
+                                onClick={handleLogin}
+                                label="Sign In"
+                            />
+                        </div>
+
+                        <Divider />
+                        <GoogleButton onClick={handleOAuth} label="Authenticate via Google" />
+                    </StepShell>
+                    )}
+
+                    {mode === "login" && loginStep === "forgot" && (
+                    <StepShell key="forgot">
+                        <div className="mb-8">
+                            <h2 className="font-serif text-3xl font-bold uppercase">Reset Access</h2>
+                            <p className="mt-2 text-sm font-mono uppercase text-neutral-600">
+                                Link will be dispatched.
+                            </p>
+                        </div>
+                        <EmailInput email={email} setEmail={setEmail} />
+                        <div className="mt-6">
+                            <PrimaryButton
+                                disabled={!isValidEmail(email) || actionLoading}
+                                onClick={handleResetPassword}
+                                label="Dispatch Link"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setLoginStep("credentials")}
+                            className="mt-6 text-sm font-bold uppercase tracking-widest text-neutral-500 hover:text-black"
+                        >
+                            ← Return
+                        </button>
+                    </StepShell>
+                    )}
+
+                    {mode === "login" && loginStep === "forgot-sent" && (
+                    <StepShell key="forgot-sent">
+                        <div className="flex flex-col items-center py-6 text-center border border-black p-8">
+                            <div className="flex h-16 w-16 items-center justify-center border-2 border-black rounded-full mb-6">
+                                <Check className="h-8 w-8" />
+                            </div>
+                            <h2 className="text-2xl font-serif uppercase font-bold mb-2">Check Email</h2>
+                            <p className="text-sm font-mono text-neutral-600">
+                                If active, link dispatched to <br />
+                                <span className="font-bold text-black">{email}</span>
+                            </p>
+                            <button
+                                onClick={() => setLoginStep("credentials")}
+                                className="mt-8 border border-black px-6 py-2 text-sm font-bold uppercase hover:bg-black hover:text-white transition-colors"
+                            >
+                                Return to Sign In
+                            </button>
+                        </div>
+                    </StepShell>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -373,10 +376,10 @@ function StepShell({ children }: { children: React.ReactNode }) {
 
 function Divider() {
   return (
-    <div className="my-6 flex items-center gap-4 text-xs text-neutral-600">
-      <span className="h-[1px] flex-1 bg-white/10" />
+    <div className="my-8 flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-neutral-400">
+      <span className="h-[2px] flex-1 bg-black" />
       <span>OR</span>
-      <span className="h-[1px] flex-1 bg-white/10" />
+      <span className="h-[2px] flex-1 bg-black" />
     </div>
   );
 }
@@ -390,14 +393,14 @@ function EmailInput({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-neutral-300">Email address</label>
+      <label className="mb-2 block text-sm font-bold uppercase tracking-widest">Email Address</label>
       <input
         type="email"
         autoFocus
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="name@example.com"
-        className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder-neutral-500 outline-none transition focus:border-white/20 focus:bg-white/10"
+        placeholder="USER@DOMAIN.COM"
+        className="w-full border-2 border-black bg-transparent px-4 py-3 text-sm font-medium outline-none transition focus:bg-neutral-200 rounded-none placeholder-neutral-400"
       />
     </div>
   );
@@ -416,7 +419,7 @@ function PrimaryButton({
     <button
       disabled={disabled}
       onClick={onClick}
-      className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black transition-all hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex w-full items-center justify-center gap-2 border-2 border-black bg-black px-4 py-3 text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-transparent hover:text-black focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 rounded-none"
     >
       {label}
     </button>
@@ -427,7 +430,7 @@ function GoogleButton({ onClick, label }: { onClick: () => void; label: string }
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center justify-center gap-3 rounded-lg border border-white/10 bg-transparent px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-white/5 hover:text-white"
+      className="flex w-full items-center justify-center gap-3 border-2 border-black bg-transparent px-4 py-3 text-sm font-bold uppercase tracking-widest text-black transition hover:bg-black hover:text-white rounded-none"
     >
       <GoogleIcon />
       {label}
@@ -459,32 +462,32 @@ function PasswordFields({
   const canSubmit = strength.score >= 2 && match;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <label className="mb-2 block text-sm font-medium text-neutral-300">Password</label>
+        <label className="mb-2 block text-sm font-bold uppercase tracking-widest">Password</label>
         <input
           type="password"
           autoFocus
           value={pw}
           onChange={(e) => setPw(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-white/20 focus:bg-white/10"
+          className="w-full border-2 border-black bg-transparent px-4 py-3 text-sm outline-none transition focus:bg-neutral-200 rounded-none"
         />
       </div>
 
       <div>
-        <label className="mb-2 block text-sm font-medium text-neutral-300">Confirm password</label>
+        <label className="mb-2 block text-sm font-bold uppercase tracking-widest">Confirm Password</label>
         <input
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-white/20 focus:bg-white/10"
+          className="w-full border-2 border-black bg-transparent px-4 py-3 text-sm outline-none transition focus:bg-neutral-200 rounded-none"
         />
       </div>
 
       <div className="pt-2">
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+            <div key={i} className="h-2 flex-1 border border-black bg-transparent">
               <motion.div
                 initial={false}
                 animate={{
@@ -492,23 +495,23 @@ function PasswordFields({
                   backgroundColor: strength.color,
                 }}
                 transition={{ duration: 0.3 }}
-                className="h-full rounded-full"
+                className="h-full"
               />
             </div>
           ))}
         </div>
-        <div className="mt-2 flex items-center justify-between text-xs font-medium">
-          <span className="text-neutral-400">{pw.length === 0 ? "" : strength.label}</span>
+        <div className="mt-2 flex items-center justify-between text-xs font-bold uppercase tracking-widest">
+          <span className="text-black">{pw.length === 0 ? "" : strength.label}</span>
           {confirm.length > 0 && (
-            <span className={match ? "text-[#10b981]" : "text-red-400"}>
-              {match ? "Matches" : "Doesn't match"}
+            <span className={match ? "text-[#10b981]" : "text-red-600"}>
+              {match ? "VERIFIED" : "MISMATCH"}
             </span>
           )}
         </div>
       </div>
 
       <div className="pt-4">
-        <PrimaryButton disabled={!canSubmit || disabled} onClick={onSubmit} label="Create account" />
+        <PrimaryButton disabled={!canSubmit || disabled} onClick={onSubmit} label="Create Account" />
       </div>
     </div>
   );
@@ -521,34 +524,22 @@ function scorePassword(pw: string): { score: number; label: string; color: strin
   if (/\d/.test(pw)) s++;
   if (/[^A-Za-z0-9]/.test(pw)) s++;
   const map = [
-    { label: "Too short", color: "#f87171" }, // red-400
-    { label: "Weak", color: "#fb923c" }, // orange-400
-    { label: "Fair", color: "#fbbf24" }, // amber-400
-    { label: "Strong", color: "#34d399" }, // emerald-400
-    { label: "Excellent", color: "#10b981" }, // emerald-500
+    { label: "WEAK", color: "#ef4444" },
+    { label: "FAIR", color: "#f97316" },
+    { label: "GOOD", color: "#eab308" },
+    { label: "STRONG", color: "#22c55e" },
+    { label: "EXCELLENT", color: "#14b8a6" },
   ];
   return { score: s, ...map[s] };
 }
 
 function GoogleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" className="opacity-90">
-      <path
-        fill="#ffffff"
-        d="M22.5 12.3c0-.8-.1-1.4-.2-2.1H12v3.9h5.9c-.1.9-.8 2.4-2.3 3.4l-.1.1 3.3 2.5.2.1c2.1-1.9 3.3-4.8 3.3-7.9"
-      />
-      <path
-        fill="#ffffff"
-        d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-.9.6-2.2 1.1-3.8 1.1-2.9 0-5.4-1.9-6.3-4.6l-.1 0-3.4 2.6-.1.1C3.9 20.4 7.6 23 12 23"
-      />
-      <path
-        fill="#ffffff"
-        d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.1-1.5.3-2.1V7.2l-3.5-.1C1.4 8.7 1 10.3 1 12s.4 3.3 1.1 4.9L5.7 14"
-      />
-      <path
-        fill="#ffffff"
-        d="M12 5.4c2.1 0 3.5.9 4.3 1.7l3.1-3C17.5 2.4 15 1 12 1 7.6 1 3.9 3.6 2.1 7.1L5.7 10c.9-2.7 3.4-4.6 6.3-4.6"
-      />
+    <svg width="18" height="18" viewBox="0 0 24 24" className="fill-current">
+      <path d="M22.5 12.3c0-.8-.1-1.4-.2-2.1H12v3.9h5.9c-.1.9-.8 2.4-2.3 3.4l-.1.1 3.3 2.5.2.1c2.1-1.9 3.3-4.8 3.3-7.9" />
+      <path d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-.9.6-2.2 1.1-3.8 1.1-2.9 0-5.4-1.9-6.3-4.6l-.1 0-3.4 2.6-.1.1C3.9 20.4 7.6 23 12 23" />
+      <path d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.1-1.5.3-2.1V7.2l-3.5-.1C1.4 8.7 1 10.3 1 12s.4 3.3 1.1 4.9L5.7 14" />
+      <path d="M12 5.4c2.1 0 3.5.9 4.3 1.7l3.1-3C17.5 2.4 15 1 12 1 7.6 1 3.9 3.6 2.1 7.1L5.7 10c.9-2.7 3.4-4.6 6.3-4.6" />
     </svg>
   );
 }
