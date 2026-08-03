@@ -141,12 +141,17 @@ function Auth() {
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-black">
         
         {/* Left Side - Typography/Ticker */}
-        <div className="flex flex-col border-b md:border-b-0 border-black bg-black text-[#F9F9F7] justify-between relative overflow-hidden">
-            <div className="p-12 z-10">
-                <h1 className="font-serif text-6xl md:text-8xl leading-[0.9] tracking-tighter uppercase mb-6">
+        <div className="flex flex-col border-b md:border-b-0 border-black bg-black text-[#F9F9F7] justify-between relative overflow-hidden group">
+            <img 
+                src="/auth-bg.jpg" 
+                alt="Auth Background" 
+                className="absolute inset-0 w-full h-full object-cover opacity-60 grayscale mix-blend-luminosity transition-all duration-1000 group-hover:grayscale-0 group-hover:mix-blend-normal group-hover:opacity-100" 
+            />
+            <div className="p-12 z-10 pointer-events-none relative">
+                <h1 className="font-serif text-6xl md:text-8xl leading-[0.9] tracking-tighter uppercase mb-6 drop-shadow-md">
                     Enter the System
                 </h1>
-                <p className="font-mono text-lg uppercase tracking-widest opacity-80">
+                <p className="font-mono text-lg uppercase tracking-widest opacity-80 bg-black/60 backdrop-blur-sm inline-block px-2 py-1">
                     Secure Access Required.
                 </p>
             </div>
