@@ -141,26 +141,31 @@ function Auth() {
       <div className="flex-1 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-black">
         
         {/* Left Side - Typography/Ticker */}
-        <div className="flex flex-col border-b md:border-b-0 border-black bg-black text-[#F9F9F7] justify-between relative overflow-hidden group">
+        <div className="flex flex-col border-b md:border-b-0 border-black bg-black justify-between relative overflow-hidden group">
             <img 
                 src="/auth-bg.jpg" 
                 alt="Auth Background" 
-                className="absolute inset-0 w-full h-full object-cover opacity-60 grayscale mix-blend-luminosity transition-all duration-1000 group-hover:grayscale-0 group-hover:mix-blend-normal group-hover:opacity-100" 
+                className="absolute inset-0 w-full h-full object-cover opacity-80 grayscale mix-blend-luminosity transition-all duration-1000 group-hover:grayscale-0 group-hover:mix-blend-normal group-hover:opacity-100" 
             />
-            <div className="p-12 z-10 pointer-events-none relative">
-                <h1 className="font-serif text-6xl md:text-8xl leading-[0.9] tracking-tighter uppercase mb-6 drop-shadow-md">
-                    Enter the System
-                </h1>
-                <p className="font-mono text-lg uppercase tracking-widest opacity-80 bg-black/60 backdrop-blur-sm inline-block px-2 py-1">
-                    Secure Access Required.
-                </p>
+            {/* Dark overlay to help contrast */}
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors duration-1000 z-0"></div>
+            
+            <div className="p-8 md:p-12 z-10 pointer-events-none relative flex flex-col items-start mt-8">
+                <div className="bg-[#F9F9F7] text-black p-6 border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                    <h1 className="font-serif text-5xl md:text-7xl leading-[0.9] tracking-tighter uppercase mb-4">
+                        Enter the System
+                    </h1>
+                    <p className="font-mono text-sm md:text-base uppercase tracking-widest bg-black text-[#F9F9F7] inline-block px-3 py-1">
+                        Secure Access Required.
+                    </p>
+                </div>
             </div>
             
-            <div className="py-4 border-t border-white/20 font-mono text-xs uppercase tracking-widest whitespace-nowrap overflow-hidden">
+            <div className="py-4 border-t-2 border-black bg-[#F9F9F7] text-black font-mono text-xs uppercase tracking-widest whitespace-nowrap overflow-hidden z-10">
                 <Marquee speed={40} gradient={false}>
-                    <span className="mx-4">UNAUTHORIZED ACCESS PROHIBITED</span> •
-                    <span className="mx-4">SECURE YOUR ACCOUNT</span> •
-                    <span className="mx-4">ENCRYPTED CONNECTION ESTABLISHED</span> •
+                    <span className="mx-4 font-bold">UNAUTHORIZED ACCESS PROHIBITED</span> •
+                    <span className="mx-4 font-bold">SECURE YOUR ACCOUNT</span> •
+                    <span className="mx-4 font-bold">ENCRYPTED CONNECTION ESTABLISHED</span> •
                 </Marquee>
             </div>
         </div>
