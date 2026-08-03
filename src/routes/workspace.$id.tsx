@@ -17,6 +17,11 @@ import {
   CloudLightning,
   CloudOff,
   RefreshCw,
+  Layout,
+  MousePointer2,
+  Type,
+  Image as ImageIcon,
+  MessageSquare
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { AIThinking } from "@/components/workspace/AIThinking";
@@ -55,7 +60,7 @@ function SaveStatusIndicator({
 }) {
   if (!isOnline) {
     return (
-      <div className="flex items-center gap-1 text-[11px] text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20">
         <CloudOff className="h-3.5 w-3.5" />
         <span>Offline</span>
       </div>
@@ -64,16 +69,16 @@ function SaveStatusIndicator({
 
   if (status === "saving") {
     return (
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-white/[0.04] px-2.5 py-1 rounded-md border border-white/5">
         <RefreshCw className="h-3 w-3 animate-spin text-electric" />
-        <span>Saving...</span>
+        <span>Saving</span>
       </div>
     );
   }
 
   if (status === "saved") {
     return (
-      <div className="flex items-center gap-1 text-[11px] text-emerald-400">
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-md border border-emerald-400/20">
         <Cloud className="h-3.5 w-3.5" />
         <span>Saved</span>
       </div>
@@ -84,7 +89,7 @@ function SaveStatusIndicator({
     return (
       <button
         onClick={onRetry}
-        className="flex items-center gap-1 text-[11px] text-rose-400 bg-rose-400/15 px-2.5 py-0.5 rounded-full border border-rose-400/30 transition hover:bg-rose-400/25"
+        className="flex items-center gap-1.5 text-[11px] font-medium text-rose-400 bg-rose-400/15 px-2.5 py-1 rounded-md border border-rose-400/30 transition hover:bg-rose-400/25"
         title="Click to retry saving"
       >
         <CloudLightning className="h-3.5 w-3.5 animate-bounce" />
@@ -95,6 +100,27 @@ function SaveStatusIndicator({
 
   return null;
 }
+
+function StatusPill({ ready, generating }: { ready: boolean; generating: boolean }) {
+  if (generating) {
+    return (
+      <div className="flex items-center gap-1.5 rounded-full bg-electric/10 border border-electric/30 px-2.5 py-1">
+         <div className="h-1.5 w-1.5 rounded-full bg-electric animate-pulse" />
+         <span className="text-[10px] font-bold uppercase tracking-widest text-electric">Generating</span>
+      </div>
+    );
+  }
+  return null;
+}
+
+function formatTs(ts: number) {
+  return new Date(ts).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+}
+
+function StreamText({ text }: { text: string }) {
+  return <span>{text}</span>;
+}
+
 
 function Workspace() {
   const { user, loading } = useAuth();
@@ -129,76 +155,54 @@ function Workspace() {
   const [generationError, setGenerationError] = useState<string | null>(null);
   const generationStarted = useRef(false);
   const creationStarted = useRef(false);
-  // The prompt is either from the URL (first load) or from the DB description field (on refresh)
   const [effectivePrompt, setEffectivePrompt] = useState(seededPrompt);
 
   const { sync, retry, status: saveStatus, isOnline } = usePresentationSync(id);
 
-  // Show real slides only; never fall back to demo data
   const renderSlidesList = slides;
 
   useEffect(() => {
     if (dbSlides) {
-      console.log(`[Workspace] slides loaded: ${dbSlides.length}`);
       setSlides(dbSlides);
     }
   }, [dbSlides]);
 
   useEffect(() => {
     if (dbPresentation) {
-      console.log("[Workspace] presentation loaded");
       setTitle(dbPresentation.title);
-      // Recover the prompt stored in description JSON on refresh
       if (!seededPrompt) {
         try {
           const meta = JSON.parse(dbPresentation.description ?? "");
           if (typeof meta?.prompt === "string" && meta.prompt) {
             setEffectivePrompt(meta.prompt);
           }
-        } catch {
-          // description is not JSON or has no prompt — generation won't run
-        }
+        } catch {}
       }
     }
   }, [dbPresentation, seededPrompt]);
 
-  // ─── Real AI generation pipeline ────────────────────────────────────────────
   useEffect(() => {
-    // Wait for the slides query to settle — undefined means still loading.
-    // ponytail: one extra guard prevents the race on refresh.
     if (isSlidesLoading || !dbPresentation || !effectivePrompt || id === "new" || !user?.id) return;
     
     const hasExistingSlides = dbSlides && dbSlides.length > 0;
     const isCompleted = dbPresentation.status === "completed";
     
-    if (isCompleted || hasExistingSlides) {
-      console.log("[Workspace] generation skipped (existing deck)");
-      return;
-    }
+    if (isCompleted || hasExistingSlides) return;
     if (generationStarted.current) return;
 
     generationStarted.current = true;
 
     const startGeneration = async () => {
-      console.log("[Workspace] generation started (new deck)");
-      console.log("[2] Prompt:", effectivePrompt, "| Presentation ID:", id);
       setIsGenerating(true);
       setGenerationError(null);
 
       try {
-        console.log("[3] Before generateFullPresentation()");
         const result = await generateFullPresentation(effectivePrompt, {
           config: { provider: "gemini" },
         });
-        console.log("[4] After generateFullPresentation() — title:", result.title, "slides:", result.slides.length);
 
-        // Persist generated slides to the database
-        console.log("[5] Before saveSlides()");
         const savedSlides = await saveSlides(id, result.slides);
-        console.log("[6] After saveSlides() — saved", savedSlides.length, "slides");
 
-        // Update title and status
-        console.log("[7] Updating presentation status to completed");
         const updates: any = { status: "completed" };
         if (result.title) {
           updates.title = result.title;
@@ -206,16 +210,12 @@ function Workspace() {
         }
         await updatePresentation(id, updates);
 
-        // Update local slides state from DB response
         setSlides(savedSlides);
 
-        // Refresh queries so other components stay in sync
         queryClient.invalidateQueries({ queryKey: ["slides", id] });
         queryClient.invalidateQueries({ queryKey: ["presentation", id] });
 
-        console.log("[8] Generation complete — slides rendered in canvas");
       } catch (err) {
-        console.error("[Generation error]", err);
         setGenerationError(
           err instanceof Error ? err.message : "Generation failed. Please retry."
         );
@@ -226,9 +226,7 @@ function Workspace() {
 
     startGeneration();
   }, [id, effectivePrompt, user?.id, dbPresentation, dbSlides, isSlidesLoading, queryClient]);
-  // ────────────────────────────────────────────────────────────────────────────
 
-  // Handle new presentation creation on mount
   useEffect(() => {
     const initNew = async () => {
       if (id === "new" && user?.id && !creationStarted.current) {
@@ -240,7 +238,6 @@ function Workspace() {
               : seededPrompt
             : "Untitled Presentation";
 
-          // Store the original user prompt in description so it survives refresh
           const descriptionMeta = JSON.stringify({ prompt: seededPrompt || null });
 
           const newPres = await createPresentation(
@@ -251,24 +248,17 @@ function Workspace() {
             descriptionMeta,
           );
 
-          // Do NOT seed demoSlides — generation will populate slides after redirect
-
-          // Redirect immediately to the new UUID workspace
           navigate({
             to: "/workspace/$id",
             params: { id: newPres.id },
             search: { prompt },
           });
-        } catch (err) {
-          console.error("Failed to initialize presentation:", err);
-        }
+        } catch (err) {}
       }
     };
     initNew();
   }, [id, user, seededPrompt, prompt, navigate]);
 
-
-  // Route protection
   useEffect(() => {
     if (!loading && !user) {
       navigate({ to: "/auth" });
@@ -280,10 +270,8 @@ function Workspace() {
 
   const [messages, setMessages] = useState<Message[]>([]);
 
-  // Seed the initial chat messages once effectivePrompt is available
   const messagesSeeded = useRef(false);
   useEffect(() => {
-    // Wait for presentation to load to know if it's existing
     if (isPresLoading || isSlidesLoading || !dbPresentation || !effectivePrompt || messagesSeeded.current) return;
     messagesSeeded.current = true;
     
@@ -311,24 +299,21 @@ function Workspace() {
     }
   }, [effectivePrompt, isPresLoading, isSlidesLoading, dbPresentation, dbSlides]);
 
-  // Scroll conversation to bottom on new messages
   useEffect(() => {
     if (conversationRef.current) {
       conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
     }
   }, [messages]);
+
   const [selectedEl, setSelectedEl] = useState<string | null>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const [composer, setComposer] = useState("");
   const [timelineOpen, setTimelineOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(true);
 
-  // Check if presentation is already completed
   const isExistingPresentation = dbPresentation?.status === "completed" || (dbSlides && dbSlides.length > 0);
   
-  // active: there is a prompt in play AND we need to generate
   const active = effectivePrompt.length > 0 && !isExistingPresentation;
-  
-  // Timeline: runs while AI is generating; completes when isGenerating flips to false, OR instantly if already existing
   const generationCompleted = (active && !isGenerating && generationStarted.current) || false;
   const gen = useGenerationTimeline(active && isGenerating, generationCompleted || !!isExistingPresentation);
 
@@ -374,7 +359,7 @@ function Workspace() {
     : gen.isReady
       ? "assistant"
       : "thinking";
-  // How many slides are visible during generation
+
   const generatedCount = useMemo(() => {
     if (gen.isReady) return renderSlidesList.length;
     if (!gen.showSlides) return 0;
@@ -389,9 +374,9 @@ function Workspace() {
   if (loading || isPresLoading || isSlidesLoading || id === "new") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
-          <span className="text-xs text-muted-foreground">Setting up workspace...</span>
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-electric border-t-transparent shadow-[0_0_15px_var(--electric)]" />
+          <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Setting up workspace...</span>
         </div>
       </div>
     );
@@ -400,15 +385,15 @@ function Workspace() {
   if (presError || !dbPresentation) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
-        <h1 className="text-xl font-semibold text-foreground">Presentation not found</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
+        <h1 className="text-xl font-bold text-foreground">Presentation not found</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           The presentation you are trying to access doesn't exist or you don't have access.
         </p>
         <Link
           to="/home"
-          className="mt-6 inline-flex items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90"
+          className="mt-6 inline-flex items-center justify-center rounded-xl bg-foreground px-5 py-2.5 text-sm font-semibold text-background transition hover:opacity-90 shadow-lg"
         >
-          Go home
+          Return Home
         </Link>
       </div>
     );
@@ -419,216 +404,237 @@ function Workspace() {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
-      {/* Top bar */}
-      <header className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
-        <div className="flex items-center gap-3">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-[#E5E5E5] dark:bg-[#0E0E10]">
+      {/* Studio Top Toolbar */}
+      <header className="flex h-[52px] shrink-0 items-center justify-between border-b border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/80 backdrop-blur-xl px-4 z-20">
+        <div className="flex items-center gap-6">
           <Link
             to="/home"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+            className="flex items-center justify-center h-8 w-8 rounded-lg text-black/50 hover:text-black dark:text-white/50 hover:bg-black/5 dark:hover:text-white dark:hover:bg-white/10 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <Logo showWord={false} />
-          <input
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            className="rounded-md bg-transparent px-2 py-1 text-sm outline-none focus:bg-white/5"
-          />
-          <StatusPill ready={gen.isReady} generating={active && !gen.isReady} />
-          {id !== "new" && (
-            <SaveStatusIndicator status={saveStatus} isOnline={isOnline} onRetry={retry} />
-          )}
+          
+          <div className="flex items-center gap-3">
+            <input
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              className="rounded-md bg-transparent px-2 py-1 text-sm font-semibold text-black dark:text-white outline-none hover:bg-black/5 dark:hover:bg-white/5 focus:bg-black/5 dark:focus:bg-white/5 transition-colors max-w-[200px] sm:max-w-[300px]"
+            />
+            {id !== "new" && (
+              <SaveStatusIndicator status={saveStatus} isOnline={isOnline} onRetry={retry} />
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {gen.showSlides && !gen.isReady && (
-            <span className="hidden font-mono text-[11px] text-muted-foreground md:inline">
-              {generatedCount} / {renderSlidesList.length} slides
-            </span>
-          )}
+
+        {/* Central Tools */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 bg-black/5 dark:bg-white/5 rounded-lg p-1 border border-black/5 dark:border-white/5">
+           <button className="p-1.5 rounded-md hover:bg-white dark:hover:bg-black text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white shadow-sm transition-all">
+             <MousePointer2 className="w-4 h-4" />
+           </button>
+           <button className="p-1.5 rounded-md hover:bg-white dark:hover:bg-black text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-all">
+             <Layout className="w-4 h-4" />
+           </button>
+           <button className="p-1.5 rounded-md hover:bg-white dark:hover:bg-black text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-all">
+             <Type className="w-4 h-4" />
+           </button>
+           <button className="p-1.5 rounded-md hover:bg-white dark:hover:bg-black text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-all">
+             <ImageIcon className="w-4 h-4" />
+           </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <StatusPill ready={gen.isReady} generating={active && !gen.isReady} />
+          <button 
+             onClick={() => setIsChatOpen(!isChatOpen)}
+             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${isChatOpen ? 'bg-electric/10 text-electric border border-electric/20' : 'bg-black/5 dark:bg-white/5 text-black/70 dark:text-white/70 hover:bg-black/10 dark:hover:bg-white/10'}`}
+          >
+             <MessageSquare className="w-3.5 h-3.5" /> AI Chat
+          </button>
           <motion.button
             whileHover={{ scale: gen.isReady ? 1.02 : 1 }}
             onClick={() => navigate({ to: "/present/$id", params: { id } })}
             disabled={!gen.isReady}
-            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs transition hover:border-white/25 disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-lg bg-black dark:bg-white px-4 py-1.5 text-xs font-semibold text-white dark:text-black transition hover:opacity-90 disabled:opacity-40 shadow-md"
           >
-            <Play className="h-3 w-3" /> Open Viewer
+            <Play className="h-3 w-3" /> Present
           </motion.button>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* LEFT: Conversation — 18% */}
-        <aside className="flex w-[18%] min-w-[280px] shrink-0 flex-col border-r border-border">
-          <div className="flex-1 overflow-y-auto px-4 py-5" ref={conversationRef}>
-            {/* Collapsible timeline */}
-            {active && (
-              <div className="mb-4 overflow-hidden rounded-xl border border-border bg-white/[0.02]">
-                <button
-                  onClick={() => setTimelineOpen((o) => !o)}
-                  className="flex w-full items-center justify-between px-3 py-2 text-left"
-                >
-                  <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-muted-foreground">
-                    <Sparkles className="h-3 w-3 text-electric" /> Generation timeline
-                  </div>
-                  {timelineOpen ? (
-                    <ChevronUp className="h-3 w-3 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
-                  )}
-                </button>
-                <AnimatePresence initial={false}>
-                  {timelineOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Floating Chat Panel */}
+        <AnimatePresence>
+          {isChatOpen && (
+            <motion.aside
+              initial={{ x: -320, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -320, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute left-4 top-4 bottom-4 w-[280px] z-10 flex flex-col rounded-2xl bg-white/90 dark:bg-[#151515]/90 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl overflow-hidden"
+            >
+              <div className="flex-1 overflow-y-auto px-4 py-5" ref={conversationRef}>
+                {active && (
+                  <div className="mb-4 overflow-hidden rounded-xl border border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/5">
+                    <button
+                      onClick={() => setTimelineOpen((o) => !o)}
+                      className="flex w-full items-center justify-between px-3 py-2.5 text-left"
                     >
-                      <div className="space-y-1 px-3 pb-3">
-                        {gen.steps.map((s, i) => {
-                          const st = gen.stepStatus(i);
-                          return (
-                            <div key={s} className="flex items-center gap-2 text-[11px]">
-                              <span className="flex h-3.5 w-3.5 items-center justify-center">
-                                {st === "done" && <Check className="h-3 w-3 text-electric" />}
-                                {st === "active" && (
-                                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-electric" />
-                                )}
-                                {st === "pending" && (
-                                  <span className="h-1 w-1 rounded-full bg-white/20" />
-                                )}
-                              </span>
-                              <span
-                                className={
-                                  st === "pending"
-                                    ? "text-muted-foreground"
-                                    : st === "active"
-                                      ? "text-foreground"
-                                      : "text-muted-foreground line-through decoration-white/10"
-                                }
-                              >
-                                {s}
-                              </span>
+                      <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black/60 dark:text-white/60">
+                        <Sparkles className="h-3.5 w-3.5 text-electric" /> Timeline
+                      </div>
+                      {timelineOpen ? (
+                        <ChevronUp className="h-3.5 w-3.5 text-black/40 dark:text-white/40" />
+                      ) : (
+                        <ChevronDown className="h-3.5 w-3.5 text-black/40 dark:text-white/40" />
+                      )}
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {timelineOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="space-y-1.5 px-3 pb-3">
+                            {gen.steps.map((s, i) => {
+                              const st = gen.stepStatus(i);
+                              return (
+                                <div key={s} className="flex items-center gap-2 text-[11px] font-medium">
+                                  <span className="flex h-4 w-4 items-center justify-center">
+                                    {st === "done" && <Check className="h-3.5 w-3.5 text-emerald-500" />}
+                                    {st === "active" && (
+                                      <span className="h-2 w-2 animate-pulse rounded-full bg-electric" />
+                                    )}
+                                    {st === "pending" && (
+                                      <span className="h-1.5 w-1.5 rounded-full bg-black/20 dark:bg-white/20" />
+                                    )}
+                                  </span>
+                                  <span
+                                    className={
+                                      st === "pending"
+                                        ? "text-black/40 dark:text-white/40"
+                                        : st === "active"
+                                          ? "text-black dark:text-white"
+                                          : "text-black/40 dark:text-white/40 line-through decoration-black/20 dark:decoration-white/20"
+                                    }
+                                  >
+                                    {s}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
+                <AnimatePresence initial={false}>
+                  {messages.map((m) => (
+                    <motion.div
+                      key={m.id}
+                      initial={{ opacity: 0, y: 8, x: m.role === "user" ? 6 : -6 }}
+                      animate={{ opacity: 1, y: 0, x: 0 }}
+                      className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      {m.role === "ai" ? (
+                        <div className="max-w-[90%]">
+                          <div className="mb-1.5 flex items-center gap-1.5">
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-electric to-violet shadow-sm">
+                              <Sparkles className="h-2.5 w-2.5 text-white" />
                             </div>
-                          );
-                        })}
-                      </div>
+                            <div className="text-[9px] font-bold uppercase tracking-widest text-black/50 dark:text-white/50">
+                              Orivox
+                            </div>
+                            <div className="text-[9px] text-black/40 dark:text-white/40">{formatTs(m.ts)}</div>
+                          </div>
+                          <div className="text-[13px] leading-relaxed text-black/80 dark:text-white/80">
+                            {m.stream ? <StreamText text={m.text} /> : m.text}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="max-w-[90%]">
+                          <div className="rounded-2xl rounded-tr-sm bg-black dark:bg-white px-3 py-2 text-[13px] text-white dark:text-black shadow-sm">
+                            {m.text}
+                          </div>
+                          <div className="mt-1 text-right text-[9px] text-black/40 dark:text-white/40">
+                            {formatTs(m.ts)}
+                          </div>
+                        </div>
+                      )}
                     </motion.div>
-                  )}
+                  ))}
                 </AnimatePresence>
+                
+                {messages.length === 0 && (
+                  <div className="mt-20 text-center text-sm text-black/50 dark:text-white/50">
+                    <Sparkles className="mx-auto mb-3 h-5 w-5 text-electric opacity-50" />
+                    Describe a presentation to begin.
+                  </div>
+                )}
               </div>
-            )}
 
-            <AnimatePresence initial={false}>
-              {messages.map((m, i) => (
-                <motion.div
-                  key={m.id}
-                  initial={{ opacity: 0, y: 8, x: m.role === "user" ? 6 : -6 }}
-                  animate={{ opacity: 1, y: 0, x: 0 }}
-                  transition={{ type: "spring", stiffness: 280, damping: 26 }}
-                  className={`mb-4 flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {m.role === "ai" ? (
-                    <div className="max-w-[92%]">
-                      <div className="mb-1.5 flex items-center gap-2">
-                        <div className="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-electric to-violet">
-                          <Sparkles className="h-2.5 w-2.5 text-background" />
-                        </div>
-                        <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                          Orivox
-                        </div>
-                        <div className="text-[10px] text-muted-foreground/60">{formatTs(m.ts)}</div>
-                      </div>
-                      <div className="text-sm text-foreground/90">
-                        {m.stream ? <StreamText text={m.text} /> : m.text}
-                      </div>
-
-
-
-
-                    </div>
-                  ) : (
-                    <div className="max-w-[92%]">
-                      <div className="rounded-2xl bg-white/[0.06] px-3.5 py-2 text-sm text-foreground">
-                        {m.text}
-                      </div>
-                      <div className="mt-1 text-right text-[10px] text-muted-foreground/60">
-                        {formatTs(m.ts)}
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {messages.length === 0 && (
-              <div className="mt-20 text-center text-sm text-muted-foreground">
-                <Sparkles className="mx-auto mb-3 h-5 w-5 text-electric" />
-                Describe a presentation to begin.
+              <div className="p-3 border-t border-black/5 dark:border-white/10 bg-white dark:bg-black/20">
+                <div className="flex items-end gap-2 rounded-xl bg-black/5 dark:bg-white/5 p-1.5 border border-black/5 dark:border-white/5 focus-within:border-black/20 dark:focus-within:border-white/20 transition-colors">
+                  <textarea
+                    value={composer}
+                    onChange={(e) => setComposer(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        send(composer);
+                      }
+                    }}
+                    placeholder="Ask Orivox..."
+                    rows={1}
+                    className="max-h-24 min-h-[28px] flex-1 resize-none bg-transparent px-2 py-1 text-xs outline-none placeholder:text-black/40 dark:placeholder:text-white/40 text-black dark:text-white"
+                  />
+                  <button
+                    onClick={() => send(composer)}
+                    disabled={!composer.trim()}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-electric text-white transition disabled:opacity-30 disabled:grayscale"
+                  >
+                    <ArrowUp className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
-            )}
-          </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
 
-          <div className="border-t border-border p-3">
-            <div className="glass flex items-end gap-2 rounded-xl p-2">
-              <textarea
-                value={composer}
-                onChange={(e) => setComposer(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    send(composer);
-                  }
-                }}
-                placeholder="Ask Orivox to change anything..."
-                rows={1}
-                className="max-h-24 min-h-6 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground"
-              />
-              <button
-                onClick={() => send(composer)}
-                disabled={!composer.trim()}
-                className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground text-background transition disabled:opacity-30"
-              >
-                <ArrowUp className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* CENTER: Canvas — 64% */}
+        {/* Canvas Area */}
         <main
-          className="flex flex-1 flex-col overflow-hidden bg-[oklch(0.14_0.008_270)]"
+          className="flex-1 h-full overflow-y-auto w-full relative"
           onClick={() => setSelectedEl(null)}
         >
-          <div className="flex-1 overflow-y-auto px-8 py-8">
-            <div className="mx-auto max-w-4xl">
+          {/* Subtle grid pattern background */}
+          <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+
+          <div className="relative min-h-full flex flex-col items-center justify-start py-12 px-8">
+            <div className="w-full max-w-5xl">
               {messages.length === 0 && (
-                <div className="flex h-[60vh] items-center justify-center text-center text-muted-foreground">
-                  <div>
-                    <Sparkles className="mx-auto mb-3 h-6 w-6 text-electric" />
-                    <div className="text-lg text-foreground/80">Describe your presentation.</div>
-                    <div className="mt-1 text-sm">Your deck will grow here as Orivox works.</div>
+                <div className="flex h-[60vh] items-center justify-center text-center">
+                  <div className="bg-white/50 dark:bg-black/50 backdrop-blur-xl p-8 rounded-3xl border border-black/5 dark:border-white/5 shadow-xl">
+                    <Sparkles className="mx-auto mb-4 h-8 w-8 text-electric" />
+                    <div className="text-xl font-bold text-black dark:text-white">Start creating</div>
+                    <div className="mt-2 text-sm text-black/60 dark:text-white/60 max-w-xs">Your presentation canvas is ready. Use the AI chat to generate your first draft.</div>
                   </div>
                 </div>
               )}
 
-              {/* Generation error banner */}
               {generationError && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mb-4 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
+                  className="mb-6 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-600 dark:text-rose-400 shadow-sm"
                 >
-                  <span className="font-medium">Generation failed: </span>
-                  {generationError}
+                  Failed: {generationError}
                 </motion.div>
               )}
 
-
-
-              {/* Outline phase */}
               <AnimatePresence>
                 {gen.showOutline && !gen.showSlides && (
                   <motion.div
@@ -636,17 +642,17 @@ function Workspace() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="mb-6"
+                    className="mb-8 bg-white/80 dark:bg-black/40 backdrop-blur-xl rounded-3xl border border-black/5 dark:border-white/5 p-6 shadow-xl"
                   >
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Outline
+                    <div className="mb-6 flex items-center justify-between">
+                      <div className="text-xs font-bold uppercase tracking-widest text-black/50 dark:text-white/50">
+                        Proposed Outline
                       </div>
-                      <button className="rounded-md border border-electric/40 bg-electric/10 px-2.5 py-1 text-[11px] text-electric transition hover:bg-electric/20">
-                        Approve outline
+                      <button className="rounded-lg bg-electric/10 px-3 py-1.5 text-[11px] font-bold text-electric transition hover:bg-electric/20">
+                        Approve
                       </button>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {renderSlidesList.map((s, i) => (
                         <motion.div
                           key={s.id}
@@ -654,12 +660,12 @@ function Workspace() {
                           initial={{ opacity: 0, x: -6 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.06 }}
-                          className="glass flex items-center gap-3 rounded-xl px-4 py-3"
+                          className="flex items-center gap-4 rounded-xl border border-black/5 dark:border-white/5 bg-white dark:bg-white/[0.02] px-4 py-3.5 shadow-sm"
                         >
-                          <div className="w-6 font-mono text-xs text-muted-foreground">
+                          <div className="w-8 font-mono text-xs font-bold text-black/30 dark:text-white/30">
                             {String(i + 1).padStart(2, "0")}
                           </div>
-                          <div className="text-sm">{s.title}</div>
+                          <div className="text-sm font-semibold text-black dark:text-white">{s.title}</div>
                         </motion.div>
                       ))}
                     </div>
@@ -667,22 +673,22 @@ function Workspace() {
                 )}
               </AnimatePresence>
 
-              {/* Slides phase */}
               {gen.showSlides && visibleSlides.length > 0 && (
-                <>
-                  <div className="mx-auto max-w-3xl">
-                    {/* Slide progress */}
-                    {!gen.isReady && (
-                      <div className="mb-3 flex items-center justify-between text-[11px] text-muted-foreground">
-                        <span>Designing slides</span>
-                        <span className="font-mono">
-                          {generatedCount} / {renderSlidesList.length} generated
-                        </span>
-                      </div>
-                    )}
+                <div className="flex flex-col items-center w-full">
+                  {!gen.isReady && (
+                    <div className="mb-4 flex w-full max-w-4xl items-center justify-between text-[11px] font-bold uppercase tracking-widest text-black/50 dark:text-white/50">
+                      <span>Rendering canvas</span>
+                      <span className="font-mono bg-black/5 dark:bg-white/5 px-2 py-1 rounded">
+                        {generatedCount} / {renderSlidesList.length}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="w-full max-w-4xl relative group">
                     <motion.div
                       key={visibleSlides[activeSlide]?.id}
                       layoutId={`slide-${visibleSlides[activeSlide]?.id}`}
+                      className="shadow-2xl rounded-xl overflow-hidden border border-black/10 dark:border-white/10 ring-4 ring-black/5 dark:ring-white/5 bg-white"
                     >
                       <SlideCanvas
                         slide={visibleSlides[activeSlide]}
@@ -691,182 +697,48 @@ function Workspace() {
                         onSlideChange={handleSlideChange}
                       />
                     </motion.div>
-                    {gen.showNotes && visibleSlides[activeSlide]?.notes && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-3 rounded-xl border border-border bg-white/[0.02] p-3 text-xs text-muted-foreground"
-                      >
-                        <span className="mr-1.5 text-foreground/70">Notes:</span>{" "}
-                        {visibleSlides[activeSlide]?.notes}
-                      </motion.div>
-                    )}
                   </div>
 
-                  {/* Filmstrip */}
-                  <div className="no-scrollbar mt-6 flex gap-2 overflow-x-auto pb-2">
-                    {renderSlidesList.map((s, i) => {
-                      const shown = i < visibleSlides.length;
-                      return (
-                        <motion.button
-                          key={s.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (shown) setActiveSlide(i);
-                          }}
-                          className={`relative aspect-video w-28 shrink-0 overflow-hidden rounded-md border transition ${
-                            i === activeSlide && shown ? "border-electric/60" : "border-border"
-                          } ${shown ? "opacity-100" : "opacity-40"}`}
-                        >
-                          {shown ? (
-                            <div className="flex h-full items-center justify-center bg-gradient-to-br from-white/[0.04] to-white/[0.01] p-2">
-                              <div className="line-clamp-2 text-[9px] text-white/60">{s.title}</div>
-                            </div>
-                          ) : (
-                            <div className="relative flex h-full items-center justify-center bg-white/[0.02]">
-                              <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-                              <Circle className="h-3 w-3 text-white/20" />
-                            </div>
-                          )}
-                          <div className="absolute left-1 top-1 rounded bg-black/40 px-1 font-mono text-[8px] text-white/70">
-                            {i + 1}
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Success card */}
-                  <AnimatePresence>
-                    {gen.isReady && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ type: "spring", stiffness: 220, damping: 26, delay: 0.2 }}
-                        className="glass mx-auto mt-8 max-w-3xl overflow-hidden rounded-2xl p-5"
-                      >
-                        <div className="flex items-center gap-3">
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 260,
-                              damping: 18,
-                              delay: 0.35,
-                            }}
-                            className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-400/15"
-                          >
-                            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                          </motion.div>
-                          <div className="flex-1">
-                            <div className="text-sm font-medium">Presentation ready</div>
-                            <div className="text-xs text-muted-foreground">
-                              Reviewed and ready to present.
-                            </div>
-                          </div>
+                  {/* Modern Filmstrip */}
+                  <div className="mt-12 w-full max-w-5xl bg-white/50 dark:bg-black/30 backdrop-blur-xl border border-black/5 dark:border-white/5 rounded-2xl p-4 shadow-xl">
+                    <div className="no-scrollbar flex gap-4 overflow-x-auto pb-2 px-2 snap-x">
+                      {renderSlidesList.map((s, i) => {
+                        const shown = i < visibleSlides.length;
+                        return (
                           <motion.button
-                            whileHover={{ scale: 1.03 }}
-                            onClick={() => navigate({ to: "/present/$id", params: { id } })}
-                            className="flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-90"
+                            key={s.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (shown) setActiveSlide(i);
+                            }}
+                            className={`relative aspect-video w-40 shrink-0 snap-center overflow-hidden rounded-xl border-2 transition-all duration-300 ${
+                              i === activeSlide && shown ? "border-electric scale-105 shadow-[0_0_15px_rgba(var(--electric-rgb),0.3)]" : "border-transparent hover:border-black/20 dark:hover:border-white/20"
+                            } ${shown ? "opacity-100 bg-white dark:bg-white/5" : "opacity-40 bg-black/5 dark:bg-white/5"}`}
                           >
-                            <Play className="h-3 w-3" /> Open Viewer
-                          </motion.button>
-                        </div>
-                        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                          {[
-                            { label: "Slides", value: renderSlidesList.length.toString() },
-                            { label: "Charts", value: renderSlidesList.filter(s => s.kind === "chart").length.toString() },
-                          ].map((s) => (
-                            <div
-                              key={s.label}
-                              className="rounded-xl border border-border bg-white/[0.02] py-2.5"
-                            >
-                              <div className="font-mono text-lg text-foreground">{s.value}</div>
-                              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                                {s.label}
+                            {shown ? (
+                              <div className="flex h-full items-center justify-center p-3">
+                                <div className="line-clamp-3 text-[10px] font-medium text-black/70 dark:text-white/70 leading-relaxed text-center">{s.title}</div>
                               </div>
+                            ) : (
+                              <div className="relative flex h-full items-center justify-center">
+                                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-black/5 dark:via-white/5 to-transparent" />
+                                <Circle className="h-4 w-4 text-black/20 dark:text-white/20" />
+                              </div>
+                            )}
+                            <div className={`absolute left-1.5 top-1.5 rounded-md px-1.5 py-0.5 font-mono text-[9px] font-bold ${i === activeSlide ? 'bg-electric text-white' : 'bg-black/10 dark:bg-black/50 text-black/70 dark:text-white/70'}`}>
+                              {i + 1}
                             </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
         </main>
-
-        {/* RIGHT: Morphing panel — 18% */}
-        <aside className="w-[18%] min-w-[280px] shrink-0 border-l border-border">
-          <div className="flex h-full flex-col p-5">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={rightMode}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
-                className="flex h-full flex-col"
-              >
-                {rightMode === "thinking" && (
-                  <AIThinking steps={gen.steps} status={gen.stepStatus} />
-                )}
-                {rightMode === "assistant" && <AIAssistant />}
-                {rightMode === "selected" && selectedEl && (
-                  <ElementSelectedPanel
-                    element={selectedEl}
-                    onDeselect={() => setSelectedEl(null)}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </aside>
       </div>
     </div>
-  );
-}
-
-function StatusPill({ ready, generating }: { ready: boolean; generating: boolean }) {
-  const label = ready ? "Ready" : generating ? "Generating" : "Idle";
-  const color = ready ? "text-emerald-400" : generating ? "text-electric" : "text-muted-foreground";
-  const dot = ready ? "bg-emerald-400" : generating ? "bg-electric animate-pulse" : "bg-white/30";
-  return (
-    <motion.div
-      layout
-      className={`ml-2 flex items-center gap-1.5 rounded-full border border-border px-2 py-0.5 text-[10px] ${color}`}
-    >
-      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
-      {label}
-    </motion.div>
-  );
-}
-
-function formatTs(ts: number) {
-  const d = new Date(ts);
-  return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-}
-
-function StreamText({ text }: { text: string }) {
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    setN(0);
-    let i = 0;
-    const id = window.setInterval(() => {
-      i += 1;
-      setN(i);
-      if (i >= text.length) window.clearInterval(id);
-    }, 14);
-    return () => window.clearInterval(id);
-  }, [text]);
-  return (
-    <span>
-      {text.slice(0, n)}
-      {n < text.length && (
-        <span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-electric/70" />
-      )}
-    </span>
   );
 }

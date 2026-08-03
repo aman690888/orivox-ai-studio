@@ -1,20 +1,21 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
+import { motion } from "motion/react";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        default: "bg-primary text-primary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:bg-primary/90 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_0_15px_color-mix(in_oklab,var(--color-primary)_40%,transparent)]",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:shadow-[0_0_15px_color-mix(in_oklab,var(--color-destructive)_40%,transparent)]",
         outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-background/40 backdrop-blur-md shadow-sm hover:bg-accent/80 hover:text-accent-foreground hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_15px_color-mix(in_oklab,var(--color-accent)_30%,transparent)]",
+        secondary: "bg-secondary/60 backdrop-blur-md text-secondary-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:bg-secondary/80 hover:shadow-[0_0_15px_color-mix(in_oklab,var(--color-secondary)_40%,transparent)]",
+        ghost: "hover:bg-accent/50 backdrop-blur-sm hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -38,9 +39,25 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
+    if (asChild) {
+      return (
+        <Slot
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        />
+      );
+    }
+    
     return (
-      <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+      <motion.button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref as any}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        {...props as any}
+      />
     );
   },
 );

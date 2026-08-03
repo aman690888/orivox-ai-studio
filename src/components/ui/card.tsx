@@ -1,13 +1,16 @@
 import * as React from "react";
+import { motion } from "motion/react";
 
 import { cn } from "@/lib/utils";
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn("rounded-xl border bg-card text-card-foreground shadow", className)}
-      {...props}
+    <motion.div
+      ref={ref as any}
+      whileHover={{ scale: 1.01 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      className={cn("rounded-xl border border-border/50 bg-card/60 backdrop-blur-xl text-card-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_8px_30px_color-mix(in_oklab,var(--color-primary)_10%,transparent)] hover:border-border/80", className)}
+      {...props as any}
     />
   ),
 );

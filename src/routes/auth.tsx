@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
@@ -33,7 +33,6 @@ function Auth() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // If already logged in, redirect to home
   useEffect(() => {
     if (!loading && user) {
       navigate({ to: "/home" });
@@ -77,9 +76,7 @@ function Auth() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/home`,
-        },
+        options: { emailRedirectTo: `${window.location.origin}/home` },
       });
       if (error) throw error;
       setSignupStep("confirm-sent");
@@ -95,10 +92,7 @@ function Auth() {
     setAuthError(null);
     setActionLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       navigate({ to: "/home" });
     } catch (err) {
@@ -128,238 +122,261 @@ function Auth() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-[#0A0A0A]">
+        <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
       </div>
     );
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
-      <div className="pointer-events-none absolute inset-0 [background:radial-gradient(600px_at_50%_20%,color-mix(in_oklab,var(--electric)_15%,transparent),transparent)]" />
-      <FloatingOrbs />
-      <Link to="/" className="absolute left-6 top-6">
-        <Logo />
-      </Link>
+    <div className="relative flex min-h-screen font-sans items-center justify-center overflow-hidden bg-[#0A0A0A] px-4 selection:bg-neutral-800 selection:text-white">
+      {/* Deep blurred abstract background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[150px] mix-blend-screen" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-violet-500/10 blur-[150px] mix-blend-screen" />
+      </div>
+
+      <div className="absolute top-8 left-8 z-20">
+        <Link to="/">
+          <Logo />
+        </Link>
+      </div>
 
       <motion.div
         layout
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="glass relative w-full max-w-md overflow-hidden rounded-2xl p-6"
+        transition={{ type: "spring", stiffness: 400, damping: 40 }}
+        className="relative z-10 w-full max-w-[400px]"
       >
-        {/* Error notice */}
-        {authError && (
-          <div className="mb-4 rounded-lg bg-rose-500/10 p-3 text-xs text-rose-400 border border-rose-500/25">
-            {authError}
-          </div>
-        )}
-
-        {/* Tabs — only visible on the entry steps */}
-        {((mode === "signup" && signupStep === "email") ||
-          (mode === "login" && loginStep === "credentials")) && (
-          <div className="mb-6 flex rounded-lg bg-white/5 p-1 text-sm">
-            {(["signup", "login"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => resetAll(t)}
-                className="relative flex-1 rounded-md py-1.5 text-center"
-              >
-                {mode === t && (
-                  <motion.span
-                    layoutId="auth-tab"
-                    className="absolute inset-0 rounded-md bg-white/[0.08]"
-                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                  />
-                )}
-                <span
-                  className={`relative ${mode === t ? "text-foreground" : "text-muted-foreground"}`}
-                >
-                  {t === "signup" ? "Create account" : "Log in"}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        <AnimatePresence mode="wait">
-          {mode === "signup" && signupStep === "email" && (
-            <StepShell key="signup-email">
-              <h1 className="text-xl font-semibold tracking-tight">Create your account</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Start turning ideas into presentations.
-              </p>
-
-              <GoogleButton onClick={handleOAuth} label="Sign up with Google" />
-              <Divider />
-
-              <EmailInput email={email} setEmail={setEmail} />
-              <PrimaryButton
-                disabled={!isValidEmail(email) || actionLoading}
-                onClick={handleEmailStep}
-                label="Continue with email"
-              />
-            </StepShell>
+        <div className="rounded-2xl border border-white/[0.08] bg-black/40 p-8 shadow-2xl backdrop-blur-2xl backdrop-saturate-150">
+          {authError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400"
+            >
+              {authError}
+            </motion.div>
           )}
 
-          {mode === "signup" && signupStep === "password" && (
-            <StepShell key="signup-password">
-              <BackButton onClick={() => setSignupStep("email")} />
-              <h1 className="text-xl font-semibold tracking-tight">Create a password</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                You'll use this to sign in next time.
-              </p>
-              <PasswordFields
-                pw={password}
-                setPw={setPassword}
-                confirm={confirmPassword}
-                setConfirm={setConfirmPassword}
-                onSubmit={handleSignUp}
-                disabled={actionLoading}
-              />
-            </StepShell>
-          )}
-
-          {mode === "signup" && signupStep === "confirm-sent" && (
-            <StepShell key="confirm-sent">
-              <div className="flex flex-col items-center py-4 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-electric/15">
-                  <Check className="h-5 w-5 text-electric" />
-                </div>
-                <h1 className="mt-4 text-xl font-semibold tracking-tight">Check your email</h1>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  We've sent a verification link to <span className="text-foreground">{email}</span>
-                  . Please verify your email before logging in.
-                </p>
+          {((mode === "signup" && signupStep === "email") ||
+            (mode === "login" && loginStep === "credentials")) && (
+            <div className="mb-8 flex space-x-4 border-b border-white/[0.08] pb-4">
+              {(["login", "signup"] as const).map((t) => (
                 <button
-                  onClick={() => resetAll("login")}
-                  className="mt-6 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  key={t}
+                  onClick={() => resetAll(t)}
+                  className={`relative pb-4 -mb-4 text-sm font-medium transition-colors ${
+                    mode === t ? "text-white" : "text-neutral-500 hover:text-neutral-300"
+                  }`}
                 >
-                  <ArrowLeft className="h-3 w-3" /> Back to login
+                  {t === "login" ? "Sign In" : "Sign Up"}
+                  {mode === t && (
+                    <motion.div
+                      layoutId="active-tab"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-white"
+                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    />
+                  )}
                 </button>
-              </div>
-            </StepShell>
+              ))}
+            </div>
           )}
 
-          {mode === "login" && loginStep === "credentials" && (
-            <StepShell key="login">
-              <h1 className="text-xl font-semibold tracking-tight">Welcome back</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Sign in to continue to Orivox.</p>
+          <AnimatePresence mode="wait">
+            {mode === "signup" && signupStep === "email" && (
+              <StepShell key="signup-email">
+                <div className="mb-6">
+                  <h1 className="text-xl font-medium tracking-tight text-white">
+                    Create an account
+                  </h1>
+                  <p className="mt-1.5 text-sm text-neutral-400">
+                    Enter your email to get started.
+                  </p>
+                </div>
 
-              <GoogleButton onClick={handleOAuth} label="Continue with Google" />
-              <Divider />
+                <EmailInput email={email} setEmail={setEmail} />
+                <PrimaryButton
+                  disabled={!isValidEmail(email) || actionLoading}
+                  onClick={handleEmailStep}
+                  label="Continue with email"
+                />
 
-              <EmailInput email={email} setEmail={setEmail} />
-              <div className="mt-3">
-                <div className="mb-1.5 flex items-center justify-between">
-                  <label className="text-xs text-muted-foreground">Password</label>
+                <Divider />
+                <GoogleButton onClick={handleOAuth} label="Continue with Google" />
+              </StepShell>
+            )}
+
+            {mode === "signup" && signupStep === "password" && (
+              <StepShell key="signup-password">
+                <div className="mb-6">
+                  <h1 className="text-xl font-medium tracking-tight text-white">Set a password</h1>
+                  <p className="mt-1.5 text-sm text-neutral-400">
+                    Choose a secure password for your account.
+                  </p>
+                </div>
+                <PasswordFields
+                  pw={password}
+                  setPw={setPassword}
+                  confirm={confirmPassword}
+                  setConfirm={setConfirmPassword}
+                  onSubmit={handleSignUp}
+                  disabled={actionLoading}
+                />
+                <button
+                  onClick={() => setSignupStep("email")}
+                  className="mt-6 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
+                >
+                  Back
+                </button>
+              </StepShell>
+            )}
+
+            {mode === "signup" && signupStep === "confirm-sent" && (
+              <StepShell key="confirm-sent">
+                <div className="flex flex-col items-center py-6 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10">
+                    <Check className="h-5 w-5 text-neutral-300" />
+                  </div>
+                  <h1 className="mt-5 text-lg font-medium text-white">Check your email</h1>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                    We sent a verification link to <br />
+                    <span className="font-medium text-white">{email}</span>
+                  </p>
                   <button
-                    onClick={() => setLoginStep("forgot")}
-                    className="text-xs text-muted-foreground transition hover:text-foreground"
+                    onClick={() => resetAll("login")}
+                    className="mt-8 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
                   >
-                    Forgot password?
+                    Return to sign in
                   </button>
                 </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-white/[0.03] px-3 py-2.5 pr-10 text-sm outline-none transition focus:border-white/25 focus:bg-white/[0.05]"
+              </StepShell>
+            )}
+
+            {mode === "login" && loginStep === "credentials" && (
+              <StepShell key="login">
+                <div className="mb-6">
+                  <h1 className="text-xl font-medium tracking-tight text-white">Welcome back</h1>
+                  <p className="mt-1.5 text-sm text-neutral-400">Sign in to your account.</p>
+                </div>
+
+                <div className="space-y-4">
+                  <EmailInput email={email} setEmail={setEmail} />
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <label className="text-sm font-medium text-neutral-300">Password</label>
+                      <button
+                        onClick={() => setLoginStep("forgot")}
+                        className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
+                      >
+                        Forgot?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 pr-10 text-sm text-white placeholder-neutral-500 outline-none transition focus:border-white/20 focus:bg-white/10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((s) => !s)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-neutral-500 hover:text-neutral-300 transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <PrimaryButton
+                    disabled={!isValidEmail(email) || !password || actionLoading}
+                    onClick={handleLogin}
+                    label="Sign in"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-3.5 w-3.5" />
-                    ) : (
-                      <Eye className="h-3.5 w-3.5" />
-                    )}
-                  </button>
                 </div>
-              </div>
-              <PrimaryButton
-                disabled={!isValidEmail(email) || !password || actionLoading}
-                onClick={handleLogin}
-                label="Continue"
-              />
-            </StepShell>
-          )}
 
-          {mode === "login" && loginStep === "forgot" && (
-            <StepShell key="forgot">
-              <BackButton onClick={() => setLoginStep("credentials")} />
-              <h1 className="text-xl font-semibold tracking-tight">Reset your password</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                We'll email you a secure reset link.
-              </p>
-              <EmailInput email={email} setEmail={setEmail} className="mt-6" />
-              <PrimaryButton
-                disabled={!isValidEmail(email) || actionLoading}
-                onClick={handleResetPassword}
-                label="Send reset link"
-              />
-            </StepShell>
-          )}
+                <Divider />
+                <GoogleButton onClick={handleOAuth} label="Continue with Google" />
+              </StepShell>
+            )}
 
-          {mode === "login" && loginStep === "forgot-sent" && (
-            <StepShell key="forgot-sent">
-              <div className="flex flex-col items-center py-4 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-electric/15">
-                  <Check className="h-5 w-5 text-electric" />
+            {mode === "login" && loginStep === "forgot" && (
+              <StepShell key="forgot">
+                <div className="mb-6">
+                  <h1 className="text-xl font-medium tracking-tight text-white">Reset password</h1>
+                  <p className="mt-1.5 text-sm text-neutral-400">
+                    We'll email you a secure reset link.
+                  </p>
                 </div>
-                <h1 className="mt-4 text-xl font-semibold tracking-tight">Check your email</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  If <span className="text-foreground">{email}</span> exists, a reset link is on its
-                  way.
-                </p>
+                <EmailInput email={email} setEmail={setEmail} />
+                <div className="mt-6">
+                  <PrimaryButton
+                    disabled={!isValidEmail(email) || actionLoading}
+                    onClick={handleResetPassword}
+                    label="Send link"
+                  />
+                </div>
                 <button
                   onClick={() => setLoginStep("credentials")}
-                  className="mt-6 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  className="mt-6 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
                 >
-                  <ArrowLeft className="h-3 w-3" /> Back to login
+                  Back
                 </button>
-              </div>
-            </StepShell>
-          )}
-        </AnimatePresence>
+              </StepShell>
+            )}
+
+            {mode === "login" && loginStep === "forgot-sent" && (
+              <StepShell key="forgot-sent">
+                <div className="flex flex-col items-center py-6 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/10">
+                    <Check className="h-5 w-5 text-neutral-300" />
+                  </div>
+                  <h1 className="mt-5 text-lg font-medium text-white">Check your email</h1>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-400">
+                    If an account exists for <br />
+                    <span className="font-medium text-white">{email}</span>, a link is on its way.
+                  </p>
+                  <button
+                    onClick={() => setLoginStep("credentials")}
+                    className="mt-8 text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
+                  >
+                    Return to sign in
+                  </button>
+                </div>
+              </StepShell>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
     </div>
   );
 }
 
-/* ---------- Shared pieces ---------- */
-
 function StepShell({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 16 }}
+      initial={{ opacity: 0, x: 10 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -16 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0, x: -10 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
   );
 }
 
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="mb-4 flex items-center gap-1 text-xs text-muted-foreground transition hover:text-foreground"
-    >
-      <ArrowLeft className="h-3 w-3" /> Back
-    </button>
-  );
-}
-
 function Divider() {
   return (
-    <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-      <span className="h-px flex-1 bg-border" /> OR <span className="h-px flex-1 bg-border" />
+    <div className="my-6 flex items-center gap-4 text-xs text-neutral-600">
+      <span className="h-[1px] flex-1 bg-white/10" />
+      <span>OR</span>
+      <span className="h-[1px] flex-1 bg-white/10" />
     </div>
   );
 }
@@ -367,22 +384,20 @@ function Divider() {
 function EmailInput({
   email,
   setEmail,
-  className = "",
 }: {
   email: string;
   setEmail: (v: string) => void;
-  className?: string;
 }) {
   return (
-    <div className={className || "mt-1"}>
-      <label className="mb-1.5 block text-xs text-muted-foreground">Email</label>
+    <div>
+      <label className="mb-2 block text-sm font-medium text-neutral-300">Email address</label>
       <input
         type="email"
         autoFocus
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@company.com"
-        className="w-full rounded-lg border border-border bg-white/[0.03] px-3 py-2.5 text-sm outline-none transition focus:border-white/25 focus:bg-white/[0.05]"
+        placeholder="name@example.com"
+        className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder-neutral-500 outline-none transition focus:border-white/20 focus:bg-white/10"
       />
     </div>
   );
@@ -401,9 +416,9 @@ function PrimaryButton({
     <button
       disabled={disabled}
       onClick={onClick}
-      className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-foreground py-2.5 text-sm font-medium text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+      className="flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black transition-all hover:bg-neutral-200 focus:outline-none focus:ring-2 focus:ring-white/20 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {label} <ArrowRight className="h-4 w-4" />
+      {label}
     </button>
   );
 }
@@ -412,9 +427,10 @@ function GoogleButton({ onClick, label }: { onClick: () => void; label: string }
   return (
     <button
       onClick={onClick}
-      className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white/[0.03] py-2.5 text-sm transition hover:border-white/20 hover:bg-white/5"
+      className="flex w-full items-center justify-center gap-3 rounded-lg border border-white/10 bg-transparent px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-white/5 hover:text-white"
     >
-      <GoogleIcon /> {label}
+      <GoogleIcon />
+      {label}
     </button>
   );
 }
@@ -422,8 +438,6 @@ function GoogleButton({ onClick, label }: { onClick: () => void; label: string }
 function isValidEmail(e: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 }
-
-/* ---------- Password ---------- */
 
 function PasswordFields({
   pw,
@@ -445,52 +459,57 @@ function PasswordFields({
   const canSubmit = strength.score >= 2 && match;
 
   return (
-    <div className="mt-6 space-y-3">
-      <div className="relative">
+    <div className="space-y-4">
+      <div>
+        <label className="mb-2 block text-sm font-medium text-neutral-300">Password</label>
         <input
           type="password"
           autoFocus
           value={pw}
           onChange={(e) => setPw(e.target.value)}
-          placeholder="Password"
-          className="w-full rounded-lg border border-border bg-white/[0.03] px-3 py-2.5 text-sm outline-none focus:border-white/25 focus:bg-white/[0.05]"
+          className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-white/20 focus:bg-white/10"
         />
       </div>
-      <input
-        type="password"
-        value={confirm}
-        onChange={(e) => setConfirm(e.target.value)}
-        placeholder="Confirm password"
-        className="w-full rounded-lg border border-border bg-white/[0.03] px-3 py-2.5 text-sm outline-none focus:border-white/25 focus:bg-white/[0.05]"
-      />
 
       <div>
-        <div className="flex gap-1">
+        <label className="mb-2 block text-sm font-medium text-neutral-300">Confirm password</label>
+        <input
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          className="w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-white/20 focus:bg-white/10"
+        />
+      </div>
+
+      <div className="pt-2">
+        <div className="flex gap-1.5">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/5">
+            <div key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
               <motion.div
                 initial={false}
                 animate={{
                   width: i < strength.score ? "100%" : "0%",
                   backgroundColor: strength.color,
                 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.3 }}
                 className="h-full rounded-full"
               />
             </div>
           ))}
         </div>
-        <div className="mt-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>{pw.length === 0 ? "At least 8 characters" : strength.label}</span>
+        <div className="mt-2 flex items-center justify-between text-xs font-medium">
+          <span className="text-neutral-400">{pw.length === 0 ? "" : strength.label}</span>
           {confirm.length > 0 && (
-            <span className={match ? "text-emerald-400" : "text-rose-400"}>
-              {match ? "Passwords match" : "Passwords don't match"}
+            <span className={match ? "text-[#10b981]" : "text-red-400"}>
+              {match ? "Matches" : "Doesn't match"}
             </span>
           )}
         </div>
       </div>
 
-      <PrimaryButton disabled={!canSubmit || disabled} onClick={onSubmit} label="Create account" />
+      <div className="pt-4">
+        <PrimaryButton disabled={!canSubmit || disabled} onClick={onSubmit} label="Create account" />
+      </div>
     </div>
   );
 }
@@ -502,51 +521,32 @@ function scorePassword(pw: string): { score: number; label: string; color: strin
   if (/\d/.test(pw)) s++;
   if (/[^A-Za-z0-9]/.test(pw)) s++;
   const map = [
-    { label: "Too short", color: "#f43f5e" },
-    { label: "Weak", color: "#f97316" },
-    { label: "Fair", color: "#eab308" },
-    { label: "Strong", color: "#10b981" },
-    { label: "Excellent", color: "#10b981" },
+    { label: "Too short", color: "#f87171" }, // red-400
+    { label: "Weak", color: "#fb923c" }, // orange-400
+    { label: "Fair", color: "#fbbf24" }, // amber-400
+    { label: "Strong", color: "#34d399" }, // emerald-400
+    { label: "Excellent", color: "#10b981" }, // emerald-500
   ];
   return { score: s, ...map[s] };
 }
 
-/* ---------- Decoration ---------- */
-
-function FloatingOrbs() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <motion.div
-        className="absolute -left-32 top-1/4 h-64 w-64 rounded-full bg-electric/10 blur-3xl"
-        animate={{ y: [0, 20, 0], x: [0, 10, 0] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute -right-24 bottom-1/4 h-72 w-72 rounded-full bg-violet/10 blur-3xl"
-        animate={{ y: [0, -20, 0], x: [0, -10, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-      />
-    </div>
-  );
-}
-
 function GoogleIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24">
+    <svg width="18" height="18" viewBox="0 0 24 24" className="opacity-90">
       <path
-        fill="#4285F4"
+        fill="#ffffff"
         d="M22.5 12.3c0-.8-.1-1.4-.2-2.1H12v3.9h5.9c-.1.9-.8 2.4-2.3 3.4l-.1.1 3.3 2.5.2.1c2.1-1.9 3.3-4.8 3.3-7.9"
       />
       <path
-        fill="#34A853"
+        fill="#ffffff"
         d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-.9.6-2.2 1.1-3.8 1.1-2.9 0-5.4-1.9-6.3-4.6l-.1 0-3.4 2.6-.1.1C3.9 20.4 7.6 23 12 23"
       />
       <path
-        fill="#FBBC05"
+        fill="#ffffff"
         d="M5.7 14c-.2-.7-.4-1.4-.4-2.1s.1-1.5.3-2.1V7.2l-3.5-.1C1.4 8.7 1 10.3 1 12s.4 3.3 1.1 4.9L5.7 14"
       />
       <path
-        fill="#EB4335"
+        fill="#ffffff"
         d="M12 5.4c2.1 0 3.5.9 4.3 1.7l3.1-3C17.5 2.4 15 1 12 1 7.6 1 3.9 3.6 2.1 7.1L5.7 10c.9-2.7 3.4-4.6 6.3-4.6"
       />
     </svg>

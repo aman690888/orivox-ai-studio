@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
-import { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { User, Palette, Bell, Sparkles, CreditCard, Lock, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -16,76 +16,82 @@ export const Route = createFileRoute("/_app/settings")({
 });
 
 const tabs = [
-  { id: "account", label: "Account", icon: User },
-  { id: "appearance", label: "Appearance", icon: Palette },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "ai", label: "AI Preferences", icon: Sparkles },
-  { id: "billing", label: "Billing", icon: CreditCard },
+  { id: "account", label: "Account Details", icon: User, desc: "Manage your personal information and security." },
+  { id: "appearance", label: "Appearance", icon: Palette, desc: "Customize the look and feel of your workspace." },
+  { id: "notifications", label: "Notifications", icon: Bell, desc: "Control your email and push alerts." },
+  { id: "ai", label: "AI Preferences", icon: Sparkles, desc: "Tune how Orivox generates content." },
+  { id: "billing", label: "Billing & Plans", icon: CreditCard, desc: "Manage your subscription and usage." },
 ] as const;
 
 function Settings() {
   const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("account");
+  const activeTabDetails = tabs.find(t => t.id === tab);
 
   return (
-    <div className="mx-auto flex max-w-5xl gap-8 px-6 py-10 md:py-14">
-      <aside className="w-52 shrink-0">
-        <h1 className="mb-5 text-lg font-semibold tracking-tight">Settings</h1>
-        <nav className="flex flex-col gap-0.5">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`relative flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${
-                tab === t.id ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {tab === t.id && (
-                <motion.span
-                  layoutId="settings-tab"
-                  className="absolute inset-0 rounded-lg bg-white/[0.06]"
-                />
-              )}
-              <t.icon className="relative h-4 w-4" />
-              <span className="relative">{t.label}</span>
-            </button>
-          ))}
-        </nav>
-      </aside>
+    <div className="h-full w-full overflow-y-auto px-6 py-12 md:px-12 md:py-16 bg-background">
+      <div className="mx-auto max-w-5xl">
+        <header className="mb-12 space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
+          <p className="text-sm text-muted-foreground">Manage your account settings and preferences.</p>
+        </header>
 
-      <div className="flex-1">
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass rounded-2xl p-6"
-        >
-          {tab === "account" && <Account />}
-          {tab === "appearance" && <Appearance />}
-          {tab === "notifications" && <Notifications />}
-          {tab === "ai" && <AIPrefs />}
-          {tab === "billing" && <Billing />}
-        </motion.div>
+        <div className="flex flex-col lg:flex-row gap-12">
+          <aside className="w-full lg:w-[260px] shrink-0">
+            <nav className="flex flex-col space-y-1">
+              {tabs.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`group relative flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-300 ${
+                    tab === t.id ? "bg-white/[0.04] text-foreground shadow-sm" : "text-muted-foreground hover:bg-white/[0.02] hover:text-foreground"
+                  }`}
+                >
+                  {tab === t.id && (
+                    <motion.div
+                      layoutId="settings-tab-indicator"
+                      className="absolute left-0 top-1/4 bottom-1/4 w-[3px] rounded-r-full bg-electric shadow-[0_0_8px_var(--electric)]"
+                    />
+                  )}
+                  <t.icon className={`h-[18px] w-[18px] transition-colors ${tab === t.id ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"}`} />
+                  <span className="text-sm font-medium">{t.label}</span>
+                </button>
+              ))}
+            </nav>
+          </aside>
+
+          <main className="flex-1 min-w-0">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <div className="border-b border-white/5 pb-6">
+                  <h2 className="text-xl font-semibold text-foreground">{activeTabDetails?.label}</h2>
+                  <p className="mt-1.5 text-sm text-muted-foreground">{activeTabDetails?.desc}</p>
+                </div>
+                
+                {tab === "account" && <Account />}
+                {tab === "appearance" && <Appearance />}
+                {tab === "notifications" && <Notifications />}
+                {tab === "ai" && <AIPrefs />}
+                {tab === "billing" && <Billing />}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
       </div>
     </div>
   );
 }
 
-function Section({
-  title,
-  desc,
-  children,
-}: {
-  title: string;
-  desc?: string;
-  children: React.ReactNode;
-}) {
+function SectionCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-medium">{title}</h2>
-        {desc && <p className="mt-1 text-sm text-muted-foreground">{desc}</p>}
-      </div>
-      <div className="space-y-4">{children}</div>
+    <div className="rounded-2xl border border-white/10 bg-white/[0.01] shadow-sm overflow-hidden">
+      {children}
     </div>
   );
 }
@@ -94,18 +100,22 @@ function Row({
   label,
   hint,
   children,
+  border = true
 }: {
   label: string;
   hint?: string;
   children: React.ReactNode;
+  border?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-t border-border pt-4 first:border-0 first:pt-0">
-      <div>
-        <div className="text-sm">{label}</div>
-        {hint && <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div>}
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 ${border ? "border-b border-white/5" : ""}`}>
+      <div className="flex-1 pr-8">
+        <div className="text-sm font-semibold text-foreground">{label}</div>
+        {hint && <div className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{hint}</div>}
       </div>
-      {children}
+      <div className="shrink-0">
+        {children}
+      </div>
     </div>
   );
 }
@@ -124,17 +134,17 @@ function Field({
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       readOnly={readOnly}
-      className={`w-64 rounded-lg border border-border px-3 py-2 text-sm outline-none ${
+      className={`w-full sm:w-72 rounded-xl border px-4 py-2.5 text-sm outline-none transition-all ${
         readOnly
-          ? "cursor-default bg-white/[0.01] text-muted-foreground"
-          : "bg-white/[0.03] focus:border-white/25"
+          ? "border-white/5 bg-white/[0.02] text-muted-foreground cursor-not-allowed"
+          : "border-white/10 bg-white/[0.04] text-foreground focus:border-white/30 focus:bg-white/[0.06] focus:ring-4 focus:ring-white/5"
       }`}
     />
   );
 }
 
 function Account() {
-  const { signOut, session, user } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
 
   const originalName = user?.user_metadata?.full_name ?? "";
@@ -153,7 +163,6 @@ function Account() {
       ? "GitHub"
       : "Email";
 
-  // Block navigation if there are unsaved changes
   useBlocker({
     shouldBlockFn: () => {
       if (isDirty) {
@@ -183,7 +192,6 @@ function Account() {
         console.warn("Could not update profiles table, but auth user updated.", e);
       }
       
-      // refresh local session hack:
       await supabase.auth.refreshSession();
       toast.success("Profile updated successfully");
     } catch (err) {
@@ -204,71 +212,63 @@ function Account() {
   };
 
   return (
-    <Section title="Account" desc="Manage your identity on Orivox.">
-      <Row label="Avatar">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16 bg-muted">
-            <AvatarImage src={avatarUrl} alt={name || "User Avatar"} />
-            <AvatarFallback>{getInitials(name)}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col items-start gap-1">
-            {isGoogle && (
-              <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                Managed by Google
-              </span>
-            )}
-            {!isGoogle && (
-              <span className="text-xs text-muted-foreground">
-                Avatar is synced with your provider.
-              </span>
-            )}
+    <div className="space-y-8">
+      <SectionCard>
+        <Row label="Profile Picture" hint={isGoogle ? "Managed by Google." : "Synced with your provider."}>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 bg-white/5 border border-white/10 ring-4 ring-white/[0.02]">
+              <AvatarImage src={avatarUrl} alt={name || "User Avatar"} />
+              <AvatarFallback className="bg-transparent text-lg font-medium">{getInitials(name)}</AvatarFallback>
+            </Avatar>
           </div>
+        </Row>
+        <Row label="Full Name" hint="Used for communication and team presence.">
+          <Field value={name} onChange={setName} />
+        </Row>
+        <Row label="Email Address" hint="Your email address cannot be changed here." border={false}>
+          <div className="relative w-full sm:w-72">
+            <Field value={email} readOnly />
+            <Lock className="absolute right-3.5 top-3 h-4 w-4 text-muted-foreground/50" />
+          </div>
+        </Row>
+      </SectionCard>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-muted-foreground">Connected via</span>
+          <span className="rounded-md bg-white/[0.06] border border-white/10 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm">
+            {provider}
+          </span>
         </div>
-      </Row>
-
-      <Row label="Name">
-        <Field value={name} onChange={setName} />
-      </Row>
-
-      <Row label="Email" hint="Your email address cannot be changed here.">
-        <div className="relative w-64">
-          <Field value={email} readOnly />
-          <Lock className="absolute right-3 top-2.5 h-4 w-4 text-muted-foreground/50" />
-        </div>
-      </Row>
-
-      <Row label="Provider">
-        <span className="rounded bg-white/10 px-2.5 py-1 text-xs text-foreground">
-          {provider}
-        </span>
-      </Row>
-
-      {isDirty && (
-        <div className="mt-6 flex justify-end border-t border-border pt-4">
+        {isDirty && (
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex h-9 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-black transition hover:bg-white/90 disabled:opacity-50"
+            className="flex h-10 items-center justify-center gap-2 rounded-xl bg-foreground px-5 text-sm font-medium text-background transition-all hover:bg-white/90 disabled:opacity-50 active:scale-95 shadow-lg"
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
-      <Row label="Sign out" hint="Log out of your current session">
-        <button
-          onClick={handleSignOut}
-          className="rounded-lg border border-border px-3 py-1.5 text-xs transition hover:bg-white/5"
-        >
-          Sign out
-        </button>
-      </Row>
-      <Row label="Delete account" hint="Permanent and cannot be undone">
-        <button className="rounded-lg border border-destructive/40 px-3 py-1.5 text-xs text-destructive transition hover:bg-destructive/10">
-          Delete
-        </button>
-      </Row>
-    </Section>
+      <div className="pt-8 border-t border-white/5">
+        <SectionCard>
+          <Row label="Sign out" hint="Log out of your current session on this device.">
+            <button
+              onClick={handleSignOut}
+              className="rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2 text-sm font-medium transition hover:bg-white/[0.05]"
+            >
+              Sign out
+            </button>
+          </Row>
+          <Row label="Delete account" hint="Permanent action. All data will be erased." border={false}>
+            <button className="rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-2 text-sm font-medium text-rose-500 transition hover:bg-rose-500/10 hover:border-rose-500/50">
+              Delete Account
+            </button>
+          </Row>
+        </SectionCard>
+      </div>
+    </div>
   );
 }
 
@@ -276,98 +276,104 @@ function Appearance() {
   const { theme, setTheme, accent, setAccent } = useTheme();
 
   return (
-    <Section title="Appearance" desc="Personalize how Orivox looks.">
-      <Row label="Theme" hint="Dark mode is optimized for long sessions.">
-        <div className="flex rounded-lg border border-border p-0.5 text-xs">
-          {(["dark", "light", "system"] as const).map((t) => (
+    <div className="space-y-8">
+      <SectionCard>
+        <Row label="Interface Theme" hint="Select or customize your UI theme.">
+          <div className="flex rounded-xl border border-white/10 bg-white/[0.02] p-1 shadow-inner">
+            {(["dark", "light", "system"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTheme(t)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium capitalize transition-all ${
+                  theme === t ? "bg-white/[0.08] text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.02]"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </Row>
+        <Row label="Accent Color" hint="Used in highlights, focus rings, and active states." border={false}>
+          <div className="flex gap-4">
             <button
-              key={t}
-              onClick={() => setTheme(t)}
-              className={`rounded-md px-3 py-1.5 capitalize transition-colors ${
-                theme === t ? "bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground"
+              onClick={() => setAccent("blue")}
+              className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
+                accent === "blue" ? "ring-2 ring-white/30 scale-110 shadow-[0_0_15px_oklch(0.68_0.19_255)]" : "ring-1 ring-white/10 opacity-70 hover:opacity-100 hover:scale-105"
               }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </Row>
-      <Row label="Accent" hint="Used in prompts, focus rings, and highlights.">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setAccent("blue")}
-            className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
-              accent === "blue" ? "glow-electric ring-2 ring-white/20" : "ring-1 ring-white/10 opacity-70 hover:opacity-100"
-            }`}
-            style={{ backgroundColor: "oklch(0.68 0.19 255)" }}
-            aria-label="Blue"
-          />
-          <button
-            onClick={() => setAccent("purple")}
-            className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
-              accent === "purple" ? "glow-electric ring-2 ring-white/20" : "ring-1 ring-white/10 opacity-70 hover:opacity-100"
-            }`}
-            style={{ backgroundColor: "oklch(0.72 0.17 300)" }}
-            aria-label="Purple"
-          />
-          <button
-            onClick={() => setAccent("green")}
-            className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
-              accent === "green" ? "glow-electric ring-2 ring-white/20" : "ring-1 ring-white/10 opacity-70 hover:opacity-100"
-            }`}
-            style={{ backgroundColor: "oklch(0.69 0.15 160)" }}
-            aria-label="Green"
-          />
-        </div>
-      </Row>
-    </Section>
+              style={{ backgroundColor: "oklch(0.68 0.19 255)" }}
+              aria-label="Blue"
+            />
+            <button
+              onClick={() => setAccent("purple")}
+              className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
+                accent === "purple" ? "ring-2 ring-white/30 scale-110 shadow-[0_0_15px_oklch(0.72_0.17_300)]" : "ring-1 ring-white/10 opacity-70 hover:opacity-100 hover:scale-105"
+              }`}
+              style={{ backgroundColor: "oklch(0.72 0.17 300)" }}
+              aria-label="Purple"
+            />
+            <button
+              onClick={() => setAccent("green")}
+              className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
+                accent === "green" ? "ring-2 ring-white/30 scale-110 shadow-[0_0_15px_oklch(0.69_0.15_160)]" : "ring-1 ring-white/10 opacity-70 hover:opacity-100 hover:scale-105"
+              }`}
+              style={{ backgroundColor: "oklch(0.69 0.15 160)" }}
+              aria-label="Green"
+            />
+          </div>
+        </Row>
+      </SectionCard>
+    </div>
   );
 }
 
 function Notifications() {
   return (
-    <Section title="Notifications">
-      <Row label="Generation complete">
-        <Switch defaultChecked />
-      </Row>
-      <Row label="Weekly summary">
-        <Switch />
-      </Row>
-      <Row label="Product updates">
-        <Switch defaultChecked />
-      </Row>
-    </Section>
+    <div className="space-y-8">
+      <SectionCard>
+        <Row label="Generation Complete" hint="Get notified when AI finishes long tasks.">
+          <Switch defaultChecked />
+        </Row>
+        <Row label="Weekly Summary" hint="Receive a digest of your activity and usage.">
+          <Switch />
+        </Row>
+        <Row label="Product Updates" hint="Hear about new features and improvements." border={false}>
+          <Switch defaultChecked />
+        </Row>
+      </SectionCard>
+    </div>
   );
 }
 
 function AIPrefs() {
   return (
-    <Section title="AI Preferences" desc="Tune how Orivox writes and designs.">
-      <Row label="Default tone">
-        <select className="rounded-lg border border-border bg-white/[0.03] px-3 py-2 text-sm">
-          <option>Executive</option>
-          <option>Conversational</option>
-          <option>Academic</option>
-        </select>
-      </Row>
-      <Row label="Default length">
-        <select className="rounded-lg border border-border bg-white/[0.03] px-3 py-2 text-sm">
-          <option>10 slides</option>
-          <option>15 slides</option>
-          <option>20+ slides</option>
-        </select>
-      </Row>
-      <Row label="Always include citations">
-        <Switch defaultChecked />
-      </Row>
-    </Section>
+    <div className="space-y-8">
+      <SectionCard>
+        <Row label="Default Tone" hint="The primary voice used in generated text.">
+          <select className="w-full sm:w-48 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm outline-none focus:border-white/30 focus:ring-4 focus:ring-white/5 transition-all text-foreground cursor-pointer appearance-none">
+            <option className="bg-[#0a0a0a]">Executive</option>
+            <option className="bg-[#0a0a0a]">Conversational</option>
+            <option className="bg-[#0a0a0a]">Academic</option>
+          </select>
+        </Row>
+        <Row label="Default Length" hint="Preferred presentation length.">
+          <select className="w-full sm:w-48 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm outline-none focus:border-white/30 focus:ring-4 focus:ring-white/5 transition-all text-foreground cursor-pointer appearance-none">
+            <option className="bg-[#0a0a0a]">10 slides</option>
+            <option className="bg-[#0a0a0a]">15 slides</option>
+            <option className="bg-[#0a0a0a]">20+ slides</option>
+          </select>
+        </Row>
+        <Row label="Always Include Citations" hint="Automatically append sources when factual claims are made." border={false}>
+          <Switch defaultChecked />
+        </Row>
+      </SectionCard>
+    </div>
   );
 }
 
 function Billing() {
   return (
-    <Section title="Billing" desc="Free plan · usage-based limits apply.">
-      <div className="grid gap-3 md:grid-cols-3">
+    <div className="space-y-8">
+      <div className="grid gap-6 md:grid-cols-3">
         {[
           { name: "Free", price: "$0", features: ["3 decks / month", "PDF export"], active: true },
           {
@@ -379,21 +385,32 @@ function Billing() {
         ].map((p) => (
           <div
             key={p.name}
-            className={`rounded-xl border p-4 ${p.active ? "border-electric/50 bg-electric/5" : "border-border"}`}
+            className={`relative rounded-3xl border p-6 transition-all duration-300 ${p.active ? "border-electric/50 bg-electric/5 shadow-[0_0_30px_rgba(var(--electric-rgb),0.1)] scale-[1.02]" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}
           >
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">{p.name}</div>
-            <div className="mt-2 text-2xl font-semibold">
-              {p.price}
-              <span className="text-xs text-muted-foreground">/mo</span>
+            {p.active && (
+              <div className="absolute top-0 right-6 -translate-y-1/2 rounded-full bg-electric px-3 py-0.5 text-[10px] font-bold uppercase tracking-widest text-background">
+                Current Plan
+              </div>
+            )}
+            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{p.name}</div>
+            <div className="mt-4 flex items-baseline gap-1">
+              <span className="text-4xl font-bold text-foreground">{p.price}</span>
+              <span className="text-sm font-medium text-muted-foreground">/mo</span>
             </div>
-            <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+            <ul className="mt-6 space-y-3">
               {p.features.map((f) => (
-                <li key={f}>· {f}</li>
+                <li key={f} className="flex items-center gap-3 text-sm text-foreground/80">
+                  <div className={`h-1.5 w-1.5 rounded-full ${p.active ? "bg-electric" : "bg-white/20"}`} />
+                  {f}
+                </li>
               ))}
             </ul>
+            <button className={`mt-8 w-full rounded-xl py-2.5 text-sm font-semibold transition-all ${p.active ? "bg-white/10 text-foreground hover:bg-white/20" : "bg-white text-black hover:bg-white/90"}`}>
+               {p.active ? "Manage Plan" : "Upgrade"}
+            </button>
           </div>
         ))}
       </div>
-    </Section>
+    </div>
   );
 }
