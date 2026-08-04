@@ -247,7 +247,7 @@ function Export() {
   const { id } = Route.useParams();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
+    if (!loading && !user) navigate({ to: "/auth", search: { reset: false } });
   }, [user, loading, navigate]);
 
   const { data: dbPresentation } = useQuery({

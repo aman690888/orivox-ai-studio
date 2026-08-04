@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { CommandPalette, useCommandPalette } from "@/components/command/CommandPalette";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Home, Settings, Layers, Search, LogOut } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
@@ -23,7 +23,7 @@ function AppLayout() {
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { reset: false } });
     }
   }, [user, loading, navigate]);
 
@@ -65,9 +65,23 @@ function AppLayout() {
     >
       <Sidebar />
       <main className="flex-1 relative overflow-y-auto z-10">
-        <Outlet />
+        <Suspense fallback={<AppSkeleton />}>
+          <Outlet />
+        </Suspense>
       </main>
       <CommandPalette />
+    </div>
+  );
+}
+
+function AppSkeleton() {
+  return (
+    <div className="flex-1 w-full h-full p-8">
+      <div className="animate-pulse flex flex-col gap-4 max-w-4xl mx-auto">
+        <div className="h-10 bg-[#e5e0d8] rounded-md w-1/3 mb-8"></div>
+        <div className="h-64 bg-[#e5e0d8] rounded-md w-full border-[3px] border-dashed border-[#2d2d2d]"></div>
+        <div className="h-32 bg-[#e5e0d8] rounded-md w-full border-[3px] border-dashed border-[#2d2d2d]"></div>
+      </div>
     </div>
   );
 }
@@ -90,7 +104,7 @@ function Sidebar() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate({ to: "/auth" });
+    navigate({ to: "/auth", search: { reset: false } });
   };
 
   return (

@@ -30,6 +30,7 @@ function Presentations() {
     queryKey: ["presentations", user?.id],
     queryFn: () => getPresentations(user!.id),
     enabled: !!user?.id,
+    staleTime: 30_000,
   });
 
   const filteredPresentations = useMemo(() => {

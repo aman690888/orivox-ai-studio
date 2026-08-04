@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import type { Slide } from "@/lib/mock";
 import { Quote } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 function EditableText({
   value,
@@ -79,7 +79,7 @@ function EditableText({
   );
 }
 
-export function SlideCanvas({
+export const SlideCanvas = React.memo(function SlideCanvas({
   slide,
   onSelect,
   selected,
@@ -220,7 +220,7 @@ export function SlideCanvas({
       )}
     </div>
   );
-}
+});
 
 function Selectable({
   id,

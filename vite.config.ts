@@ -12,4 +12,19 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          // Code-split heavy libraries into separate cacheable chunks
+          manualChunks(id: string) {
+            if (id.includes("recharts") || id.includes("d3-")) return "charts";
+            if (id.includes("@radix-ui")) return "radix";
+            if (id.includes("framer-motion")) return "motion";
+            if (id.includes("lucide-react")) return "icons";
+          },
+        },
+      },
+    },
+  },
 });

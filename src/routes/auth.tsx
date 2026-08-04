@@ -14,9 +14,9 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Sign in or create your Orivox account." },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => {
+  validateSearch: (search: Record<string, unknown>): { reset?: boolean } => {
     return {
-      reset: search.reset === "true",
+      reset: search.reset === "true" || search.reset === true,
     };
   },
   component: Auth,

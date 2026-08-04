@@ -259,7 +259,7 @@ function Account() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { reset: false } });
     } catch {
       /**/
     }

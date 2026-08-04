@@ -202,13 +202,13 @@ function Landing() {
           </nav>
           <div className="flex items-center gap-3">
             <Link
-              to="/auth"
+              to="/auth" search={{ reset: false }}
               className="hidden md:block text-sm text-[#2d2d2d] hover:text-[#ff4d4d] transition-colors"
               style={{ fontFamily: "Patrick Hand, cursive" }}
             >
               Log in
             </Link>
-            <Link to="/auth">
+            <Link to="/auth" search={{ reset: false }}>
               <WobblyBtn>
                 Get Started <ArrowRight size={18} strokeWidth={2.5} />
               </WobblyBtn>
@@ -271,7 +271,7 @@ function Landing() {
               </p>
 
               <div className="flex flex-wrap gap-4 items-center mt-2">
-                <Link to="/auth">
+                <Link to="/auth" search={{ reset: false }}>
                   <WobblyBtn>
                     Try it free <ArrowRight size={18} strokeWidth={2.5} />
                   </WobblyBtn>
@@ -645,7 +645,7 @@ function Landing() {
             </p>
 
             <div className="flex flex-wrap gap-4 justify-center">
-              <Link to="/auth">
+              <Link to="/auth" search={{ reset: false }}>
                 <div
                   className="inline-flex items-center gap-2 px-8 py-4 text-xl font-bold bg-[#ff4d4d] text-white border-[3px] border-[#fdfbf7] shadow-[4px_4px_0px_0px_#fdfbf7] hover:shadow-[2px_2px_0px_0px_#fdfbf7] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-100 cursor-pointer"
                   style={{ borderRadius: R.wobblyBtn, fontFamily: "Kalam, cursive" }}
@@ -653,7 +653,7 @@ function Landing() {
                   Start for free <ArrowRight size={20} strokeWidth={2.5} />
                 </div>
               </Link>
-              <Link to="/auth">
+              <Link to="/auth" search={{ reset: false }}>
                 <div
                   className="inline-flex items-center gap-2 px-8 py-4 text-xl font-bold bg-transparent text-[#fdfbf7] border-[3px] border-[#fdfbf7] shadow-[4px_4px_0px_0px_rgba(253,251,247,0.3)] hover:shadow-[2px_2px_0px_0px_rgba(253,251,247,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100 cursor-pointer"
                   style={{ borderRadius: R.wobblyBtn, fontFamily: "Kalam, cursive" }}

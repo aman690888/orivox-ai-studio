@@ -161,3 +161,7 @@
   background: rgba(200, 200, 200, 0.5);
   border: 1px dashed rgba(150,150,150,0.4);
 }
+
+.content-auto {
+  content-visibility: auto;
+}

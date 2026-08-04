@@ -156,6 +156,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
     ],
   }),
   shellComponent: RootShell,
@@ -170,6 +171,11 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" className="dark">
       <head>
         <HeadContent />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fqsevharcyjdwbtrlltz.supabase.co" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -228,7 +234,7 @@ function DynamicFontLoader() {
     .map((f) => `family=${f.replace(/ /g, "+")}:wght@300;400;500;600;700;800`)
     .join("&");
   return (
-    <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${familyParam}&display=swap`} />
+    <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${familyParam}&display=swap`} fetchPriority="high" />
   );
 }
 

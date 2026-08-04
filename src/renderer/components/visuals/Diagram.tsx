@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import mermaid from "mermaid";
+
 import { EditableText } from "../../EditableText";
 import { BaseComponentProps } from "../../RendererRegistry";
 
@@ -13,24 +13,27 @@ export const Diagram: React.FC<BaseComponentProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      flowchart: { curve: "basis" },
-      themeVariables: { padding: 20 as any },
-    });
-
     if (containerRef.current) {
       const mermaidString = data.mermaid_string || "graph TD;\n  Start --> Execution;";
       // generate a unique id for the mermaid container to avoid conflicts
       const id = `mermaid-${componentId || Math.random().toString(36).substring(7)}`;
-      mermaid
-        .render(id, mermaidString)
-        .then((result) => {
+      
+      (async () => {
+        try {
+          const mermaid = (await import("mermaid")).default;
+          mermaid.initialize({
+            startOnLoad: false,
+            flowchart: { curve: "basis" },
+            themeVariables: { padding: 20 as any },
+          });
+          const result = await mermaid.render(id, mermaidString);
           if (containerRef.current) {
             containerRef.current.innerHTML = result.svg;
           }
-        })
-        .catch((e) => console.error(e));
+        } catch (e) {
+          console.error(e);
+        }
+      })();
     }
   }, [data.mermaid_string, componentId]);
 

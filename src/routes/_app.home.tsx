@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ArrowRight, Play, Presentation as PresIcon, Zap, Clock, BarChart2, Sparkles, BookOpen } from "lucide-react";
 import { PromptBox } from "@/components/prompt/PromptBox";
 import { suggestions, categories } from "@/lib/mock";
@@ -30,6 +30,7 @@ function Home() {
     queryKey: ["presentations", user?.id],
     queryFn: () => getPresentations(user!.id),
     enabled: !!user?.id,
+    staleTime: 30_000,
   });
 
   const go = (p: string) =>
@@ -42,12 +43,12 @@ function Home() {
   const recents = presentations.length > 1 ? presentations.slice(1, 5) : [];
 
   // Real stats derived from actual data
-  const totalDecks = presentations.length;
-  const recentActivity = presentations.slice(0, 5).map((p) => ({
+  const totalDecks = useMemo(() => presentations.length, [presentations.length]);
+  const recentActivity = useMemo(() => presentations.slice(0, 5).map((p) => ({
     text: p.title,
     time: p.updated, // already formatted by timeAgo() in mapToUi
     icon: "📄",
-  }));
+  })), [presentations]);
 
   return (
     <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">

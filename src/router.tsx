@@ -6,10 +6,11 @@ export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        retry: 2,
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 60_000,
+        gcTime: 5 * 60_000,
+        retry: 1,
         refetchOnWindowFocus: false,
+        refetchOnReconnect: "always",
       },
       mutations: {
         retry: 1,
@@ -21,8 +22,10 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    defaultPreload: "intent",        // preload on hover
     defaultPreloadStaleTime: 0,
-    defaultPendingMinMs: 150,
+    defaultPendingMinMs: 100,        // show pending faster
+    defaultPendingMs: 500,           // avoid flash for fast loads
   });
 
   return router;

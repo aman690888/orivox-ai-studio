@@ -29,7 +29,7 @@ function UnauthorizedPage() {
         </p>
         <div className="flex gap-3">
           <Link
-            to="/auth"
+            to="/auth" search={{ reset: false }}
             className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:text-[#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >

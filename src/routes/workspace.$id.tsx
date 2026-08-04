@@ -146,12 +146,14 @@ function Workspace() {
     queryKey: ["presentation", id],
     queryFn: () => getPresentation(id),
     enabled: id !== "new" && !!user?.id,
+    staleTime: 30_000,
   });
 
   const { data: dbSlides, isLoading: isSlidesLoading } = useQuery({
     queryKey: ["slides", id],
     queryFn: () => getSlides(id),
     enabled: id !== "new" && !!user?.id,
+    staleTime: 30_000,
   });
 
   const {
@@ -403,13 +405,13 @@ function Workspace() {
     );
   }, [progress.phase, progress.imagePct, progress.chartPct, progress.diagramPct, renderSlidesList]);
 
-  const handleSlideChange = (updatedFields: Partial<Slide>) => {
+  const handleSlideChange = useCallback((updatedFields: Partial<Slide>) => {
     const updatedSlides = renderSlidesList.map((s, index) =>
       index === activeSlide ? { ...s, ...updatedFields } : s,
     );
     setSlides(updatedSlides);
     if (id !== "new") sync({ title, slides: updatedSlides });
-  };
+  }, [renderSlidesList, activeSlide, setSlides, id, sync, title]);
 
   const send = (text: string) => {
     if (!text.trim()) return;
@@ -431,10 +433,10 @@ function Workspace() {
     }, 600);
   };
 
-  const handleTitleChange = (newTitle: string) => {
+  const handleTitleChange = useCallback((newTitle: string) => {
     setTitle(newTitle);
     if (id !== "new") sync({ title: newTitle, slides: renderSlidesList });
-  };
+  }, [id, sync, renderSlidesList]);
 
   const visibleSlides = renderSlidesList.slice(0, generatedCount);
 
