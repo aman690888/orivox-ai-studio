@@ -778,12 +778,23 @@ function Workspace() {
                             style={{ borderRadius: "4px 16px 4px 16px / 16px 4px 16px 4px" }}
                           >
                             {shown ? (
-                              <div className="flex h-full flex-col items-center justify-center p-2">
+                              /* Real scaled slide preview — 960px canvas scaled to fit 144px wide thumbnail */
+                              <div
+                                className="absolute inset-0 overflow-hidden pointer-events-none bg-white"
+                                style={{ borderRadius: "inherit" }}
+                              >
                                 <div
-                                  className="text-[9px] leading-snug text-[#2d2d2d]/70 text-center line-clamp-3"
-                                  style={{ fontFamily: "Patrick Hand, cursive" }}
+                                  style={{
+                                    width: "960px",
+                                    height: "540px",
+                                    transform: "scale(0.15)",
+                                    transformOrigin: "top left",
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                  }}
                                 >
-                                  {s.title}
+                                  <SlideCanvas slide={s} onSelect={() => {}} selected={null} />
                                 </div>
                               </div>
                             ) : (

@@ -227,22 +227,24 @@ function Viewer() {
               }`}
               style={{ borderRadius: "4px 16px 4px 16px / 16px 4px 16px 4px" }}
             >
-              {/* Thumbnail mockup */}
+              {/* Real scaled-down slide preview */}
+              {/* Outer: clips to 16:9, inner: renders at 960px then scales down */}
               <div
-                className="w-full bg-[#fdfbf7] p-2 flex flex-col gap-1.5"
-                style={{ aspectRatio: "16/9" }}
+                className="w-full overflow-hidden bg-white pointer-events-none"
+                style={{ aspectRatio: "16/9", position: "relative" }}
               >
                 <div
-                  className="h-2 bg-[#2d2d2d]/20 w-3/4"
-                  style={{ borderRadius: "2px" }}
-                />
-                <div
-                  className="h-1.5 bg-[#2d2d2d]/10 w-1/2"
-                  style={{ borderRadius: "2px" }}
-                />
-                <div className="flex-1 flex gap-1 mt-0.5">
-                  <div className="flex-1 bg-[#2d2d2d]/10" style={{ borderRadius: "2px" }} />
-                  <div className="flex-1 bg-[#2d2d2d]/10" style={{ borderRadius: "2px" }} />
+                  style={{
+                    width: "960px",
+                    height: "540px",
+                    transform: "scale(0.178)",
+                    transformOrigin: "top left",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                  }}
+                >
+                  <SlideCanvas slide={s} onSelect={() => {}} selected={null} />
                 </div>
               </div>
               {/* Title row */}
