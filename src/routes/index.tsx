@@ -168,8 +168,18 @@ function Landing() {
 
         {/* FAQ */}
         <section id="faq" className="grid grid-cols-1 md:grid-cols-12 border-b border-black divide-y md:divide-y-0 md:divide-x divide-black">
-            <div className="md:col-span-4 p-8 bg-black text-[#F9F9F7] flex flex-col justify-center">
-                <h2 className="font-serif text-5xl leading-none">Frequently Asked Questions</h2>
+            <div className="md:col-span-4 p-10 md:p-12 bg-[#090909] flex flex-col justify-center relative overflow-hidden">
+                {/* Subtle radial gradient for depth */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_50%)] pointer-events-none"></div>
+                
+                <div className="relative z-10">
+                    <h2 className="font-serif text-5xl md:text-6xl leading-[1.1] text-[#FAFAFA] tracking-tight mb-6 text-balance">
+                        Frequently Asked Questions
+                    </h2>
+                    <p className="font-mono text-sm uppercase tracking-widest text-neutral-400">
+                        Everything you need to know about Orivox.
+                    </p>
+                </div>
             </div>
             <div className="md:col-span-8 p-8">
                 <Accordion type="single" collapsible className="w-full border-black">
