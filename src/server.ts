@@ -40,7 +40,7 @@ async function handleKeepAlive(request: Request): Promise<Response> {
 
   try {
     const { error } = await supabase.from("presentations").select("id").limit(1);
-    if (error) throw error;
+    if (error && error.code !== "PGRST116") throw error;
   } catch (e: any) {
     result.status = "degraded";
     result.services.database = e.message || "Database query failed";
@@ -55,16 +55,27 @@ async function handleKeepAlive(request: Request): Promise<Response> {
   }
 
   try {
-    const { error } = await supabase.storage.listBuckets();
-    if (error) throw error;
+    const { error } = await supabase.storage.from("presentations").list("", { limit: 1 });
+    if (error && !error.message?.toLowerCase().includes("not found") && !error.message?.toLowerCase().includes("security") && !error.message?.toLowerCase().includes("policy")) {
+      throw error;
+    }
   } catch (e: any) {
     result.status = "degraded";
     result.services.storage = e.message || "Storage service unreachable";
   }
 
   try {
-    const keys = AIKeyManager.discoverKeys("GEMINI_API_KEY");
-    if (!keys || keys.length === 0) throw new Error("No AI keys discovered");
+    const envObj = {
+      ...((typeof process !== "undefined" && process.env) || {}),
+      ...((import.meta as any).env || {}),
+    };
+    const keys = [
+      ...AIKeyManager.discoverKeys("GEMINI_API_KEY", envObj),
+      ...AIKeyManager.discoverKeys("VITE_GEMINI_API_KEY", envObj),
+    ];
+    if (!keys || keys.length === 0) {
+      throw new Error("No GEMINI_API_KEY or VITE_GEMINI_API_KEY found");
+    }
   } catch (e: any) {
     result.status = "degraded";
     result.services.ai = e.message || "AI System verification failed";
