@@ -293,7 +293,7 @@ function Workspace() {
   }, [id, user, seededPrompt, prompt, navigate]);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
+    if (!loading && !user) navigate({ to: "/auth", search: { reset: false } });
   }, [user, loading, navigate]);
 
   const nextIdRef = useRef(1);
@@ -597,7 +597,7 @@ function Workspace() {
 
         {/* Right: generating pill + chat toggle + present */}
         <div className="flex items-center gap-2">
-          {active && progress.status !== "ready" && progress.status !== "success" && progress.status !== "idle" && (
+          {active && progress.status !== "success" && progress.status !== "idle" && (
             <AIStatusBar 
               status={progress.status}
               phase={progress.phase}
