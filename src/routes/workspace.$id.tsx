@@ -158,15 +158,15 @@ function Workspace() {
     redo,
     canUndo,
     canRedo,
-  } = useEditorHistory([]);
+  } = useEditorHistory(dbSlides || []);
 
-  const setSlides = (newSlides: Slide[] | ((prev: Slide[]) => Slide[])) => {
-    if (typeof newSlides === "function") {
-      setSlidesHistory(newSlides(slides));
-    } else {
-      setSlidesHistory(newSlides);
-    }
-  };
+  const setSlides = useCallback((newSlides: Slide[] | ((prev: Slide[]) => Slide[])) => {
+    setSlidesHistory((prev) => {
+      const result = typeof newSlides === "function" ? newSlides(prev) : newSlides;
+      return result;
+    });
+  }, [setSlidesHistory]);
+  
   const [title, setTitle] = useState("New presentation");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);

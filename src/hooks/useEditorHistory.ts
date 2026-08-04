@@ -1,33 +1,52 @@
 import { useState, useCallback, useEffect } from "react";
 import type { Slide } from "@/lib/mock";
 
+interface HistoryState {
+  history: Slide[][];
+  currentIndex: number;
+}
+
 export function useEditorHistory(initialState: Slide[]) {
-  const [history, setHistory] = useState<Slide[][]>([initialState]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [{ history, currentIndex }, setState] = useState<HistoryState>({
+    history: [initialState],
+    currentIndex: 0,
+  });
 
   // Sync initial state if it arrives later
   useEffect(() => {
-    if (history.length === 1 && history[0].length === 0 && initialState.length > 0) {
-      setHistory([initialState]);
-      setCurrentIndex(0);
-    }
-  }, [initialState, history]);
-
-  const pushState = useCallback((newState: Slide[]) => {
-    setHistory((prev) => {
-      const newHistory = prev.slice(0, currentIndex + 1);
-      return [...newHistory, newState];
+    setState((prev) => {
+      if (prev.history.length === 1 && prev.history[0].length === 0 && initialState.length > 0) {
+        return { history: [initialState], currentIndex: 0 };
+      }
+      return prev;
     });
-    setCurrentIndex((prev) => prev + 1);
-  }, [currentIndex]);
+  }, [initialState]);
+
+  const pushState = useCallback((newState: Slide[] | ((prev: Slide[]) => Slide[])) => {
+    setState((prev) => {
+      const currentSlides = prev.history[prev.currentIndex];
+      const resolvedState = typeof newState === "function" ? newState(currentSlides) : newState;
+      const newHistory = prev.history.slice(0, prev.currentIndex + 1);
+      return {
+        history: [...newHistory, resolvedState],
+        currentIndex: prev.currentIndex + 1,
+      };
+    });
+  }, []);
 
   const undo = useCallback(() => {
-    setCurrentIndex((prev) => Math.max(0, prev - 1));
+    setState((prev) => ({
+      ...prev,
+      currentIndex: Math.max(0, prev.currentIndex - 1),
+    }));
   }, []);
 
   const redo = useCallback(() => {
-    setCurrentIndex((prev) => Math.min(history.length - 1, prev + 1));
-  }, [history.length]);
+    setState((prev) => ({
+      ...prev,
+      currentIndex: Math.min(prev.history.length - 1, prev.currentIndex + 1),
+    }));
+  }, []);
 
   return {
     state: history[currentIndex] || initialState,
