@@ -610,22 +610,6 @@ function Workspace() {
         </div>
       </header>
 
-      {/* Draft Recovery Mock Banner */}
-      <AnimatePresence>
-        {isExistingPresentation && !showHistoryPanel && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="bg-[#fff9c4] border-b-[2px] border-dashed border-[#2d2d2d] px-4 py-1.5 flex items-center justify-center gap-4 z-10 relative"
-            style={{ fontFamily: "Patrick Hand, cursive" }}
-          >
-            <span className="text-xs text-[#2d2d2d]">Draft recovered from local storage (12:43 PM)</span>
-            <button className="text-xs font-bold text-[#2d5da1] hover:underline">Restore</button>
-            <button className="text-xs text-[#6b6460] hover:text-[#ff4d4d]">Dismiss</button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden relative">
