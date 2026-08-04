@@ -6,7 +6,12 @@ import { supabase } from "./lib/supabase";
 import { AIKeyManager } from "./orchestrator/key-manager/AIKeyManager";
 
 async function handleKeepAlive(request: Request): Promise<Response> {
-  const isCron = request.headers.get("x-vercel-cron") === "1";
+  const userAgent = request.headers.get("user-agent") || "";
+  const vercelCronHeader = request.headers.get("x-vercel-cron");
+  const isCron =
+    vercelCronHeader === "1" ||
+    vercelCronHeader === "true" ||
+    userAgent.toLowerCase().includes("vercel-cron");
   let isAuth = false;
 
   if (!isCron) {
