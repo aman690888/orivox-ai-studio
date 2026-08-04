@@ -19,11 +19,22 @@ import {
   MessageSquare,
   X,
   Loader2,
+  Undo2,
+  Redo2,
+  ZoomIn,
+  ZoomOut,
+  History,
+  Type,
+  Bold,
+  Italic,
+  AlignLeft,
+  Trash,
 } from "lucide-react";
 import { AIThinking } from "@/components/workspace/AIThinking";
 import { AIAssistant, ElementSelectedPanel } from "@/components/workspace/RightPanels";
 import { SlideCanvas } from "@/components/workspace/SlideCanvas";
 import { useGenerationTimeline } from "@/hooks/useGenerationTimeline";
+import { useEditorHistory } from "@/hooks/useEditorHistory";
 import { Slide } from "@/lib/mock";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -140,7 +151,22 @@ function Workspace() {
     enabled: id !== "new" && !!user?.id,
   });
 
-  const [slides, setSlides] = useState<Slide[]>([]);
+  const {
+    state: slides,
+    pushState: setSlidesHistory,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useEditorHistory([]);
+
+  const setSlides = (newSlides: Slide[] | ((prev: Slide[]) => Slide[])) => {
+    if (typeof newSlides === "function") {
+      setSlidesHistory(newSlides(slides));
+    } else {
+      setSlidesHistory(newSlides);
+    }
+  };
   const [title, setTitle] = useState("New presentation");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
@@ -304,6 +330,41 @@ function Workspace() {
   const [composer, setComposer] = useState("");
   const [timelineOpen, setTimelineOpen] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Undo/Redo
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        if (e.shiftKey) {
+          e.preventDefault();
+          redo();
+        } else {
+          e.preventDefault();
+          undo();
+        }
+      }
+      
+      // Slide navigation
+      if (e.key === "ArrowRight" && !e.shiftKey && !e.metaKey && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+        setActiveSlide(prev => Math.min(slides.length - 1, prev + 1));
+      }
+      if (e.key === "ArrowLeft" && !e.shiftKey && !e.metaKey && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+        setActiveSlide(prev => Math.max(0, prev - 1));
+      }
+
+      // Deselect on Escape
+      if (e.key === "Escape") {
+        setSelectedEl(null);
+        setContextMenu(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undo, redo, slides.length]);
 
   const isExistingPresentation =
     dbPresentation?.status === "completed" || (dbSlides && dbSlides.length > 0);
@@ -548,6 +609,23 @@ function Workspace() {
           </button>
         </div>
       </header>
+
+      {/* Draft Recovery Mock Banner */}
+      <AnimatePresence>
+        {isExistingPresentation && !showHistoryPanel && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-[#fff9c4] border-b-[2px] border-dashed border-[#2d2d2d] px-4 py-1.5 flex items-center justify-center gap-4 z-10 relative"
+            style={{ fontFamily: "Patrick Hand, cursive" }}
+          >
+            <span className="text-xs text-[#2d2d2d]">Draft recovered from local storage (12:43 PM)</span>
+            <button className="text-xs font-bold text-[#2d5da1] hover:underline">Restore</button>
+            <button className="text-xs text-[#6b6460] hover:text-[#ff4d4d]">Dismiss</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden relative">
@@ -899,35 +977,98 @@ function Workspace() {
                   )}
 
                   {/* Active slide (fixed aspect ratio 16:9, no overflow) */}
-                  <div className="w-full relative group">
-                    {/* Tilted shadow behind */}
-                    <div
-                      className="absolute inset-0 bg-[#e5e0d8] border-[2px] border-[#2d2d2d]"
-                      style={{
-                        borderRadius: R.card,
-                        transform: "rotate(1deg) translate(5px, 5px)",
-                      }}
-                    />
-                    <motion.div
-                      key={visibleSlides[activeSlide]?.id}
-                      layoutId={`slide-${visibleSlides[activeSlide]?.id}`}
-                      className="relative w-full bg-white border-[3px] border-[#2d2d2d] shadow-[8px_8px_0px_0px_#2d2d2d] overflow-hidden"
-                      style={{ borderRadius: R.card, aspectRatio: "16/9" }}
-                    >
-                      <div className="absolute inset-0">
-                        <SlideCanvas
-                          slide={visibleSlides[activeSlide]}
-                          onSelect={setSelectedEl}
-                          selected={selectedEl}
-                          onSlideChange={handleSlideChange}
-                        />
+                  <div className="w-full relative group flex flex-col gap-3">
+                    
+                    {/* Editor Controls Toolbar */}
+                    <div className="flex items-center justify-between bg-white border-[2.5px] border-[#2d2d2d] px-3 py-2 shadow-[3px_3px_0px_0px_#2d2d2d]" style={{ borderRadius: R.tag }}>
+                      <div className="flex items-center gap-1">
+                        <button onClick={undo} disabled={!canUndo} className="p-1.5 hover:bg-[#e5e0d8] disabled:opacity-30 rounded transition-colors" title="Undo (Ctrl+Z)">
+                          <Undo2 size={16} strokeWidth={2.5} className="text-[#2d2d2d]" />
+                        </button>
+                        <button onClick={redo} disabled={!canRedo} className="p-1.5 hover:bg-[#e5e0d8] disabled:opacity-30 rounded transition-colors" title="Redo (Ctrl+Shift+Z)">
+                          <Redo2 size={16} strokeWidth={2.5} className="text-[#2d2d2d]" />
+                        </button>
                       </div>
-                    </motion.div>
-                    {/* Tape decoration */}
-                    <div
-                      className="absolute -top-4 left-1/2 w-12 h-5 bg-gray-300/60 border border-dashed border-gray-400/50"
-                      style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1.5deg)" }}
-                    />
+                      
+                      <div className="flex items-center gap-2 border-l-[2px] border-dashed border-[#2d2d2d]/30 pl-3">
+                        <button onClick={() => setZoomLevel(z => Math.max(0.5, z - 0.1))} className="p-1.5 hover:bg-[#e5e0d8] rounded transition-colors">
+                          <ZoomOut size={16} strokeWidth={2.5} className="text-[#2d2d2d]" />
+                        </button>
+                        <span className="text-xs font-bold w-12 text-center" style={{ fontFamily: "Patrick Hand, cursive" }}>{Math.round(zoomLevel * 100)}%</span>
+                        <button onClick={() => setZoomLevel(z => Math.min(2, z + 0.1))} className="p-1.5 hover:bg-[#e5e0d8] rounded transition-colors">
+                          <ZoomIn size={16} strokeWidth={2.5} className="text-[#2d2d2d]" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2 border-l-[2px] border-dashed border-[#2d2d2d]/30 pl-3 ml-auto">
+                        <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold transition-all ${showHistoryPanel ? "bg-[#2d2d2d] text-white" : "hover:bg-[#e5e0d8] text-[#2d2d2d]"}`} style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}>
+                          <History size={14} strokeWidth={2.5} /> History
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="relative w-full transition-transform duration-200 origin-top" style={{ transform: `scale(${zoomLevel})` }}>
+                      {/* Tilted shadow behind */}
+                      <div
+                        className="absolute inset-0 bg-[#e5e0d8] border-[2px] border-[#2d2d2d]"
+                        style={{
+                          borderRadius: R.card,
+                          transform: "rotate(1deg) translate(5px, 5px)",
+                        }}
+                      />
+                      <motion.div
+                        key={visibleSlides[activeSlide]?.id}
+                        layoutId={`slide-${visibleSlides[activeSlide]?.id}`}
+                        className="relative w-full bg-white border-[3px] border-[#2d2d2d] shadow-[8px_8px_0px_0px_#2d2d2d] overflow-hidden"
+                        style={{ borderRadius: R.card, aspectRatio: "16/9" }}
+                      >
+                        <div className="absolute inset-0">
+                          <SlideCanvas
+                            slide={visibleSlides[activeSlide]}
+                            onSelect={(id) => {
+                              setSelectedEl(id);
+                              // Mock position for context menu
+                              setContextMenu({ x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 200 });
+                            }}
+                            selected={selectedEl}
+                            onSlideChange={handleSlideChange}
+                          />
+                        </div>
+                      </motion.div>
+                      {/* Tape decoration */}
+                      <div
+                        className="absolute -top-4 left-1/2 w-12 h-5 bg-gray-300/60 border border-dashed border-gray-400/50"
+                        style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1.5deg)" }}
+                      />
+                    </div>
+
+                    {/* Floating Context Menu */}
+                    <AnimatePresence>
+                      {selectedEl && contextMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className="absolute z-50 flex items-center gap-1 bg-white border-[2.5px] border-[#2d2d2d] p-1.5 shadow-[4px_4px_0px_0px_#2d2d2d]"
+                          style={{
+                            top: "10%",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            borderRadius: R.tag,
+                          }}
+                        >
+                          <div className="flex items-center gap-1 border-r-[2px] border-dashed border-[#2d2d2d]/30 pr-1 mr-1">
+                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]"><Type size={14} strokeWidth={2.5} /></button>
+                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]"><Bold size={14} strokeWidth={2.5} /></button>
+                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]"><Italic size={14} strokeWidth={2.5} /></button>
+                          </div>
+                          <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]"><AlignLeft size={14} strokeWidth={2.5} /></button>
+                          <button className="p-1.5 hover:bg-[#ff4d4d]/10 hover:text-[#ff4d4d] rounded transition-colors ml-1 text-[#6b6460]">
+                            <Trash size={14} strokeWidth={2.5} />
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Slide filmstrip thumbnails */}
@@ -1001,6 +1142,65 @@ function Workspace() {
             </div>
           </div>
         </main>
+
+        {/* ── Right Panel (Version History) ── */}
+        <AnimatePresence>
+          {showHistoryPanel && (
+            <motion.aside
+              initial={{ x: 310, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 310, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 30 }}
+              className="absolute right-0 top-0 bottom-0 w-[300px] z-10 flex flex-col bg-[#fdfbf7] border-l-[3px] border-dashed border-[#2d2d2d]"
+            >
+              <div className="flex items-center justify-between px-4 py-3 border-b-[2px] border-dashed border-[#2d2d2d]">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-6 h-6 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-xs"
+                    style={{ borderRadius: "50%" }}
+                  >
+                    🕰️
+                  </div>
+                  <span
+                    className="text-sm font-bold text-[#2d2d2d]"
+                    style={{ fontFamily: "Kalam, cursive" }}
+                  >
+                    Version History
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowHistoryPanel(false)}
+                  className="text-[#6b6460] hover:text-[#ff4d4d] transition-colors"
+                >
+                  <X size={16} strokeWidth={2.5} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <div className="text-xs font-bold text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>Today</div>
+                  <button className="flex flex-col text-left p-3 border-[2.5px] border-[#2d2d2d] bg-white shadow-[3px_3px_0px_0px_#2d2d2d] transition-all hover:bg-[#fff9c4] group" style={{ borderRadius: R.tag }}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Patrick Hand, cursive" }}>Current Version</span>
+                      <span className="text-[10px] text-[#6b6460]">Just now</span>
+                    </div>
+                  </button>
+                  <button className="flex flex-col text-left p-3 border-[2.5px] border-dashed border-[#2d2d2d]/30 bg-transparent hover:border-solid hover:border-[#2d2d2d] hover:bg-white transition-all group" style={{ borderRadius: R.tag }}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm font-bold text-[#6b6460] group-hover:text-[#2d2d2d]" style={{ fontFamily: "Patrick Hand, cursive" }}>AI Auto-save</span>
+                      <span className="text-[10px] text-[#6b6460]">12:43 PM</span>
+                    </div>
+                  </button>
+                  <button className="flex flex-col text-left p-3 border-[2.5px] border-dashed border-[#2d2d2d]/30 bg-transparent hover:border-solid hover:border-[#2d2d2d] hover:bg-white transition-all group" style={{ borderRadius: R.tag }}>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm font-bold text-[#6b6460] group-hover:text-[#2d2d2d]" style={{ fontFamily: "Patrick Hand, cursive" }}>Initial Generation</span>
+                      <span className="text-[10px] text-[#6b6460]">11:20 AM</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
