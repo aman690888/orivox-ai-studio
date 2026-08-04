@@ -1,10 +1,9 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { ArrowRight, Play, Presentation as PresIcon, Plus, Sparkles, Clock } from "lucide-react";
+import { ArrowRight, Play, Presentation as PresIcon, Zap, Clock } from "lucide-react";
 import { PromptBox } from "@/components/prompt/PromptBox";
 import { suggestions, categories } from "@/lib/mock";
-import { useCommandPalette } from "@/components/command/CommandPalette";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { getPresentations } from "@/lib/database/presentations";
@@ -14,11 +13,17 @@ export const Route = createFileRoute("/_app/home")({
   component: Home,
 });
 
+const R = {
+  tag: "4px 22px 6px 18px / 22px 6px 18px 4px",
+  card: "6px 38px 6px 42px / 38px 6px 42px 6px",
+  md: "8px 42px 12px 38px / 42px 12px 38px 8px",
+  input: "4px 18px 4px 16px / 18px 4px 16px 4px",
+};
+
 function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [prompt, setPrompt] = useState("");
-  const { open } = useCommandPalette();
 
   const { data: presentations = [], isLoading } = useQuery({
     queryKey: ["presentations", user?.id],
@@ -32,157 +37,254 @@ function Home() {
   const greeting = getGreeting();
   const dateLabel = getDateLabel();
   const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
-
   const featured = presentations.length > 0 ? presentations[0] : null;
-  const recents = presentations.length > 1 ? presentations.slice(1, 7) : [];
+  const recents = presentations.length > 1 ? presentations.slice(1, 5) : [];
 
   return (
-    <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-12 md:py-16 bg-white text-black">
-      <div className="max-w-5xl mx-auto space-y-16">
-        <header className="flex flex-col space-y-3">
+    <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
+      <div className="max-w-4xl mx-auto flex flex-col gap-12">
+
+        {/* ── Header ── */}
+        <header className="flex flex-col gap-3">
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 self-start border border-black bg-white px-3 py-1 text-xs font-mono font-bold text-black uppercase"
+            className="inline-flex items-center self-start gap-2 px-3 py-1 bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-xs shadow-[2px_2px_0px_0px_#2d2d2d]"
+            style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
           >
-             {dateLabel}
+            📅 {dateLabel}
           </motion.div>
           <motion.h1
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl font-mono font-bold tracking-tight text-black md:text-5xl"
+            transition={{ delay: 0.08 }}
+            className="text-4xl md:text-5xl font-bold text-[#2d2d2d]"
+            style={{ fontFamily: "Kalam, cursive" }}
           >
-            {greeting}, <span className="text-black">{userName}</span>.
+            {greeting},{" "}
+            <span className="relative">
+              {userName} ✌️
+              <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 100 6" preserveAspectRatio="none" height="6">
+                <path d="M0,3 Q25,0 50,3 Q75,6 100,3" stroke="#ff4d4d" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+              </svg>
+            </span>
           </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+            className="text-base text-[#6b6460]"
+            style={{ fontFamily: "Patrick Hand, cursive" }}
+          >
+            What are we building today?
+          </motion.p>
         </header>
 
+        {/* ── Prompt Card ── */}
         <motion.div
-          className="relative group"
-          initial={{ opacity: 0, scale: 0.98 }}
+          initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 25 }}
+          transition={{ delay: 0.18, type: "spring", stiffness: 280, damping: 22 }}
+          className="relative"
         >
-          <div className="relative bg-white p-2 border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <PromptBox
-              value={prompt}
-              onChange={setPrompt}
-              onSubmit={go}
-              placeholder="What are we presenting today? Type an idea..."
+          {/* Tilted card behind */}
+          <div
+            className="absolute inset-0 bg-[#e5e0d8] border-[2px] border-[#2d2d2d] -z-10"
+            style={{ borderRadius: R.card, transform: "rotate(1.5deg) translate(4px, 4px)" }}
+          />
+          <div
+            className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-[5px_5px_0px_0px_#ff4d4d]"
+            style={{ borderRadius: R.card }}
+          >
+            {/* Tape */}
+            <div
+              className="absolute -top-4 left-1/2 w-12 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
+              style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1deg)" }}
             />
-          </div>
-          
-          <div className="mt-5 flex flex-wrap gap-2 px-2">
-            {suggestions.slice(0, 4).map((s, i) => (
-              <motion.button
-                key={s}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.05 }}
-                onClick={() => setPrompt(s)}
-                className="border border-black bg-white px-4 py-1.5 text-[11px] font-mono font-bold text-black uppercase transition-all hard-shadow-hover hover:bg-black hover:text-white"
-              >
-                {s}
-              </motion.button>
-            ))}
+            <p className="text-sm font-bold mb-3 text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>
+              ✍️ Describe your presentation...
+            </p>
+            <div
+              className="border-[2px] border-[#2d2d2d] p-1 bg-[#fdfbf7] focus-within:border-[#2d5da1] focus-within:ring-2 focus-within:ring-[#2d5da1]/20 transition-all"
+              style={{ borderRadius: R.input }}
+            >
+              <PromptBox
+                value={prompt}
+                onChange={setPrompt}
+                onSubmit={go}
+                placeholder="A startup pitch for investors in Series A..."
+              />
+            </div>
+            {/* Suggestions */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {suggestions.slice(0, 4).map((s, i) => (
+                <motion.button
+                  key={s}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 + i * 0.06 }}
+                  onClick={() => setPrompt(s)}
+                  className="text-xs px-3 py-1.5 bg-[#fdfbf7] border-[2px] border-dashed border-[#2d2d2d] hover:bg-[#e5e0d8] hover:border-solid transition-all duration-100"
+                  style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
+                >
+                  {s}
+                </motion.button>
+              ))}
+            </div>
           </div>
         </motion.div>
 
+        {/* ── Presentations ── */}
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-electric border-t-transparent shadow-[0_0_15px_var(--electric)]" />
+          <div className="flex flex-col items-center gap-3 py-12">
+            <div
+              className="w-12 h-12 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-2xl animate-gentle-bounce shadow-[2px_2px_0px_0px_#2d2d2d]"
+              style={{ borderRadius: "50%" }}
+            >
+              ✏️
+            </div>
+            <p className="text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+              Loading your decks...
+            </p>
           </div>
         ) : presentations.length === 0 ? (
-          <motion.section 
-             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-             className="relative flex flex-col items-center justify-center border border-black bg-white p-16 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="relative flex flex-col items-center justify-center text-center py-16 px-8 bg-white border-[3px] border-dashed border-[#2d2d2d]"
+            style={{ borderRadius: R.md }}
           >
-            <div className="relative z-10 flex h-16 w-16 items-center justify-center border border-black bg-white mb-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-              <PresIcon className="h-7 w-7 text-black" />
+            <div
+              className="w-16 h-16 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-3xl mb-5 shadow-[3px_3px_0px_0px_#2d2d2d] animate-wiggle"
+              style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
+            >
+              <PresIcon className="w-7 h-7 text-[#2d2d2d]" strokeWidth={2.5} />
             </div>
-            <h2 className="relative z-10 text-xl font-mono font-bold text-black">Nothing here yet</h2>
-            <p className="relative z-10 mt-2 text-sm text-black font-mono font-medium max-w-sm">
-              Use the prompt above to magically generate your first presentation in seconds.
+            <h2 className="text-xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+              Nothing here yet!
+            </h2>
+            <p className="mt-2 text-sm text-[#6b6460] max-w-xs" style={{ fontFamily: "Patrick Hand, cursive" }}>
+              Type an idea in the box above and watch it come to life in seconds. ✨
             </p>
-          </motion.section>
+            <button
+              onClick={() => go("A startup pitch deck for investors")}
+              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+            >
+              <Zap size={16} strokeWidth={2.5} /> Try a demo deck
+            </button>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-8">
+            {/* Featured (most recent) */}
             {featured && (
-              <section className="lg:col-span-2 flex flex-col space-y-4">
-                <div className="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-widest text-black ml-1">
-                   <Clock className="w-3.5 h-3.5" /> Continue where you left off
+              <section className="flex flex-col gap-3">
+                <div
+                  className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#2d2d2d] text-white shadow-[2px_2px_0px_0px_#ff4d4d]"
+                  style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                >
+                  <Clock size={12} strokeWidth={2.5} /> Continue where you left off
                 </div>
-                <Link to="/workspace/$id" params={{ id: featured.id }} className="group block flex-1">
+                <Link to="/workspace/$id" params={{ id: featured.id }} className="group block">
                   <motion.div
-                    whileHover={{ y: -4 }}
+                    whileHover={{ y: -3 }}
                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    className="relative flex h-full min-h-[280px] border border-black bg-white p-1.5 transition-all hard-shadow-hover"
+                    className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-[5px_5px_0px_0px_#2d2d2d] hover:shadow-[7px_7px_0px_0px_#2d2d2d] transition-all"
+                    style={{ borderRadius: R.card }}
                   >
-                    <div className="flex h-full w-full flex-col sm:flex-row bg-white border border-black">
-                       <div className="relative flex-1 bg-white p-6 flex flex-col justify-center border-b sm:border-b-0 sm:border-r border-black">
-                          <div className="relative z-10 space-y-4">
-                             <div className="inline-flex border border-black bg-white px-2 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                               {featured.category}
-                             </div>
-                             <h3 className="text-2xl sm:text-3xl font-mono font-bold leading-tight text-black line-clamp-3 group-hover:underline decoration-2 underline-offset-4">
-                               {featured.title}
-                             </h3>
-                          </div>
-                       </div>
-                       <div className="w-full sm:w-64 p-6 flex flex-col justify-center bg-white">
-                          {featured.progress !== undefined && (
-                            <div className="space-y-2.5">
-                              <div className="flex items-center justify-between text-xs font-mono font-bold">
-                                <span className="text-black">Completion</span>
-                                <span className="text-black">{featured.progress}%</span>
-                              </div>
-                              <div className="h-2 w-full border border-black bg-white">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${featured.progress}%` }}
-                                  transition={{ duration: 1, ease: "easeOut" }}
-                                  className="h-full bg-black"
-                                />
-                              </div>
-                            </div>
-                          )}
-                          <div className="mt-8 flex items-center gap-1.5 text-xs font-mono font-bold text-black uppercase">
-                            Resume Editing <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-                          </div>
-                       </div>
+                    {/* Tape */}
+                    <div
+                      className="absolute -top-3 left-8 w-10 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
+                      style={{ borderRadius: "2px", transform: "rotate(-1deg)" }}
+                    />
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className="inline-block px-2 py-0.5 text-xs bg-[#fff9c4] border-[1.5px] border-[#2d2d2d] mb-3"
+                          style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
+                        >
+                          {featured.category}
+                        </div>
+                        <h3
+                          className="text-xl md:text-2xl font-bold text-[#2d2d2d] line-clamp-2 group-hover:text-[#ff4d4d] transition-colors"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
+                          {featured.title}
+                        </h3>
+                      </div>
+                      <div
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-[#2d2d2d] text-white border-[2px] border-[#2d2d2d] shrink-0"
+                        style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                      >
+                        Resume Editing <ArrowRight size={14} strokeWidth={2.5} className="transition-transform group-hover:translate-x-1" />
+                      </div>
                     </div>
+                    {featured.progress !== undefined && (
+                      <div className="mt-5 space-y-1.5">
+                        <div className="flex justify-between text-xs" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                          <span className="text-[#6b6460]">Completion</span>
+                          <span className="font-bold text-[#2d2d2d]">{featured.progress}%</span>
+                        </div>
+                        <div className="h-3 bg-[#fdfbf7] border-[2px] border-[#2d2d2d]" style={{ borderRadius: "2px", overflow: "hidden" }}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${featured.progress}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="h-full bg-[#ff4d4d]"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 </Link>
               </section>
             )}
 
+            {/* Recent decks */}
             {recents.length > 0 && (
-              <section className="flex flex-col space-y-4 lg:col-span-1">
-                <div className="flex items-center justify-between text-[10px] font-mono font-bold uppercase tracking-widest text-black ml-1">
-                  <span>Recent</span>
-                  <Link to="/presentations" className="text-black hover:underline underline-offset-4 transition-all">View All</Link>
+              <section className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div
+                    className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+                    style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                  >
+                    📚 Recent
+                  </div>
+                  <Link
+                    to="/presentations"
+                    className="text-xs text-[#6b6460] hover:text-[#ff4d4d] transition-colors"
+                    style={{ fontFamily: "Patrick Hand, cursive" }}
+                  >
+                    View all →
+                  </Link>
                 </div>
-                <div className="flex flex-col gap-2.5 flex-1">
-                  {recents.slice(0, 4).map((p, i) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {recents.map((p, i) => (
                     <motion.div
                       key={p.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + i * 0.1 }}
-                      className="flex-1"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + i * 0.08 }}
                     >
-                      <Link to="/present/$id" params={{ id: p.id }} className="group block h-full">
-                        <div className="flex h-full items-center gap-4 border border-black bg-white p-2.5 transition-all hard-shadow-hover hover:bg-black hover:text-white">
-                          <div className="relative flex h-12 w-16 shrink-0 items-center justify-center border border-black bg-white">
-                             <Play className="h-4 w-4 text-black transition-colors group-hover:text-black" />
+                      <Link to="/present/$id" params={{ id: p.id }} className="group block">
+                        <div
+                          className="flex items-center gap-3 bg-white border-[2px] border-[#2d2d2d] px-4 py-3 shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+                          style={{ borderRadius: R.tag }}
+                        >
+                          <div
+                            className="w-10 h-10 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-lg shrink-0"
+                            style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
+                          >
+                            <Play size={14} strokeWidth={2.5} className="text-[#2d2d2d]" />
                           </div>
-                          <div className="flex-1 min-w-0 pr-2">
-                            <div className="truncate text-sm font-mono font-bold text-black group-hover:text-white">{p.title}</div>
-                            <div className="mt-0.5 flex items-center gap-2 text-[10px] font-mono text-black group-hover:text-white">
-                              <span className="truncate">{p.category}</span>
-                              <span className="h-0.5 w-0.5 bg-black group-hover:bg-white" />
-                              <span className="shrink-0">{p.updated}</span>
-                            </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold truncate text-[#2d2d2d] group-hover:text-[#ff4d4d] transition-colors" style={{ fontFamily: "Kalam, cursive" }}>
+                              {p.title}
+                            </p>
+                            <p className="text-xs text-[#6b6460] truncate" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                              {p.category} · {p.updated}
+                            </p>
                           </div>
                         </div>
                       </Link>
@@ -194,44 +296,42 @@ function Home() {
           </div>
         )}
 
-        <section className="space-y-5 pt-8 border-t border-black">
-          <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-black ml-1">
-             Templates
+        {/* ── Templates ── */}
+        <section className="flex flex-col gap-5 pt-4 border-t-[2px] border-dashed border-[#2d2d2d]">
+          <div
+            className="inline-flex items-center self-start gap-2 px-3 py-1 text-xs bg-[#2d5da1] text-white shadow-[2px_2px_0px_0px_#2d2d2d]"
+            style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+          >
+            ✨ Start from a template
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {categories.map((c, i) => (
               <motion.button
                 key={c.name}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.05 }}
+                transition={{ delay: 0.2 + i * 0.06 }}
                 onClick={() => setPrompt(`A ${c.name.toLowerCase()} on `)}
-                className="group relative flex flex-col items-start gap-3 border border-black bg-white p-5 text-left transition-all hard-shadow-hover hover:bg-black hover:text-white"
+                className="group flex flex-col items-start gap-3 bg-white border-[2.5px] border-[#2d2d2d] p-5 text-left shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#fff9c4] transition-all duration-100"
+                style={{ borderRadius: R.tag, transform: `rotate(${[-0.8, 0.6, -0.5, 0.7][i % 4]}deg)` }}
               >
-                <div className="flex h-10 w-10 items-center justify-center border border-black bg-white text-black group-hover:text-black">
-                   <Plus className="h-5 w-5" />
+                <div
+                  className="text-xl w-10 h-10 bg-[#fdfbf7] border-[2px] border-[#2d2d2d] flex items-center justify-center"
+                  style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
+                >
+                  {["🚀", "📊", "🎓", "💡", "🌍", "🏆", "📈", "🔬"][i % 8]}
                 </div>
-                <div className="relative z-10 mt-1">
-                  <div className="text-sm font-mono font-bold text-black group-hover:text-white">{c.name}</div>
-                  <div className="mt-1 text-xs font-mono font-medium text-black group-hover:text-white line-clamp-2 leading-relaxed">{c.hint}</div>
+                <div>
+                  <p className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{c.name}</p>
+                  <p className="mt-1 text-xs text-[#6b6460] line-clamp-2 leading-relaxed" style={{ fontFamily: "Patrick Hand, cursive" }}>{c.hint}</p>
                 </div>
               </motion.button>
             ))}
           </div>
         </section>
+
       </div>
     </div>
-  );
-}
-
-function accentGrad(a: string) {
-  return (
-    {
-      electric: "from-electric/40 to-violet/30",
-      violet: "from-violet/40 to-electric/20",
-      emerald: "from-emerald-500/40 to-teal-500/20",
-      amber: "from-amber-500/40 to-rose-500/20",
-    }[a] || "from-electric/40 to-violet/30"
   );
 }
 
@@ -240,7 +340,6 @@ function getGreeting() {
   if (h < 5) return "Still up";
   if (h < 12) return "Good morning";
   if (h < 17) return "Good afternoon";
-  if (h < 22) return "Good evening";
   return "Good evening";
 }
 

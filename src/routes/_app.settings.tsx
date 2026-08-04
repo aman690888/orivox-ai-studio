@@ -1,9 +1,8 @@
 import { createFileRoute, useNavigate, useBlocker } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
-import { useTheme } from "@/lib/theme-context";
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { User, Palette, Bell, Sparkles, CreditCard, Lock, Loader2 } from "lucide-react";
+import { User, Palette, Bell, Sparkles, CreditCard, Lock, Loader2, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/lib/supabase";
@@ -15,44 +14,127 @@ export const Route = createFileRoute("/_app/settings")({
   component: Settings,
 });
 
+const R = {
+  tag: "4px 22px 6px 18px / 22px 6px 18px 4px",
+  card: "6px 38px 6px 42px / 38px 6px 42px 6px",
+  md: "8px 42px 12px 38px / 42px 12px 38px 8px",
+  input: "4px 18px 4px 16px / 18px 4px 16px 4px",
+};
+
 const tabs = [
-  { id: "account", label: "Account Details", icon: User, desc: "Manage your personal information and security." },
-  { id: "appearance", label: "Appearance", icon: Palette, desc: "Customize the look and feel of your workspace." },
-  { id: "notifications", label: "Notifications", icon: Bell, desc: "Control your email and push alerts." },
-  { id: "ai", label: "AI Preferences", icon: Sparkles, desc: "Tune how Orivox generates content." },
-  { id: "billing", label: "Billing & Plans", icon: CreditCard, desc: "Manage your subscription and usage." },
+  { id: "account",       label: "Account",       icon: User,       emoji: "👤" },
+  { id: "appearance",    label: "Appearance",     icon: Palette,    emoji: "🎨" },
+  { id: "notifications", label: "Notifications",  icon: Bell,       emoji: "🔔" },
+  { id: "ai",            label: "AI Prefs",       icon: Sparkles,   emoji: "✨" },
+  { id: "billing",       label: "Billing",        icon: CreditCard, emoji: "💳" },
 ] as const;
 
+// ─── Section Card ─────────────────────────────────────────────────────────────
+function SectionCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div
+      className={`relative bg-white border-[3px] border-[#2d2d2d] shadow-[5px_5px_0px_0px_#2d2d2d] ${className}`}
+      style={{ borderRadius: R.card }}
+    >
+      <div
+        className="absolute -top-4 left-8 w-12 h-5 bg-gray-300/60 border border-dashed border-gray-400/50"
+        style={{ borderRadius: "2px", transform: "rotate(-1.5deg)" }}
+      />
+      {children}
+    </div>
+  );
+}
+
+// ─── Row ──────────────────────────────────────────────────────────────────────
+function Row({ label, hint, children, border = true }: {
+  label: string; hint?: string; children: React.ReactNode; border?: boolean;
+}) {
+  return (
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 ${border ? "border-b-[2px] border-dashed border-[#2d2d2d]/30" : ""}`}>
+      <div className="flex-1 pr-8">
+        <div className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{label}</div>
+        {hint && <div className="mt-1.5 text-xs text-[#6b6460] leading-relaxed" style={{ fontFamily: "Patrick Hand, cursive" }}>{hint}</div>}
+      </div>
+      <div className="shrink-0">{children}</div>
+    </div>
+  );
+}
+
+// ─── Hand Input ───────────────────────────────────────────────────────────────
+function Field({ value, onChange, readOnly }: {
+  value: string; onChange?: (v: string) => void; readOnly?: boolean;
+}) {
+  return (
+    <div className="relative">
+      <input
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        readOnly={readOnly}
+        className={`w-full sm:w-72 border-[2px] border-[#2d2d2d] px-4 py-2.5 text-sm outline-none transition-all ${
+          readOnly
+            ? "bg-[#e5e0d8] text-[#6b6460] cursor-not-allowed"
+            : "bg-white text-[#2d2d2d] focus:border-[#2d5da1] focus:ring-2 focus:ring-[#2d5da1]/20"
+        }`}
+        style={{ borderRadius: R.input, fontFamily: "Patrick Hand, cursive" }}
+      />
+    </div>
+  );
+}
+
+// ─── Settings Root ────────────────────────────────────────────────────────────
 function Settings() {
   const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("account");
-  const activeTabDetails = tabs.find(t => t.id === tab);
+  const activeTab = tabs.find((t) => t.id === tab);
 
   return (
-    <div className="h-full w-full overflow-y-auto px-6 py-12 md:px-12 md:py-16 bg-white text-black">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-12 space-y-2 border-b border-black pb-6">
-          <h1 className="text-3xl font-mono font-bold tracking-tight text-black uppercase">Settings</h1>
-          <p className="text-sm font-mono text-black">Manage your account settings and preferences.</p>
+    <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
+      <div className="max-w-4xl mx-auto flex flex-col gap-8">
+
+        {/* Header */}
+        <header>
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] mb-3"
+            style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
+          >
+            ⚙️ Configuration
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="text-4xl font-bold text-[#2d2d2d]"
+            style={{ fontFamily: "Kalam, cursive" }}
+          >
+            Settings
+          </motion.h1>
+          <div className="mt-6 border-t-[2px] border-dashed border-[#2d2d2d]" />
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-12">
-          <aside className="w-full lg:w-[260px] shrink-0">
-            <nav className="flex flex-col space-y-2">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Tabs */}
+          <aside className="w-full lg:w-[200px] shrink-0">
+            <nav className="flex flex-col gap-2">
               {tabs.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`group relative flex items-center gap-3 border border-black px-4 py-3 text-left transition-all hard-shadow-hover ${
-                    tab === t.id ? "bg-black text-white" : "bg-white text-black hover:bg-black hover:text-white"
+                  className={`flex items-center gap-3 px-4 py-3 text-left text-sm font-bold border-[2.5px] border-[#2d2d2d] transition-all duration-100 ${
+                    tab === t.id
+                      ? "bg-[#2d2d2d] text-white shadow-[3px_3px_0px_0px_#ff4d4d]"
+                      : "bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px]"
                   }`}
+                  style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                 >
-                  <t.icon className={`h-[18px] w-[18px] transition-colors ${tab === t.id ? "text-white" : "text-black group-hover:text-white"}`} />
-                  <span className="text-sm font-mono font-bold uppercase">{t.label}</span>
+                  <span className="text-base">{t.emoji}</span>
+                  <span>{t.label}</span>
                 </button>
               ))}
             </nav>
           </aside>
 
+          {/* Tab Content */}
           <main className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
               <motion.div
@@ -61,13 +143,15 @@ function Settings() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-8"
+                className="flex flex-col gap-6"
               >
-                <div className="border-b border-black pb-6">
-                  <h2 className="text-xl font-mono font-bold text-black uppercase">{activeTabDetails?.label}</h2>
-                  <p className="mt-1.5 text-sm font-mono text-black">{activeTabDetails?.desc}</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{activeTab?.emoji}</span>
+                  <h2 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                    {activeTab?.label}
+                  </h2>
                 </div>
-                
+
                 {tab === "account" && <Account />}
                 {tab === "appearance" && <Appearance />}
                 {tab === "notifications" && <Notifications />}
@@ -82,61 +166,7 @@ function Settings() {
   );
 }
 
-function SectionCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="border border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
-      {children}
-    </div>
-  );
-}
-
-function Row({
-  label,
-  hint,
-  children,
-  border = true
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-  border?: boolean;
-}) {
-  return (
-    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 ${border ? "border-b border-black" : ""}`}>
-      <div className="flex-1 pr-8">
-        <div className="text-sm font-mono font-bold text-black">{label}</div>
-        {hint && <div className="mt-1.5 text-xs font-mono text-black leading-relaxed">{hint}</div>}
-      </div>
-      <div className="shrink-0">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  value,
-  onChange,
-  readOnly,
-}: {
-  value: string;
-  onChange?: (val: string) => void;
-  readOnly?: boolean;
-}) {
-  return (
-    <input
-      value={value}
-      onChange={(e) => onChange?.(e.target.value)}
-      readOnly={readOnly}
-      className={`w-full sm:w-72 border border-black px-4 py-2.5 text-sm font-mono outline-none transition-all ${
-        readOnly
-          ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-          : "bg-white text-black focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-      }`}
-    />
-  );
-}
-
+// ─── Account Tab ──────────────────────────────────────────────────────────────
 function Account() {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
@@ -144,119 +174,105 @@ function Account() {
   const originalName = user?.user_metadata?.full_name ?? "";
   const email = user?.email ?? "";
   const avatarUrl = user?.user_metadata?.avatar_url ?? "";
-  
+
   const [name, setName] = useState(originalName);
   const [isSaving, setIsSaving] = useState(false);
 
   const isDirty = name !== originalName;
   const isGoogle = user?.app_metadata?.providers?.includes("google");
-  
-  const provider = isGoogle
-    ? "Google"
-    : user?.app_metadata?.providers?.includes("github")
-      ? "GitHub"
-      : "Email";
+  const provider = isGoogle ? "Google" : user?.app_metadata?.providers?.includes("github") ? "GitHub" : "Email";
 
   useBlocker({
     shouldBlockFn: () => {
-      if (isDirty) {
-        return !window.confirm("You have unsaved changes. Are you sure you want to leave?");
-      }
+      if (isDirty) return !window.confirm("You have unsaved changes. Are you sure?");
       return false;
-    }
+    },
   });
 
-  const getInitials = (n: string) => {
-    if (!n) return "U";
-    return n.split(" ").map((part) => part[0]).slice(0, 2).join("").toUpperCase();
-  };
+  const getInitials = (n: string) =>
+    !n ? "U" : n.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 
   const handleSave = async () => {
     if (!isDirty || !user?.id) return;
     setIsSaving(true);
     try {
-      const { error: authError } = await supabase.auth.updateUser({
-        data: { full_name: name },
-      });
+      const { error: authError } = await supabase.auth.updateUser({ data: { full_name: name } });
       if (authError) throw authError;
-
-      try {
-        await updateProfile(user.id, { full_name: name });
-      } catch (e) {
-        console.warn("Could not update profiles table, but auth user updated.", e);
-      }
-      
+      try { await updateProfile(user.id, { full_name: name }); } catch (e) { /* silently handled */ }
       await supabase.auth.refreshSession();
-      toast.success("Profile updated successfully");
+      toast.success("Profile updated! ✓");
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to update profile");
+      toast.error("Failed to save changes.");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate({ to: "/auth" });
-    } catch (err) {
-      console.error(err);
-    }
+    try { await signOut(); navigate({ to: "/auth" }); } catch { /**/ }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6">
       <SectionCard>
         <Row label="Profile Picture" hint={isGoogle ? "Managed by Google." : "Synced with your provider."}>
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 bg-white/5 border border-white/10 ring-4 ring-white/[0.02]">
-              <AvatarImage src={avatarUrl} alt={name || "User Avatar"} />
-              <AvatarFallback className="bg-transparent text-lg font-medium">{getInitials(name)}</AvatarFallback>
-            </Avatar>
-          </div>
+          <Avatar className="h-16 w-16 border-[3px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d]">
+            <AvatarImage src={avatarUrl} alt={name || "User"} />
+            <AvatarFallback
+              className="text-lg font-bold text-white"
+              style={{ background: "#ff4d4d", fontFamily: "Kalam, cursive" }}
+            >
+              {getInitials(name)}
+            </AvatarFallback>
+          </Avatar>
         </Row>
-        <Row label="Full Name" hint="Used for communication and team presence.">
+        <Row label="Display Name" hint="Used across your workspace.">
           <Field value={name} onChange={setName} />
         </Row>
-        <Row label="Email Address" hint="Your email address cannot be changed here." border={false}>
-          <div className="relative w-full sm:w-72">
+        <Row label="Email Address" hint="Cannot be changed here." border={false}>
+          <div className="relative">
             <Field value={email} readOnly />
-            <Lock className="absolute right-3.5 top-3 h-4 w-4 text-muted-foreground/50" />
+            <Lock className="absolute right-3.5 top-3 h-3.5 w-3.5 text-[#6b6460]" />
           </div>
         </Row>
       </SectionCard>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-muted-foreground">Connected via</span>
-          <span className="rounded-md bg-white/[0.06] border border-white/10 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm">
-            {provider}
-          </span>
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+          style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
+        >
+          Connected via: <strong className="text-[#2d2d2d]">{provider}</strong>
         </div>
         {isDirty && (
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex h-10 items-center justify-center gap-2 rounded-xl bg-foreground px-5 text-sm font-medium text-background transition-all hover:bg-white/90 disabled:opacity-50 active:scale-95 shadow-lg"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d5da1] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-100"
+            style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
-            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
+            {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={2.5} />}
+            Save Changes
           </button>
         )}
       </div>
 
-      <div className="pt-8 border-t border-white/5">
+      <div className="pt-4 border-t-[2px] border-dashed border-[#2d2d2d]">
         <SectionCard>
-          <Row label="Sign out" hint="Log out of your current session on this device.">
+          <Row label="Sign out" hint="Log out of your current session.">
             <button
               onClick={handleSignOut}
-              className="rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2 text-sm font-medium transition hover:bg-white/[0.05]"
+              className="px-4 py-2 text-sm font-bold border-[2px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
             >
               Sign out
             </button>
           </Row>
-          <Row label="Delete account" hint="Permanent action. All data will be erased." border={false}>
-            <button className="rounded-xl border border-rose-500/30 bg-rose-500/5 px-4 py-2 text-sm font-medium text-rose-500 transition hover:bg-rose-500/10 hover:border-rose-500/50">
+          <Row label="Delete account" hint="Permanent. Everything will be erased." border={false}>
+            <button
+              className="px-4 py-2 text-sm font-bold border-[2px] border-[#ff4d4d] bg-white text-[#ff4d4d] shadow-[3px_3px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:text-white hover:shadow-[1px_1px_0px_0px_#ff4d4d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+            >
               Delete Account
             </button>
           </Row>
@@ -266,53 +282,46 @@ function Account() {
   );
 }
 
+// ─── Appearance Tab ───────────────────────────────────────────────────────────
 function Appearance() {
-  const { theme, setTheme, accent, setAccent } = useTheme();
+  const [selected, setSelected] = useState<"light" | "dark" | "system">("light");
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6">
       <SectionCard>
-        <Row label="Interface Theme" hint="Select or customize your UI theme.">
-          <div className="flex rounded-xl border border-white/10 bg-white/[0.02] p-1 shadow-inner">
-            {(["dark", "light", "system"] as const).map((t) => (
+        <Row label="Interface Theme" hint="The hand-drawn aesthetic always stays — this controls light/dark preference.">
+          <div
+            className="flex border-[2px] border-[#2d2d2d] overflow-hidden"
+            style={{ borderRadius: R.tag }}
+          >
+            {(["light", "dark", "system"] as const).map((t) => (
               <button
                 key={t}
-                onClick={() => setTheme(t)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium capitalize transition-all ${
-                  theme === t ? "bg-white/[0.08] text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-white/[0.02]"
+                onClick={() => setSelected(t)}
+                className={`px-4 py-2 text-sm font-bold capitalize transition-all duration-100 border-r-[2px] border-dashed border-[#2d2d2d] last:border-0 ${
+                  selected === t ? "bg-[#2d2d2d] text-white" : "bg-white text-[#2d2d2d] hover:bg-[#e5e0d8]"
                 }`}
+                style={{ fontFamily: "Kalam, cursive" }}
               >
                 {t}
               </button>
             ))}
           </div>
         </Row>
-        <Row label="Accent Color" hint="Used in highlights, focus rings, and active states." border={false}>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setAccent("blue")}
-              className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
-                accent === "blue" ? "ring-2 ring-white/30 scale-110 shadow-[0_0_15px_oklch(0.68_0.19_255)]" : "ring-1 ring-white/10 opacity-70 hover:opacity-100 hover:scale-105"
-              }`}
-              style={{ backgroundColor: "oklch(0.68 0.19 255)" }}
-              aria-label="Blue"
-            />
-            <button
-              onClick={() => setAccent("purple")}
-              className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
-                accent === "purple" ? "ring-2 ring-white/30 scale-110 shadow-[0_0_15px_oklch(0.72_0.17_300)]" : "ring-1 ring-white/10 opacity-70 hover:opacity-100 hover:scale-105"
-              }`}
-              style={{ backgroundColor: "oklch(0.72 0.17 300)" }}
-              aria-label="Purple"
-            />
-            <button
-              onClick={() => setAccent("green")}
-              className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${
-                accent === "green" ? "ring-2 ring-white/30 scale-110 shadow-[0_0_15px_oklch(0.69_0.15_160)]" : "ring-1 ring-white/10 opacity-70 hover:opacity-100 hover:scale-105"
-              }`}
-              style={{ backgroundColor: "oklch(0.69 0.15 160)" }}
-              aria-label="Green"
-            />
+        <Row label="Accent Color" hint="Used in buttons, shadows, and highlights." border={false}>
+          <div className="flex gap-3">
+            {[
+              { color: "#ff4d4d", label: "Red (default)" },
+              { color: "#2d5da1", label: "Blue" },
+              { color: "#2d8a5b", label: "Green" },
+            ].map(({ color, label }) => (
+              <button
+                key={color}
+                title={label}
+                className="w-8 h-8 border-[2.5px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:scale-110 transition-transform duration-100"
+                style={{ background: color, borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
+              />
+            ))}
           </div>
         </Row>
       </SectionCard>
@@ -320,17 +329,18 @@ function Appearance() {
   );
 }
 
+// ─── Notifications Tab ────────────────────────────────────────────────────────
 function Notifications() {
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6">
       <SectionCard>
-        <Row label="Generation Complete" hint="Get notified when AI finishes long tasks.">
+        <Row label="Generation Complete 🎉" hint="Notify me when AI finishes creating a deck.">
           <Switch defaultChecked />
         </Row>
-        <Row label="Weekly Summary" hint="Receive a digest of your activity and usage.">
+        <Row label="Weekly Summary 📊" hint="A digest of your activity and usage.">
           <Switch />
         </Row>
-        <Row label="Product Updates" hint="Hear about new features and improvements." border={false}>
+        <Row label="Product Updates 🚀" hint="Hear about new features and improvements." border={false}>
           <Switch defaultChecked />
         </Row>
       </SectionCard>
@@ -338,25 +348,32 @@ function Notifications() {
   );
 }
 
+// ─── AI Prefs Tab ─────────────────────────────────────────────────────────────
 function AIPrefs() {
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6">
       <SectionCard>
-        <Row label="Default Tone" hint="The primary voice used in generated text.">
-          <select className="w-full sm:w-48 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm outline-none focus:border-white/30 focus:ring-4 focus:ring-white/5 transition-all text-foreground cursor-pointer appearance-none">
-            <option className="bg-[#0a0a0a]">Executive</option>
-            <option className="bg-[#0a0a0a]">Conversational</option>
-            <option className="bg-[#0a0a0a]">Academic</option>
+        <Row label="Default Tone" hint="Primary voice used in generated text.">
+          <select
+            className="w-full sm:w-48 border-[2px] border-[#2d2d2d] px-3 py-2.5 text-sm outline-none bg-white text-[#2d2d2d] focus:border-[#2d5da1] focus:ring-2 focus:ring-[#2d5da1]/20 transition-all"
+            style={{ borderRadius: R.input, fontFamily: "Patrick Hand, cursive" }}
+          >
+            <option>Executive</option>
+            <option>Conversational</option>
+            <option>Academic</option>
           </select>
         </Row>
         <Row label="Default Length" hint="Preferred presentation length.">
-          <select className="w-full sm:w-48 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm outline-none focus:border-white/30 focus:ring-4 focus:ring-white/5 transition-all text-foreground cursor-pointer appearance-none">
-            <option className="bg-[#0a0a0a]">10 slides</option>
-            <option className="bg-[#0a0a0a]">15 slides</option>
-            <option className="bg-[#0a0a0a]">20+ slides</option>
+          <select
+            className="w-full sm:w-48 border-[2px] border-[#2d2d2d] px-3 py-2.5 text-sm outline-none bg-white text-[#2d2d2d] focus:border-[#2d5da1] focus:ring-2 focus:ring-[#2d5da1]/20 transition-all"
+            style={{ borderRadius: R.input, fontFamily: "Patrick Hand, cursive" }}
+          >
+            <option>10 slides</option>
+            <option>15 slides</option>
+            <option>20+ slides</option>
           </select>
         </Row>
-        <Row label="Always Include Citations" hint="Automatically append sources when factual claims are made." border={false}>
+        <Row label="Auto-include Citations" hint="Append sources when factual claims are made." border={false}>
           <Switch defaultChecked />
         </Row>
       </SectionCard>
@@ -364,47 +381,71 @@ function AIPrefs() {
   );
 }
 
+// ─── Billing Tab ──────────────────────────────────────────────────────────────
 function Billing() {
+  const plans = [
+    { name: "Free", price: "$0", features: ["3 decks / month", "PDF export"], active: true, rotation: -1.5 },
+    { name: "Pro", price: "$20", features: ["Unlimited decks", "PPTX + share links", "Priority AI"], rotation: 0.8 },
+    { name: "Team", price: "$40", features: ["Everything in Pro", "Shared library", "SSO"], rotation: -0.5 },
+  ];
+
   return (
-    <div className="space-y-8">
-      <div className="grid gap-6 md:grid-cols-3">
-        {[
-          { name: "Free", price: "$0", features: ["3 decks / month", "PDF export"], active: true },
-          {
-            name: "Pro",
-            price: "$20",
-            features: ["Unlimited decks", "PPTX + share links", "Priority AI"],
-          },
-          { name: "Team", price: "$40", features: ["Everything in Pro", "Shared library", "SSO"] },
-        ].map((p) => (
+    <div className="grid gap-6 md:grid-cols-3">
+      {plans.map((p) => (
+        <div
+          key={p.name}
+          className={`relative bg-white border-[3px] border-[#2d2d2d] p-6 transition-all hover:rotate-0 ${
+            p.active ? "shadow-[6px_6px_0px_0px_#ff4d4d]" : "shadow-[4px_4px_0px_0px_#2d2d2d]"
+          }`}
+          style={{ borderRadius: R.card, transform: `rotate(${p.rotation}deg)` }}
+        >
+          {/* Tape */}
           <div
-            key={p.name}
-            className={`relative border-2 border-black bg-white p-6 transition-all hard-shadow-hover ${p.active ? "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]" : "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"}`}
-          >
-            {p.active && (
-              <div className="absolute top-0 right-6 -translate-y-1/2 border border-black bg-white px-3 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                Current Plan
-              </div>
-            )}
-            <div className="text-xs font-mono font-bold uppercase tracking-widest text-black">{p.name}</div>
-            <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-4xl font-mono font-bold text-black">{p.price}</span>
-              <span className="text-sm font-mono font-medium text-black">/mo</span>
+            className="absolute -top-3 left-1/2 w-10 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
+            style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1deg)" }}
+          />
+
+          {p.active && (
+            <div
+              className="absolute top-0 right-4 -translate-y-1/2 px-3 py-0.5 text-[10px] font-bold text-white bg-[#ff4d4d] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+            >
+              Current ✓
             </div>
-            <ul className="mt-6 space-y-3">
-              {p.features.map((f) => (
-                <li key={f} className="flex items-center gap-3 text-sm font-mono text-black">
-                  <div className={`h-1.5 w-1.5 border border-black ${p.active ? "bg-black" : "bg-transparent"}`} />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button className={`mt-8 w-full border border-black py-2.5 text-sm font-mono font-bold transition-all hard-shadow-hover ${p.active ? "bg-white text-black hover:bg-black hover:text-white" : "bg-black text-white hover:bg-white hover:text-black"}`}>
-               {p.active ? "Manage Plan" : "Upgrade"}
-            </button>
+          )}
+
+          <div className="text-xs font-bold uppercase tracking-widest text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>
+            {p.name}
           </div>
-        ))}
-      </div>
+          <div className="mt-3 flex items-baseline gap-1">
+            <span className="text-4xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{p.price}</span>
+            <span className="text-sm text-[#6b6460]">/mo</span>
+          </div>
+          <ul className="mt-5 space-y-2.5">
+            {p.features.map((f) => (
+              <li key={f} className="flex items-center gap-2.5 text-sm text-[#4a4440]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                <div
+                  className={`w-4 h-4 flex items-center justify-center border-[2px] border-[#2d2d2d] ${p.active ? "bg-[#ff4d4d]" : "bg-white"}`}
+                  style={{ borderRadius: "3px" }}
+                >
+                  {p.active && <Check size={10} strokeWidth={3} className="text-white" />}
+                </div>
+                {f}
+              </li>
+            ))}
+          </ul>
+          <button
+            className={`mt-6 w-full py-2.5 text-sm font-bold border-[2.5px] border-[#2d2d2d] transition-all duration-100 ${
+              p.active
+                ? "bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px]"
+                : "bg-[#2d2d2d] text-white shadow-[3px_3px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px]"
+            }`}
+            style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+          >
+            {p.active ? "Manage Plan" : "Upgrade ✨"}
+          </button>
+        </div>
+      ))}
     </div>
   );
 }

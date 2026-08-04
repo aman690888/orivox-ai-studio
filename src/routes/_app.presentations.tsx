@@ -1,17 +1,26 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { MoreHorizontal, Presentation as PresIcon } from "lucide-react";
+import { Presentation as PresIcon, Plus, ExternalLink, Clock } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { getPresentations } from "@/lib/database/presentations";
 
 export const Route = createFileRoute("/_app/presentations")({
-  head: () => ({ meta: [{ title: "Presentations — Orivox" }] }),
+  head: () => ({ meta: [{ title: "My Decks — Orivox" }] }),
   component: Presentations,
 });
 
+const R = {
+  tag: "4px 22px 6px 18px / 22px 6px 18px 4px",
+  card: "6px 38px 6px 42px / 38px 6px 42px 6px",
+  md: "8px 42px 12px 38px / 42px 12px 38px 8px",
+};
+
+const ROTATIONS = [-1.2, 0.8, -0.6, 1.0, -0.4, 0.9];
+
 function Presentations() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { data: presentations = [], isLoading } = useQuery({
     queryKey: ["presentations", user?.id],
@@ -20,87 +29,160 @@ function Presentations() {
   });
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10 md:py-14">
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Presentations</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {isLoading ? "Loading..." : `${presentations.length} decks`}
-          </p>
-        </div>
-      </div>
+    <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
+      <div className="max-w-4xl mx-auto flex flex-col gap-8">
 
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-electric border-t-transparent" />
-          <span className="mt-2 text-xs text-muted-foreground">Loading decks...</span>
-        </div>
-      ) : presentations.length === 0 ? (
-        <div className="glass flex flex-col items-center justify-center rounded-3xl p-16 text-center border border-border">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 mb-4">
-            <PresIcon className="h-6 w-6 text-electric" />
-          </div>
-          <h2 className="text-lg font-medium text-foreground">No decks found</h2>
-          <p className="mt-1 text-sm text-muted-foreground max-w-sm">
-            Navigate back to Home to describe an idea and create your first deck.
-          </p>
-          <Link
-            to="/home"
-            className="mt-6 inline-flex items-center justify-center rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90"
-          >
-            Create a presentation
-          </Link>
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {presentations.map((p, i) => (
+        {/* Header */}
+        <header className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex flex-col gap-2">
             <motion.div
-              key={p.id}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
+              className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+              style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
             >
-              <Link to="/workspace/$id" params={{ id: p.id }} className="group block">
-                <motion.div
-                  whileHover={{ y: -2 }}
-                  className="glass overflow-hidden rounded-2xl p-2"
-                >
-                  <div
-                    className={`relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br ${grad(p.accent)}`}
+              📚 Your collection
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+              className="text-4xl font-bold text-[#2d2d2d]"
+              style={{ fontFamily: "Kalam, cursive" }}
+            >
+              My Decks{" "}
+              {!isLoading && (
+                <span className="text-2xl text-[#6b6460]">({presentations.length})</span>
+              )}
+            </motion.h1>
+          </div>
+          <motion.button
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            onClick={() => navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: "" } })}
+            className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold bg-[#ff4d4d] text-white border-[3px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-100"
+            style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+          >
+            <Plus size={16} strokeWidth={2.5} /> New deck
+          </motion.button>
+        </header>
+
+        <div className="border-t-[2px] border-dashed border-[#2d2d2d]" />
+
+        {/* Content */}
+        {isLoading ? (
+          <div className="flex flex-col items-center gap-4 py-16">
+            <div
+              className="w-16 h-16 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-3xl animate-gentle-bounce shadow-[3px_3px_0px_0px_#2d2d2d]"
+              style={{ borderRadius: "50%" }}
+            >
+              ✏️
+            </div>
+            <p className="text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+              Loading your decks...
+            </p>
+          </div>
+        ) : presentations.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-center justify-center text-center py-20 px-8 bg-white border-[3px] border-dashed border-[#2d2d2d]"
+            style={{ borderRadius: R.md }}
+          >
+            <div
+              className="w-20 h-20 bg-[#fff9c4] border-[3px] border-[#2d2d2d] flex items-center justify-center mb-5 shadow-[4px_4px_0px_0px_#2d2d2d] animate-wiggle"
+              style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
+            >
+              <PresIcon className="w-9 h-9 text-[#2d2d2d]" strokeWidth={2.5} />
+            </div>
+            <h2 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+              No decks yet! 👀
+            </h2>
+            <p className="mt-2 text-base text-[#6b6460] max-w-sm" style={{ fontFamily: "Patrick Hand, cursive" }}>
+              Head back home, type an idea, and your first deck will live here in under 30 seconds.
+            </p>
+            <Link
+              to="/home"
+              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+            >
+              ← Go create one
+            </Link>
+          </motion.div>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {presentations.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07 }}
+                style={{ transform: `rotate(${ROTATIONS[i % ROTATIONS.length]}deg)` }}
+              >
+                <Link to="/workspace/$id" params={{ id: p.id }} className="group block">
+                  <motion.div
+                    whileHover={{ rotate: 0, y: -4, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                    className="relative bg-white border-[3px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] group-hover:shadow-[6px_6px_0px_0px_#ff4d4d] transition-shadow"
+                    style={{ borderRadius: R.card }}
                   >
-                    <div className="absolute inset-3 rounded-md bg-background/50 p-2 backdrop-blur-sm">
-                      <div className="h-1.5 w-12 rounded bg-white/25" />
-                      <div className="mt-1.5 h-1 w-16 rounded bg-white/15" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between px-2 py-2.5">
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium">{p.title}</div>
-                      <div className="mt-0.5 text-[11px] text-muted-foreground">
-                        {p.category} · {p.updated}
+                    {/* Tape */}
+                    <div
+                      className="absolute -top-3 left-1/2 w-10 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
+                      style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1deg)" }}
+                    />
+
+                    {/* Slide preview area */}
+                    <div
+                      className="aspect-video bg-[#fdfbf7] border-b-[2px] border-dashed border-[#2d2d2d] flex items-center justify-center relative overflow-hidden"
+                      style={{ borderRadius: `${R.card.split("/")[0].trim().split(" ").slice(0, 2).join(" ")} 0 0` }}
+                    >
+                      {/* Decorative slide mockup lines */}
+                      <div className="absolute inset-4 flex flex-col gap-2 opacity-30">
+                        <div className="h-2 bg-[#2d2d2d]/30 w-3/4" style={{ borderRadius: "2px" }} />
+                        <div className="h-1.5 bg-[#2d2d2d]/20 w-1/2" style={{ borderRadius: "2px" }} />
+                        <div className="flex-1 flex gap-2 mt-1">
+                          <div className="flex-1 bg-[#2d2d2d]/10" style={{ borderRadius: "3px" }} />
+                          <div className="flex-1 bg-[#2d2d2d]/10" style={{ borderRadius: "3px" }} />
+                        </div>
+                      </div>
+                      <div
+                        className="relative z-10 px-3 py-1 text-xs bg-[#fff9c4] border-[1.5px] border-[#2d2d2d]"
+                        style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
+                      >
+                        {p.category}
                       </div>
                     </div>
-                    <button className="rounded-md p-1.5 text-muted-foreground opacity-0 transition group-hover:opacity-100 hover:bg-white/5">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
-function grad(a: string) {
-  return (
-    {
-      electric: "from-electric/40 to-violet/30",
-      violet: "from-violet/40 to-electric/20",
-      emerald: "from-emerald-500/40 to-teal-500/20",
-      amber: "from-amber-500/40 to-rose-500/20",
-    }[a] || "from-electric/40 to-violet/30"
+                    {/* Card body */}
+                    <div className="p-4">
+                      <h3
+                        className="text-sm font-bold text-[#2d2d2d] line-clamp-2 group-hover:text-[#ff4d4d] transition-colors"
+                        style={{ fontFamily: "Kalam, cursive" }}
+                      >
+                        {p.title}
+                      </h3>
+                      <div className="mt-2 flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                          <Clock size={11} strokeWidth={2.5} />
+                          {p.updated}
+                        </div>
+                        <ExternalLink
+                          size={13}
+                          strokeWidth={2.5}
+                          className="text-[#6b6460] opacity-0 group-hover:opacity-100 transition-opacity"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
