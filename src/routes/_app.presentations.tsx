@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Presentation as PresIcon, Plus, ExternalLink, Clock } from "lucide-react";
+import { Presentation as PresIcon, Plus, ExternalLink, Clock, Search, SlidersHorizontal, ArrowDownAZ } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { getPresentations } from "@/lib/database/presentations";
+import { useState, useMemo } from "react";
 
 export const Route = createFileRoute("/_app/presentations")({
   head: () => ({ meta: [{ title: "My Decks — Orivox" }] }),
@@ -22,15 +23,28 @@ function Presentations() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All");
+
   const { data: presentations = [], isLoading } = useQuery({
     queryKey: ["presentations", user?.id],
     queryFn: () => getPresentations(user!.id),
     enabled: !!user?.id,
   });
 
+  const filteredPresentations = useMemo(() => {
+    return presentations.filter(p => {
+      const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = activeFilter === "All" || p.category === activeFilter;
+      return matchesSearch && matchesFilter;
+    });
+  }, [presentations, searchQuery, activeFilter]);
+
+  const categories = ["All", ...Array.from(new Set(presentations.map(p => p.category)))];
+
   return (
     <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
-      <div className="max-w-4xl mx-auto flex flex-col gap-8">
+      <div className="max-w-5xl mx-auto flex flex-col gap-8">
         {/* Header */}
         <header className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex flex-col gap-2">
@@ -69,7 +83,38 @@ function Presentations() {
           </motion.button>
         </header>
 
-        <div className="border-t-[2px] border-dashed border-[#2d2d2d]" />
+        {/* Filters & Actions Bar */}
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white border-[2.5px] border-[#2d2d2d] p-3 shadow-[4px_4px_0px_0px_#2d2d2d]" style={{ borderRadius: R.md }}>
+          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveFilter(cat)}
+                className={`px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-colors border-[2px] border-transparent ${activeFilter === cat ? "bg-[#2d2d2d] text-white border-[#2d2d2d]" : "bg-[#fdfbf7] text-[#6b6460] hover:border-[#2d2d2d]"}`}
+                style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative w-full md:w-64">
+              <input
+                type="text"
+                placeholder="Search decks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#fdfbf7] border-[2px] border-[#2d2d2d] pl-9 pr-4 py-2 text-sm outline-none focus:border-[#2d5da1] focus:ring-2 focus:ring-[#2d5da1]/20"
+                style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b6460]" />
+            </div>
+            <button className="flex items-center gap-1.5 px-3 py-2 bg-[#fdfbf7] border-[2px] border-[#2d2d2d] text-xs font-bold hover:bg-[#e5e0d8] transition-colors whitespace-nowrap" style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}>
+              <ArrowDownAZ size={14} /> Sort
+            </button>
+          </div>
+        </div>
 
         {/* Content */}
         {isLoading ? (
@@ -84,7 +129,7 @@ function Presentations() {
               Loading your decks...
             </p>
           </div>
-        ) : presentations.length === 0 ? (
+        ) : filteredPresentations.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -102,30 +147,32 @@ function Presentations() {
               className="text-2xl font-bold text-[#2d2d2d]"
               style={{ fontFamily: "Kalam, cursive" }}
             >
-              No decks yet! 👀
+              {searchQuery ? "No decks match your search 👀" : "No decks yet! 👀"}
             </h2>
             <p
               className="mt-2 text-base text-[#6b6460] max-w-sm"
               style={{ fontFamily: "Patrick Hand, cursive" }}
             >
-              Head back home, type an idea, and your first deck will live here in under 30 seconds.
+              {searchQuery ? "Try a different keyword or clear your filters." : "Head back home, type an idea, and your first deck will live here in under 30 seconds."}
             </p>
-            <Link
-              to="/home"
-              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
-              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
-            >
-              ← Go create one
-            </Link>
+            {!searchQuery && (
+              <Link
+                to="/home"
+                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+                style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+              >
+                ← Go create one
+              </Link>
+            )}
           </motion.div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {presentations.map((p, i) => (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredPresentations.map((p, i) => (
               <motion.div
                 key={p.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.07 }}
+                transition={{ delay: i * 0.05 }}
                 style={{ transform: `rotate(${ROTATIONS[i % ROTATIONS.length]}deg)` }}
               >
                 <Link to="/workspace/$id" params={{ id: p.id }} className="group block">

@@ -199,80 +199,142 @@ function Home() {
           </motion.div>
         ) : (
           <div className="flex flex-col gap-8">
-            {/* Featured (most recent) */}
-            {featured && (
-              <section className="flex flex-col gap-3">
-                <div
-                  className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#2d2d2d] text-white shadow-[2px_2px_0px_0px_#ff4d4d]"
-                  style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
-                >
-                  <Clock size={12} strokeWidth={2.5} /> Continue where you left off
-                </div>
-                <Link to="/workspace/$id" params={{ id: featured.id }} className="group block">
-                  <motion.div
-                    whileHover={{ y: -3 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-[5px_5px_0px_0px_#2d2d2d] hover:shadow-[7px_7px_0px_0px_#2d2d2d] transition-all"
-                    style={{ borderRadius: R.card }}
-                  >
-                    {/* Tape */}
+            {/* Dashboard Overview Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Left Column (Featured + Stats) */}
+              <div className="lg:col-span-2 flex flex-col gap-6">
+                {/* Featured (most recent) */}
+                {featured && (
+                  <section className="flex flex-col gap-3">
                     <div
-                      className="absolute -top-3 left-8 w-10 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
-                      style={{ borderRadius: "2px", transform: "rotate(-1deg)" }}
-                    />
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div
-                          className="inline-block px-2 py-0.5 text-xs bg-[#fff9c4] border-[1.5px] border-[#2d2d2d] mb-3"
-                          style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
-                        >
-                          {featured.category}
-                        </div>
-                        <h3
-                          className="text-xl md:text-2xl font-bold text-[#2d2d2d] line-clamp-2 group-hover:text-[#ff4d4d] transition-colors"
-                          style={{ fontFamily: "Kalam, cursive" }}
-                        >
-                          {featured.title}
-                        </h3>
-                      </div>
-                      <div
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-[#2d2d2d] text-white border-[2px] border-[#2d2d2d] shrink-0"
-                        style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
-                      >
-                        Resume Editing{" "}
-                        <ArrowRight
-                          size={14}
-                          strokeWidth={2.5}
-                          className="transition-transform group-hover:translate-x-1"
-                        />
-                      </div>
+                      className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#2d2d2d] text-white shadow-[2px_2px_0px_0px_#ff4d4d]"
+                      style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                    >
+                      <Clock size={12} strokeWidth={2.5} /> Continue where you left off
                     </div>
-                    {featured.progress !== undefined && (
-                      <div className="mt-5 space-y-1.5">
+                    <Link to="/workspace/$id" params={{ id: featured.id }} className="group block">
+                      <motion.div
+                        whileHover={{ y: -3 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-[5px_5px_0px_0px_#2d2d2d] hover:shadow-[7px_7px_0px_0px_#2d2d2d] transition-all"
+                        style={{ borderRadius: R.card }}
+                      >
+                        {/* Tape */}
                         <div
-                          className="flex justify-between text-xs"
-                          style={{ fontFamily: "Patrick Hand, cursive" }}
-                        >
-                          <span className="text-[#6b6460]">Completion</span>
-                          <span className="font-bold text-[#2d2d2d]">{featured.progress}%</span>
+                          className="absolute -top-3 left-8 w-10 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
+                          style={{ borderRadius: "2px", transform: "rotate(-1deg)" }}
+                        />
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div
+                              className="inline-block px-2 py-0.5 text-xs bg-[#fff9c4] border-[1.5px] border-[#2d2d2d] mb-3"
+                              style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
+                            >
+                              {featured.category}
+                            </div>
+                            <h3
+                              className="text-xl md:text-2xl font-bold text-[#2d2d2d] line-clamp-2 group-hover:text-[#ff4d4d] transition-colors"
+                              style={{ fontFamily: "Kalam, cursive" }}
+                            >
+                              {featured.title}
+                            </h3>
+                          </div>
+                          <div
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-[#2d2d2d] text-white border-[2px] border-[#2d2d2d] shrink-0"
+                            style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                          >
+                            Resume Editing{" "}
+                            <ArrowRight
+                              size={14}
+                              strokeWidth={2.5}
+                              className="transition-transform group-hover:translate-x-1"
+                            />
+                          </div>
                         </div>
-                        <div
-                          className="h-3 bg-[#fdfbf7] border-[2px] border-[#2d2d2d]"
-                          style={{ borderRadius: "2px", overflow: "hidden" }}
-                        >
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${featured.progress}%` }}
-                            transition={{ duration: 1, ease: "easeOut" }}
-                            className="h-full bg-[#ff4d4d]"
-                          />
+                        {featured.progress !== undefined && (
+                          <div className="mt-5 space-y-1.5">
+                            <div
+                              className="flex justify-between text-xs"
+                              style={{ fontFamily: "Patrick Hand, cursive" }}
+                            >
+                              <span className="text-[#6b6460]">Completion</span>
+                              <span className="font-bold text-[#2d2d2d]">{featured.progress}%</span>
+                            </div>
+                            <div
+                              className="h-3 bg-[#fdfbf7] border-[2px] border-[#2d2d2d]"
+                              style={{ borderRadius: "2px", overflow: "hidden" }}
+                            >
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${featured.progress}%` }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                                className="h-full bg-[#ff4d4d]"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    </Link>
+                  </section>
+                )}
+
+                {/* Workspace Statistics */}
+                <section className="flex flex-col gap-3">
+                   <div
+                      className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+                      style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                    >
+                      📊 Workspace Stats
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { label: "Total Decks", value: "24", emoji: "📁" },
+                        { label: "AI Prompts", value: "142", emoji: "✨" },
+                        { label: "Views", value: "1.2k", emoji: "👀" },
+                      ].map((stat, i) => (
+                        <div key={i} className="bg-white border-[2px] border-[#2d2d2d] p-4 flex flex-col items-center justify-center text-center shadow-[3px_3px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#2d2d2d] transition-all" style={{ borderRadius: R.tag }}>
+                          <span className="text-2xl mb-1">{stat.emoji}</span>
+                          <span className="text-xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{stat.value}</span>
+                          <span className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>{stat.label}</span>
                         </div>
-                      </div>
-                    )}
-                  </motion.div>
-                </Link>
-              </section>
-            )}
+                      ))}
+                    </div>
+                </section>
+              </div>
+
+              {/* Right Column (Recent Activity) */}
+              <div className="flex flex-col gap-3">
+                <div
+                    className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+                    style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                  >
+                    ⚡ Recent Activity
+                  </div>
+                  <div className="flex-1 bg-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] p-4 overflow-hidden relative" style={{ borderRadius: R.md }}>
+                    <div className="absolute top-2 right-4 w-4 h-8 bg-gray-300/50 border border-dashed border-gray-400/40 rounded-[2px] rotate-[15deg]" />
+                    <div className="flex flex-col gap-4 mt-2">
+                      {[
+                        { text: "Created Marketing Plan", time: "2h ago", icon: "✨" },
+                        { text: "Exported Q3 Board Deck", time: "5h ago", icon: "📥" },
+                        { text: "Shared Pitch Deck", time: "1d ago", icon: "🔗" },
+                        { text: "Changed Theme to Neon", time: "2d ago", icon: "🎨" },
+                        { text: "Added 5 slides", time: "3d ago", icon: "➕" }
+                      ].map((activity, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-6 h-6 shrink-0 bg-[#fdfbf7] border-[1.5px] border-[#2d2d2d] flex items-center justify-center text-[10px] rounded-full">
+                            {activity.icon}
+                          </div>
+                          <div>
+                            <p className="text-sm text-[#2d2d2d] font-bold" style={{ fontFamily: "Kalam, cursive" }}>{activity.text}</p>
+                            <p className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>{activity.time}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+              </div>
+            </div>
 
             {/* Recent decks */}
             {recents.length > 0 && (
