@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { ArrowRight, Play, Presentation as PresIcon, Zap, Clock } from "lucide-react";
+import { ArrowRight, Play, Presentation as PresIcon, Zap, Clock, BarChart2, Sparkles, BookOpen } from "lucide-react";
 import { PromptBox } from "@/components/prompt/PromptBox";
 import { suggestions, categories } from "@/lib/mock";
 import { useAuth } from "@/lib/auth-context";
@@ -40,6 +40,14 @@ function Home() {
   const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "there";
   const featured = presentations.length > 0 ? presentations[0] : null;
   const recents = presentations.length > 1 ? presentations.slice(1, 5) : [];
+
+  // Real stats derived from actual data
+  const totalDecks = presentations.length;
+  const recentActivity = presentations.slice(0, 5).map((p) => ({
+    text: p.title,
+    time: p.updated, // already formatted by timeAgo() in mapToUi
+    icon: "📄",
+  }));
 
   return (
     <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
@@ -150,18 +158,16 @@ function Home() {
 
         {/* ── Presentations ── */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex flex-col gap-3">
-                <Skeleton className="w-full aspect-video" />
-                <div className="flex justify-between items-center px-1">
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-3 w-20" />
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-4">
+              <Skeleton className="w-full h-40" />
+              <div className="grid grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24" />)}
               </div>
-            ))}
+            </div>
+            <div className="flex flex-col gap-4">
+              <Skeleton className="w-full h-64" />
+            </div>
           </div>
         ) : presentations.length === 0 ? (
           <motion.div
@@ -201,7 +207,7 @@ function Home() {
           <div className="flex flex-col gap-8">
             {/* Dashboard Overview Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
+
               {/* Left Column (Featured + Stats) */}
               <div className="lg:col-span-2 flex flex-col gap-6">
                 {/* Featured (most recent) */}
@@ -252,34 +258,95 @@ function Home() {
                             />
                           </div>
                         </div>
-                        {featured.progress !== undefined && (
-                          <div className="mt-5 space-y-1.5">
-                            <div
-                              className="flex justify-between text-xs"
-                              style={{ fontFamily: "Patrick Hand, cursive" }}
-                            >
-                              <span className="text-[#6b6460]">Completion</span>
-                              <span className="font-bold text-[#2d2d2d]">{featured.progress}%</span>
-                            </div>
-                            <div
-                              className="h-3 bg-[#fdfbf7] border-[2px] border-[#2d2d2d]"
-                              style={{ borderRadius: "2px", overflow: "hidden" }}
-                            >
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${featured.progress}%` }}
-                                transition={{ duration: 1, ease: "easeOut" }}
-                                className="h-full bg-[#ff4d4d]"
-                              />
-                            </div>
-                          </div>
-                        )}
                       </motion.div>
                     </Link>
                   </section>
                 )}
 
+                {/* Workspace Statistics — real data */}
+                <section className="flex flex-col gap-3">
+                  <div
+                    className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+                    style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                  >
+                    📊 Workspace Stats
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      {
+                        label: "Total Decks",
+                        value: String(totalDecks),
+                        icon: <BookOpen size={18} strokeWidth={2.5} className="text-[#2d5da1]" />,
+                      },
+                      {
+                        label: "Total Slides",
+                        value: String(presentations.reduce((sum, p) => sum + (p.slides || 0), 0)),
+                        icon: <BarChart2 size={18} strokeWidth={2.5} className="text-[#ff4d4d]" />,
+                      },
+                      {
+                        label: "Latest",
+                        value: presentations.length > 0 ? presentations[0].updated : "—",
+                        icon: <Sparkles size={18} strokeWidth={2.5} className="text-[#f59e0b]" />,
+                      },
+                    ].map((stat, i) => (
+                      <div
+                        key={i}
+                        className="bg-white border-[2px] border-[#2d2d2d] p-4 flex flex-col items-center justify-center text-center shadow-[3px_3px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#2d2d2d] transition-all"
+                        style={{ borderRadius: R.tag }}
+                      >
+                        <span className="mb-1">{stat.icon}</span>
+                        <span className="text-base font-bold text-[#2d2d2d] leading-tight" style={{ fontFamily: "Kalam, cursive" }}>
+                          {stat.value}
+                        </span>
+                        <span className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                          {stat.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
 
+              {/* Right Column (Recent Activity — real data) */}
+              <div className="flex flex-col gap-3">
+                <div
+                  className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+                  style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                >
+                  ⚡ Recent Activity
+                </div>
+                <div
+                  className="flex-1 bg-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] p-4 overflow-hidden relative"
+                  style={{ borderRadius: R.md }}
+                >
+                  <div className="flex flex-col gap-4 mt-2">
+                    {recentActivity.length === 0 ? (
+                      <p className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        No recent activity yet.
+                      </p>
+                    ) : (
+                      recentActivity.map((activity, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <div className="w-6 h-6 shrink-0 bg-[#fdfbf7] border-[1.5px] border-[#2d2d2d] flex items-center justify-center text-[10px] rounded-full">
+                            {activity.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <p
+                              className="text-sm text-[#2d2d2d] font-bold truncate"
+                              style={{ fontFamily: "Kalam, cursive" }}
+                            >
+                              {activity.text}
+                            </p>
+                            <p className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                              {activity.time}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Recent decks */}
@@ -308,7 +375,7 @@ function Home() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 + i * 0.08 }}
                     >
-                      <Link to="/present/$id" params={{ id: p.id }} className="group block">
+                      <Link to="/workspace/$id" params={{ id: p.id }} className="group block">
                         <div
                           className="flex items-center gap-3 bg-white border-[2px] border-[#2d2d2d] px-4 py-3 shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
                           style={{ borderRadius: R.tag }}
