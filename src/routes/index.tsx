@@ -40,57 +40,52 @@ function Landing() {
     navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: p } });
 
   return (
-    <div className="min-h-screen bg-[#F9F9F7] text-black font-sans selection:bg-black selection:text-white flex flex-col border-x border-black max-w-[1440px] mx-auto">
+    <div className="min-h-screen bg-[#FCFCFC] text-neutral-900 font-sans selection:bg-neutral-900 selection:text-white flex flex-col mx-auto">
       {/* Header */}
-      <header className="border-b border-black grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-black sticky top-0 z-50 bg-[#F9F9F7]">
-        <div className="p-4 flex items-center justify-center md:justify-start">
-          <Logo />
+      <header className="h-[72px] border-b border-neutral-200 flex items-center justify-between px-8 sticky top-0 z-50 bg-[#FCFCFC]/80 backdrop-blur-xl">
+        <div className="flex items-center">
+          <div className="scale-90 origin-left">
+            <Logo />
+          </div>
         </div>
-        <nav className="flex items-center justify-center gap-8 p-4 text-sm font-bold uppercase tracking-widest">
-          <a className="hover:underline" href="#features">Features</a>
-          <a className="hover:underline" href="#workflow">Workflow</a>
-          <a className="hover:underline" href="#faq">FAQ</a>
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-600">
+          <a className="hover:text-neutral-900 transition-colors" href="#features">Features</a>
+          <a className="hover:text-neutral-900 transition-colors" href="#workflow">Workflow</a>
+          <a className="hover:text-neutral-900 transition-colors" href="#faq">FAQ</a>
         </nav>
-        <div className="flex items-center justify-center md:justify-end gap-4 p-4">
-          <Link to="/auth" className="text-sm font-bold uppercase hover:underline">
-            Sign In
+        <div className="flex items-center gap-4">
+          <Link to="/auth" className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">
+            Log In
           </Link>
-          <Link to="/auth" className="border border-black bg-black text-[#F9F9F7] px-6 py-2 text-sm font-bold uppercase hover:bg-transparent hover:text-black transition-colors">
-            Subscribe
+          <Link to="/auth" className="bg-neutral-900 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-neutral-800 transition-all shadow-md shadow-neutral-900/10">
+            Get Started
           </Link>
         </div>
       </header>
 
-      {/* Marquee Ticker */}
-      <div className="border-b border-black py-2 bg-black text-[#F9F9F7] text-xs font-mono uppercase tracking-widest overflow-hidden">
-        <Marquee speed={50} gradient={false}>
-          <span className="mx-4">BREAKING: ORIVOX 2.0 RELEASED</span> •
-          <span className="mx-4">1,000,000+ SLIDES GENERATED</span> •
-          <span className="mx-4">THE DEATH OF POWERPOINT</span> •
-          <span className="mx-4">AI PRESENTATION SYSTEM LIVE</span> •
-          <span className="mx-4">NO MORE DRAGGING BOXES</span> •
-          <span className="mx-4">CINEMATIC DECKS IN SECONDS</span> •
-        </Marquee>
-      </div>
-
       <main className="flex-1 flex flex-col">
         {/* Hero Section */}
-        <section className="grid grid-cols-1 md:grid-cols-12 border-b border-black divide-y md:divide-y-0 md:divide-x divide-black">
+        <section className="max-w-[1440px] mx-auto w-full px-8 py-24 md:py-32 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           {/* Main Hero Text */}
-          <div className="md:col-span-8 p-8 md:p-16 flex flex-col justify-center @container">
-            <h1 className="font-serif leading-[0.85] tracking-tighter mb-8 text-balance text-[clamp(2rem,10cqw,8rem)]">
-              STOP MAKING PRESENTATIONS.
+          <div className="lg:col-span-7 flex flex-col justify-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100 text-neutral-600 text-xs font-medium mb-8 w-max border border-neutral-200">
+              <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
+              Orivox 2.0 is now live
+            </div>
+            <h1 className="font-serif leading-[1.05] tracking-tight mb-6 text-balance text-5xl md:text-7xl text-neutral-900">
+              Stop making presentations.
             </h1>
-            <p className="text-xl md:text-2xl font-medium max-w-2xl leading-snug">
-              The AI presentation operating system. From raw thoughts to stunning cinematic decks in seconds.
+            <p className="text-lg md:text-xl font-normal text-neutral-500 max-w-xl leading-relaxed">
+              The AI presentation operating system. From raw thoughts to stunning cinematic decks in seconds. Give it a prompt, and watch the magic happen.
             </p>
           </div>
           
           {/* Action Area */}
-          <div className="md:col-span-4 flex flex-col divide-y divide-black bg-black text-[#F9F9F7]">
-             <div className="p-8 flex-1 flex flex-col justify-center">
-                <h3 className="font-bold uppercase tracking-widest mb-4">Start your prompt</h3>
-                <div className="bg-[#F9F9F7] text-black p-2 border border-black">
+          <div className="lg:col-span-5 relative">
+             <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-purple-500/10 to-transparent blur-3xl -z-10 rounded-[3rem]"></div>
+             <div className="bg-white/60 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)] rounded-[24px] p-8 flex flex-col">
+                <h3 className="font-medium text-neutral-800 mb-6">What would you like to create?</h3>
+                <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-1 mb-6 transition-shadow focus-within:shadow-md focus-within:border-neutral-300">
                     <PromptBox
                         value={prompt}
                         onChange={setPrompt}
@@ -98,91 +93,87 @@ function Landing() {
                         placeholder="A pitch deck on AI in healthcare..."
                     />
                 </div>
-             </div>
-             <div className="p-8 flex flex-col gap-2">
-                <span className="font-bold uppercase tracking-widest text-xs mb-2 text-neutral-400">Trending Topics</span>
-                {["Pitch deck", "Q3 Earnings Report", "Product Launch"].map((t) => (
-                    <button
-                        key={t}
-                        onClick={() => setPrompt(`A ${t.toLowerCase()} on `)}
-                        className="text-left border border-white/20 px-4 py-2 hover:bg-white hover:text-black transition-colors font-mono text-sm"
-                    >
-                        {t}
-                    </button>
-                ))}
+                
+                <div className="flex flex-col gap-3">
+                    <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Examples</span>
+                    <div className="flex flex-wrap gap-2">
+                        {["Startup Pitch", "Q3 Earnings", "Product Launch"].map((t) => (
+                            <button
+                                key={t}
+                                onClick={() => setPrompt(`A ${t.toLowerCase()} deck for `)}
+                                className="text-left bg-neutral-50 border border-neutral-200 text-neutral-600 px-3 py-1.5 rounded-full hover:bg-neutral-100 hover:text-neutral-900 transition-colors text-sm"
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
+                </div>
              </div>
           </div>
         </section>
 
-        {/* Features - Grid Layout */}
-        <section id="features" className="border-b border-black">
-            <div className="border-b border-black p-4 bg-black text-[#F9F9F7]">
-                <h2 className="font-bold uppercase tracking-widest text-xl text-center">I. The New Standard</h2>
+        {/* Features */}
+        <section id="features" className="max-w-[1440px] mx-auto w-full px-8 py-24 border-t border-neutral-100">
+            <div className="mb-16 text-center max-w-2xl mx-auto">
+                <h2 className="font-serif text-4xl mb-4 tracking-tight">The new standard for decks</h2>
+                <p className="text-neutral-500 text-lg">Everything you need to build stunning presentations, powered by an intelligent design engine.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-black">
-                <div className="p-8 flex flex-col">
-                    <Wand2 className="h-12 w-12 mb-6" />
-                    <h3 className="font-serif text-3xl mb-4 leading-none">Live Generation</h3>
-                    <p className="text-lg leading-relaxed">Watch your slides materialize in real-time as you chat. Describe what you want, and Orivox builds it instantly. No more dragging boxes.</p>
-                </div>
-                <div className="p-8 flex flex-col">
-                    <PieChart className="h-12 w-12 mb-6" />
-                    <h3 className="font-serif text-3xl mb-4 leading-none">Beautiful Charts</h3>
-                    <p className="text-lg leading-relaxed">Paste raw data or describe a trend. Orivox generates stunning, accurate charts automatically.</p>
-                </div>
-                <div className="flex flex-col divide-y divide-black">
-                    <div className="p-8 flex-1">
-                        <Network className="h-8 w-8 mb-4" />
-                        <h3 className="font-serif text-2xl mb-2">Smart Layouts</h3>
-                        <p>AI selects the perfect layout for your content.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="p-8 rounded-[24px] bg-neutral-50 border border-neutral-100 transition-transform hover:-translate-y-1">
+                    <div className="h-12 w-12 bg-white rounded-2xl shadow-sm border border-neutral-100 flex items-center justify-center mb-6">
+                        <Wand2 className="h-5 w-5 text-neutral-700" />
                     </div>
-                    <div className="p-8 flex-1 bg-black text-[#F9F9F7]">
-                        <Download className="h-8 w-8 mb-4" />
-                        <h3 className="font-serif text-2xl mb-2">Export Anywhere</h3>
-                        <p>Export to PDF, PPTX, or share instantly via link.</p>
+                    <h3 className="font-medium text-xl mb-3">Live Generation</h3>
+                    <p className="text-neutral-500 leading-relaxed">Watch your slides materialize in real-time as you chat. Describe what you want, and Orivox builds it instantly.</p>
+                </div>
+                <div className="p-8 rounded-[24px] bg-neutral-50 border border-neutral-100 transition-transform hover:-translate-y-1">
+                    <div className="h-12 w-12 bg-white rounded-2xl shadow-sm border border-neutral-100 flex items-center justify-center mb-6">
+                        <PieChart className="h-5 w-5 text-neutral-700" />
+                    </div>
+                    <h3 className="font-medium text-xl mb-3">Beautiful Charts</h3>
+                    <p className="text-neutral-500 leading-relaxed">Paste raw data or describe a trend. Orivox generates stunning, accurate charts automatically styled to your theme.</p>
+                </div>
+                <div className="grid grid-rows-2 gap-8">
+                    <div className="p-8 rounded-[24px] bg-neutral-50 border border-neutral-100 flex flex-col justify-center">
+                        <h3 className="font-medium text-xl mb-2">Smart Layouts</h3>
+                        <p className="text-neutral-500 text-sm">AI selects the perfect layout for your content.</p>
+                    </div>
+                    <div className="p-8 rounded-[24px] bg-neutral-900 text-white shadow-xl flex flex-col justify-center">
+                        <h3 className="font-medium text-xl mb-2">Export Anywhere</h3>
+                        <p className="text-neutral-400 text-sm">Export to PDF, PPTX, or share instantly via link.</p>
                     </div>
                 </div>
             </div>
         </section>
 
         {/* Workflow */}
-        <section id="workflow" className="border-b border-black">
-            <div className="border-b border-black p-4">
-                <h2 className="font-bold uppercase tracking-widest text-xl text-center">II. The Method</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-black">
+        <section id="workflow" className="max-w-[1440px] mx-auto w-full px-8 py-24 border-t border-neutral-100">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {[
                     { icon: Search, label: "01. Research", body: "Pulls from the open web and your context." },
                     { icon: FileText, label: "02. Outline", body: "Structures the narrative automatically." },
                     { icon: LayoutTemplate, label: "03. Design", body: "Generates cinematic layouts and charts." },
                     { icon: Presentation, label: "04. Present", body: "Complete with auto-generated speaker notes." },
                 ].map((s) => (
-                    <div key={s.label} className="p-8">
-                        <s.icon className="h-8 w-8 mb-8" />
-                        <h3 className="font-bold uppercase tracking-widest text-lg mb-4">{s.label}</h3>
-                        <p className="font-serif text-lg leading-snug">{s.body}</p>
+                    <div key={s.label} className="p-8 rounded-[24px] bg-white border border-neutral-100 shadow-sm">
+                        <div className="h-10 w-10 bg-neutral-50 rounded-xl flex items-center justify-center mb-8">
+                            <s.icon className="h-5 w-5 text-neutral-600" />
+                        </div>
+                        <h3 className="font-medium text-neutral-900 mb-2">{s.label}</h3>
+                        <p className="text-neutral-500 text-sm leading-relaxed">{s.body}</p>
                     </div>
                 ))}
             </div>
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="grid grid-cols-1 md:grid-cols-12 border-b border-black divide-y md:divide-y-0 md:divide-x divide-black">
-            <div className="md:col-span-4 p-10 md:p-12 bg-[#090909] flex flex-col justify-center relative overflow-hidden">
-                {/* Subtle radial gradient for depth */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.06),transparent_50%)] pointer-events-none"></div>
-                
-                <div className="relative z-10">
-                    <h2 className="font-serif text-5xl md:text-6xl leading-[1.1] text-[#FAFAFA] tracking-tight mb-6 text-balance">
-                        Frequently Asked Questions
-                    </h2>
-                    <p className="font-mono text-sm uppercase tracking-widest text-neutral-400">
-                        Everything you need to know about Orivox.
-                    </p>
-                </div>
+        <section id="faq" className="max-w-[1000px] mx-auto w-full px-8 py-24 border-t border-neutral-100">
+            <div className="mb-12 text-center">
+                <h2 className="font-serif text-4xl tracking-tight mb-4">Frequently Asked Questions</h2>
+                <p className="text-neutral-500">Everything you need to know about Orivox.</p>
             </div>
-            <div className="md:col-span-8 p-8">
-                <Accordion type="single" collapsible className="w-full border-black">
+            <div className="bg-white rounded-[24px] border border-neutral-100 shadow-sm p-2 md:p-8">
+                <Accordion type="single" collapsible className="w-full">
                     {[
                         [
                         "Is Orivox just another AI wrapper?",
@@ -198,9 +189,9 @@ function Landing() {
                         "No. Your data is yours. We do not use user presentations to train our foundational models.",
                         ],
                     ].map(([q, a], i) => (
-                        <AccordionItem key={i} value={`item-${i}`} className="border-b border-black last:border-0 data-[state=open]:bg-neutral-200">
-                        <AccordionTrigger className="text-left font-bold uppercase tracking-widest py-6 hover:no-underline">{q}</AccordionTrigger>
-                        <AccordionContent className="font-serif text-lg leading-relaxed pb-6 pr-12">{a}</AccordionContent>
+                        <AccordionItem key={i} value={`item-${i}`} className="border-b border-neutral-100 last:border-0">
+                        <AccordionTrigger className="text-left font-medium py-6 hover:no-underline hover:text-neutral-600 transition-colors">{q}</AccordionTrigger>
+                        <AccordionContent className="text-neutral-500 leading-relaxed pb-6 pr-12">{a}</AccordionContent>
                         </AccordionItem>
                     ))}
                 </Accordion>
@@ -208,25 +199,32 @@ function Landing() {
         </section>
 
         {/* CTA */}
-        <section className="p-16 md:p-32 text-center flex flex-col items-center justify-center bg-[#F9F9F7]">
-             <h2 className="font-serif text-6xl md:text-8xl leading-none mb-8 tracking-tighter">THE END OF BORING.</h2>
-             <Link
-                to="/auth"
-                className="border-2 border-black bg-black text-[#F9F9F7] px-12 py-6 text-xl font-bold uppercase tracking-widest hover:bg-[#F9F9F7] hover:text-black transition-colors flex items-center gap-4"
-             >
-                Subscribe Now <ArrowRight className="h-6 w-6" />
-             </Link>
+        <section className="max-w-[1440px] mx-auto w-full px-8 py-32 text-center flex flex-col items-center justify-center">
+             <div className="bg-neutral-900 rounded-[32px] w-full py-24 px-8 text-white relative overflow-hidden">
+                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_50%)] pointer-events-none"></div>
+                 <h2 className="font-serif text-5xl md:text-7xl leading-tight mb-8 tracking-tight relative z-10 text-balance">
+                    The end of boring presentations.
+                 </h2>
+                 <Link
+                    to="/auth"
+                    className="inline-flex items-center gap-2 bg-white text-neutral-900 px-8 py-4 rounded-full text-lg font-medium hover:bg-neutral-100 transition-transform hover:scale-105 relative z-10"
+                 >
+                    Get Started <ArrowRight className="h-5 w-5" />
+                 </Link>
+             </div>
         </section>
       </main>
 
-      <footer className="border-t border-black p-8 flex flex-col md:flex-row items-center justify-between font-mono text-sm uppercase tracking-widest bg-black text-[#F9F9F7]">
-        <Logo />
-        <div className="flex items-center gap-8 my-8 md:my-0">
-            <a href="#" className="hover:underline">Twitter</a>
-            <a href="#" className="hover:underline">GitHub</a>
-            <a href="#" className="hover:underline">Discord</a>
+      <footer className="border-t border-neutral-100 px-8 py-12 flex flex-col md:flex-row items-center justify-between text-sm text-neutral-500 max-w-[1440px] mx-auto w-full">
+        <div className="scale-90 origin-left mb-6 md:mb-0 grayscale opacity-70">
+            <Logo />
         </div>
-        <div>© 2026 ORIVOX INC.</div>
+        <div className="flex items-center gap-8 mb-6 md:mb-0">
+            <a href="#" className="hover:text-neutral-900 transition-colors">Twitter</a>
+            <a href="#" className="hover:text-neutral-900 transition-colors">GitHub</a>
+            <a href="#" className="hover:text-neutral-900 transition-colors">Discord</a>
+        </div>
+        <div>© 2026 Orivox Inc.</div>
       </footer>
     </div>
   );
