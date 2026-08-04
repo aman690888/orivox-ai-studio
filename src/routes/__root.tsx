@@ -234,7 +234,11 @@ function DynamicFontLoader() {
     .map((f) => `family=${f.replace(/ /g, "+")}:wght@300;400;500;600;700;800`)
     .join("&");
   return (
-    <link rel="stylesheet" href={`https://fonts.googleapis.com/css2?${familyParam}&display=swap`} fetchPriority="high" />
+    <link
+      rel="stylesheet"
+      href={`https://fonts.googleapis.com/css2?${familyParam}&display=swap`}
+      fetchPriority="high"
+    />
   );
 }
 

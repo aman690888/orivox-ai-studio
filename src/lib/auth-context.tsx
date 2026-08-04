@@ -23,13 +23,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const initSession = useCallback(async () => {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
+
       if (error) {
         console.error("Auth session error:", error.message);
         throw error;
       }
-      
+
       if (session?.user) {
         await ensureProfile(session.user);
         setRole(session.user.app_metadata?.role || "user");
@@ -53,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.debug(`Auth event triggered: ${event}`);
-      
+
       if ((event as string) === "SIGNED_OUT" || (event as string) === "USER_DELETED") {
         setSession(null);
         setUser(null);
@@ -73,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.error("Failed to ensure profile on auth change", error);
         }
       }
-      
+
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);

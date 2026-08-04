@@ -31,6 +31,7 @@ export const AssetRenderer: React.FC<{ asset: AssetIR; className?: string }> = (
           }
           alt={asset.alt_text || "Presentation Asset"}
           className={className || "w-full h-auto object-cover"}
+          loading="lazy"
         />
         {isEditable && isHovered && (
           <div

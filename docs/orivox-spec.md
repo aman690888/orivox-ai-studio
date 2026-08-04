@@ -1,6 +1,6 @@
 # Orivox V3 - AI Presentation Operating System Specification
 
-This document serves as the single source of truth for the Orivox V3 architecture. It outlines the technical specifications for a highly scalable, JSON-driven presentation generation engine capable of competing with state-of-the-art platforms like Gamma, Beautiful.ai, and Pitch. 
+This document serves as the single source of truth for the Orivox V3 architecture. It outlines the technical specifications for a highly scalable, JSON-driven presentation generation engine capable of competing with state-of-the-art platforms like Gamma, Beautiful.ai, and Pitch.
 
 ---
 
@@ -12,6 +12,7 @@ Orivox V3 utilizes an agentic, pipeline-driven architecture. The core principle 
 `User Prompt` → `Presentation Director` → `Research Engine` → `Story Planner` → `Layout Planner` → `Content Generator` → `Visual Planner` → `Validator` → `Renderer`
 
 ### Module Responsibilities:
+
 - **User Prompt**: The raw, natural language input or structured data provided by the user (e.g., "A 10-slide deck pitching a B2B SaaS product for HR").
 - **Presentation Director**: The orchestrator. Analyzes the prompt to define the audience, tone, global theme, and delegates tasks to specialized sub-agents.
 - **Research Engine**: Connects to search APIs and vector databases to gather factual data, statistics, and domain context.
@@ -68,6 +69,7 @@ The entire presentation state is stored as a single, master JSON document.
 ```
 
 **Field Definitions:**
+
 - `id`: Globally unique identifier for the presentation.
 - `metadata`: Contextual data guiding the AI and defining the deck's identity.
 - `theme`: The visual styling blueprint overriding defaults.
@@ -106,6 +108,7 @@ Each slide is a standalone entity with a strict schema dictating its semantic co
 ```
 
 **Field Definitions:**
+
 - `id`: Unique identifier for the slide.
 - `title`: Primary headline of the slide.
 - `purpose`: Semantic role of the slide within the story arc.
@@ -122,6 +125,7 @@ Each slide is a standalone entity with a strict schema dictating its semantic co
 The component system represents atomic pieces of content. The Renderer maps these directly to React components.
 
 ### Core Components
+
 1. **Title / Subtitle**: Text blocks with strict typography hierarchies.
 2. **Paragraph**: Body text with character limits.
 3. **Bullet List**: Array of text strings.
@@ -146,7 +150,8 @@ The component system represents atomic pieces of content. The Renderer maps thes
 22. **Callout**: Highlighted box with `type` (warning, info, tip) and `text`.
 
 ### Component Contract (Example: Statistic)
-- **JSON Schema**: 
+
+- **JSON Schema**:
   ```json
   {
     "type": "Statistic",
@@ -200,6 +205,7 @@ Layouts dictate the spatial arrangement of components. The Layout Planner assign
 Visuals are handled declaratively. The Renderer resolves the instructions into actual assets.
 
 ### Visual Types:
+
 - **Hero Image / Stock Photo**: Generated via Unsplash API or AI Image Generation (Midjourney/DALL-E).
 - **Icons**: Resolved via Lucide-react or custom SVG libraries.
 - **Charts**: Rendered using Recharts based on JSON datasets.
@@ -207,6 +213,7 @@ Visuals are handled declaratively. The Renderer resolves the instructions into a
 - **Video**: Muted MP4 loops (stock).
 
 ### Strategy & Fallbacks:
+
 - **Generation Source**: Visual Planner specifies an `intent` (e.g., "Abstract tech background"). The system resolves this asynchronously.
 - **Rendering Strategy**: Images are lazily loaded with blur-hashes.
 - **Fallback Behavior**: If an image fails to load or generate, fallback to a CSS gradient matching the theme's `accent` color. If a chart dataset is invalid, render a graceful "Data Unavailable" state rather than crashing.
@@ -218,33 +225,40 @@ Visuals are handled declaratively. The Renderer resolves the instructions into a
 Orivox V3 uses a Multi-Agent architecture to handle the complexity of presentations.
 
 ### 1. Presentation Director
+
 - **Inputs**: Raw user prompt.
 - **Outputs**: Global parameters (`audience`, `tone`, `style`), Task plan.
 - **Contract**: JSON outlining the overarching goal.
 - **Failure**: Defaults to 'General' audience and 'Professional' tone.
 
 ### 2. Research Agent
+
 - **Inputs**: Keywords from Director.
 - **Outputs**: Verified facts, sources, data points.
 - **Failure**: Returns empty source array, forcing the Content Writer to rely on foundational knowledge and avoid specific statistics.
 
 ### 3. Story Planner
+
 - **Inputs**: Prompt, Audience, Research.
 - **Outputs**: An array of slide outlines (Titles and Purposes).
 
 ### 4. Layout Planner
+
 - **Inputs**: Slide outlines.
 - **Outputs**: Assigns a specific layout ID to each slide ensuring variety (e.g., no three 'Split 50/50' layouts in a row).
 
 ### 5. Content Writer
+
 - **Inputs**: Layout constraints, Slide Purpose, Research.
 - **Outputs**: Exact JSON component data matching the layout limits (e.g., exactly 3 bullet points if assigned a Three Column layout).
 
 ### 6. Visual Planner
+
 - **Inputs**: Content Writer output.
 - **Outputs**: Search terms or generation prompts for images/icons.
 
 ### 7. Validator
+
 - **Inputs**: The final assembled JSON.
 - **Outputs**: Pass/Fail boolean + Error logs.
 - **Failure**: Kicks the JSON back to the specific offending agent (e.g., Content Writer) for regeneration.
@@ -256,6 +270,7 @@ Orivox V3 uses a Multi-Agent architecture to handle the complexity of presentati
 The Validation Engine is a strict TypeScript module that runs before saving to the database. If JSON fails, it never reaches the Renderer.
 
 **Automated Quality Rules:**
+
 - **No empty slides**: Every slide must have at least a title and one component.
 - **No placeholder text**: Rejects exact matches of "Lorem ipsum" or "Insert text here".
 - **No duplicate slides**: Detects if two slides have 90% string similarity.

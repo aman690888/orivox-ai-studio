@@ -17,7 +17,7 @@ export const Diagram: React.FC<BaseComponentProps> = ({
       const mermaidString = data.mermaid_string || "graph TD;\n  Start --> Execution;";
       // generate a unique id for the mermaid container to avoid conflicts
       const id = `mermaid-${componentId || Math.random().toString(36).substring(7)}`;
-      
+
       (async () => {
         try {
           const mermaid = (await import("mermaid")).default;

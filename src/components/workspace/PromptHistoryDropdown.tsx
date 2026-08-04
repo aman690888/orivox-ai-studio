@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { History, X, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from "motion/react";
+import { History, X, Sparkles } from "lucide-react";
 
 interface PromptHistoryDropdownProps {
   prompts: string[];
@@ -9,7 +9,13 @@ interface PromptHistoryDropdownProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-export function PromptHistoryDropdown({ prompts, onSelect, onClear, isOpen, setIsOpen }: PromptHistoryDropdownProps) {
+export function PromptHistoryDropdown({
+  prompts,
+  onSelect,
+  onClear,
+  isOpen,
+  setIsOpen,
+}: PromptHistoryDropdownProps) {
   if (prompts.length === 0) return null;
 
   return (
@@ -32,7 +38,12 @@ export function PromptHistoryDropdown({ prompts, onSelect, onClear, isOpen, setI
             style={{ borderRadius: "8px 24px 12px 24px / 24px 12px 24px 8px" }}
           >
             <div className="flex items-center justify-between px-3 py-2 border-b-[2px] border-dashed border-[#2d2d2d] bg-[#fdfbf7]">
-              <span className="text-xs font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>Recent Prompts</span>
+              <span
+                className="text-xs font-bold text-[#2d2d2d]"
+                style={{ fontFamily: "Kalam, cursive" }}
+              >
+                Recent Prompts
+              </span>
               <button
                 onClick={onClear}
                 className="text-[10px] text-[#ff4d4d] hover:underline"

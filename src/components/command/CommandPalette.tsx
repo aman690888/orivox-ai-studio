@@ -151,11 +151,20 @@ export function CommandPalette() {
                   ))}
                 </Command.Group>
               </Command.List>
-              <div className="flex items-center justify-between border-t-2 border-dashed border-[#2d2d2d] px-3 py-2 text-[11px] text-[#6b6460] font-bold" style={{ fontFamily: "Patrick Hand, cursive" }}>
+              <div
+                className="flex items-center justify-between border-t-2 border-dashed border-[#2d2d2d] px-3 py-2 text-[11px] text-[#6b6460] font-bold"
+                style={{ fontFamily: "Patrick Hand, cursive" }}
+              >
                 <span>Orivox</span>
                 <span className="flex items-center gap-2">
-                  <kbd className="rounded border border-[#2d2d2d] bg-[#e5e0d8] px-1.5 py-0.5 font-mono shadow-[1px_1px_0px_0px_#2d2d2d] text-[#2d2d2d]">↑↓</kbd> Navigate
-                  <kbd className="rounded border border-[#2d2d2d] bg-[#e5e0d8] px-1.5 py-0.5 font-mono shadow-[1px_1px_0px_0px_#2d2d2d] text-[#2d2d2d]">↵</kbd> Open
+                  <kbd className="rounded border border-[#2d2d2d] bg-[#e5e0d8] px-1.5 py-0.5 font-mono shadow-[1px_1px_0px_0px_#2d2d2d] text-[#2d2d2d]">
+                    ↑↓
+                  </kbd>{" "}
+                  Navigate
+                  <kbd className="rounded border border-[#2d2d2d] bg-[#e5e0d8] px-1.5 py-0.5 font-mono shadow-[1px_1px_0px_0px_#2d2d2d] text-[#2d2d2d]">
+                    ↵
+                  </kbd>{" "}
+                  Open
                 </span>
               </div>
             </Command>
@@ -186,7 +195,9 @@ function Item({
     >
       <Icon className="h-4 w-4 text-[#6b6460] group-aria-selected:text-[#ff4d4d]" />
       <span className="flex-1 truncate font-bold">{label}</span>
-      {hint && <span className="text-[11px] text-[#6b6460] group-aria-selected:text-gray-300">{hint}</span>}
+      {hint && (
+        <span className="text-[11px] text-[#6b6460] group-aria-selected:text-gray-300">{hint}</span>
+      )}
       <ArrowRight className="h-3.5 w-3.5 opacity-0 transition group-aria-selected:opacity-100 group-aria-selected:text-white" />
     </Command.Item>
   );

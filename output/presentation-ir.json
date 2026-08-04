@@ -55,11 +55,7 @@
       "id": "origins-01",
       "purpose": "Define AI as rule-based logic and symbolic processing",
       "layout_id": "layout-split-img-left",
-      "components": [
-        "o1-t1",
-        "o1-p1",
-        "o1-i1"
-      ],
+      "components": ["o1-t1", "o1-p1", "o1-i1"],
       "components_data": {
         "o1-t1": {
           "id": "o1-t1",
@@ -89,11 +85,7 @@
       "id": "origins-02",
       "purpose": "Illustrate limitations of rigid rule-based systems",
       "layout_id": "layout-split-img-left",
-      "components": [
-        "o2-t1",
-        "o2-b1",
-        "o2-i1"
-      ],
+      "components": ["o2-t1", "o2-b1", "o2-i1"],
       "components_data": {
         "o2-t1": {
           "id": "o2-t1",
@@ -128,10 +120,7 @@
       "id": "learning-03",
       "purpose": "Define the paradigm shift to Machine Learning",
       "layout_id": "layout-process-flow",
-      "components": [
-        "l3-t1",
-        "l3-d1"
-      ],
+      "components": ["l3-t1", "l3-d1"],
       "components_data": {
         "l3-t1": {
           "id": "l3-t1",
@@ -156,11 +145,7 @@
       "id": "learning-04",
       "purpose": "Show the dependency of modern AI on massive datasets",
       "layout_id": "layout-chart-left",
-      "components": [
-        "l4-t1",
-        "l4-c1",
-        "l4-p1"
-      ],
+      "components": ["l4-t1", "l4-c1", "l4-p1"],
       "components_data": {
         "l4-t1": {
           "id": "l4-t1",
@@ -175,19 +160,11 @@
           "data": {
             "title": "Evolution of Artificial Intelligence — Key Metrics Overview",
             "variant": "bar",
-            "labels": [
-              "LLM Parameter Growth",
-              "Compute Efficiency",
-              "Job Impact"
-            ],
+            "labels": ["LLM Parameter Growth", "Compute Efficiency", "Job Impact"],
             "datasets": [
               {
                 "label": "Performance Metric",
-                "values": [
-                  1.8,
-                  100,
-                  300
-                ]
+                "values": [1.8, 100, 300]
               }
             ]
           }
@@ -206,10 +183,7 @@
       "id": "learning-05",
       "purpose": "Explain the iterative training process",
       "layout_id": "layout-process-flow",
-      "components": [
-        "l5-t1",
-        "l5-d1"
-      ],
+      "components": ["l5-t1", "l5-d1"],
       "components_data": {
         "l5-t1": {
           "id": "l5-t1",
@@ -234,11 +208,7 @@
       "id": "daily-06",
       "purpose": "Show AI in ubiquitous applications like assistants and filters",
       "layout_id": "layout-split-img-left",
-      "components": [
-        "d6-t1",
-        "d6-p1",
-        "d6-i1"
-      ],
+      "components": ["d6-t1", "d6-p1", "d6-i1"],
       "components_data": {
         "d6-t1": {
           "id": "d6-t1",
@@ -268,11 +238,7 @@
       "id": "daily-07",
       "purpose": "Demonstrate creative capabilities in modern content generation",
       "layout_id": "layout-split-img-left",
-      "components": [
-        "d7-t1",
-        "d7-p1",
-        "d7-i1"
-      ],
+      "components": ["d7-t1", "d7-p1", "d7-i1"],
       "components_data": {
         "d7-t1": {
           "id": "d7-t1",
@@ -302,11 +268,7 @@
       "id": "daily-08",
       "purpose": "Connect daily AI exposure to specific productivity gains",
       "layout_id": "layout-split-img-left",
-      "components": [
-        "d8-t1",
-        "d8-b1",
-        "d8-i1"
-      ],
+      "components": ["d8-t1", "d8-b1", "d8-i1"],
       "components_data": {
         "d8-t1": {
           "id": "d8-t1",
@@ -341,11 +303,7 @@
       "id": "future-09",
       "purpose": "Discuss emerging trends and long-term societal impact",
       "layout_id": "layout-chart-left",
-      "components": [
-        "f9-t1",
-        "f9-c1",
-        "f9-p1"
-      ],
+      "components": ["f9-t1", "f9-c1", "f9-p1"],
       "components_data": {
         "f9-t1": {
           "id": "f9-t1",
@@ -360,19 +318,11 @@
           "data": {
             "title": "Evolution of Artificial Intelligence — Key Metrics Overview",
             "variant": "bar",
-            "labels": [
-              "LLM Parameter Growth",
-              "Compute Efficiency",
-              "Job Impact"
-            ],
+            "labels": ["LLM Parameter Growth", "Compute Efficiency", "Job Impact"],
             "datasets": [
               {
                 "label": "Performance Metric",
-                "values": [
-                  1.8,
-                  100,
-                  300
-                ]
+                "values": [1.8, 100, 300]
               }
             ]
           }
@@ -391,11 +341,7 @@
       "id": "future-10",
       "purpose": "Discuss the necessity of human-AI synergy and ethics",
       "layout_id": "layout-split-img-left",
-      "components": [
-        "f10-t1",
-        "f10-p1",
-        "f10-i1"
-      ],
+      "components": ["f10-t1", "f10-p1", "f10-i1"],
       "components_data": {
         "f10-t1": {
           "id": "f10-t1",

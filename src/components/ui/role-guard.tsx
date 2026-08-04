@@ -9,11 +9,11 @@ interface RoleGuardProps {
   redirectTo?: string;
 }
 
-export function RoleGuard({ 
-  children, 
-  allowedRoles = ["admin"], 
-  fallback = null, 
-  redirectTo 
+export function RoleGuard({
+  children,
+  allowedRoles = ["admin"],
+  fallback = null,
+  redirectTo,
 }: RoleGuardProps) {
   const { role, loading } = useAuth();
 

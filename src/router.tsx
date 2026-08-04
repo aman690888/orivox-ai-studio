@@ -22,10 +22,10 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    defaultPreload: "intent",        // preload on hover
+    defaultPreload: "intent", // preload on hover
     defaultPreloadStaleTime: 0,
-    defaultPendingMinMs: 100,        // show pending faster
-    defaultPendingMs: 500,           // avoid flash for fast loads
+    defaultPendingMinMs: 100, // show pending faster
+    defaultPendingMs: 500, // avoid flash for fast loads
   });
 
   return router;

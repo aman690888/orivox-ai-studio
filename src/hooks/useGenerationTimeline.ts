@@ -89,11 +89,11 @@ export function useGenerationTimeline(active: boolean, done?: boolean) {
     for (const p of phasesToRun) {
       cumulative += PHASE_DURATIONS[p];
       if (p !== "understanding") {
-          actualStarts[p] = now + cumulative - PHASE_DURATIONS[p];
+        actualStarts[p] = now + cumulative - PHASE_DURATIONS[p];
       }
       timers.push(window.setTimeout(() => setPhase(p), cumulative));
     }
-    
+
     setActualStartTimes(actualStarts);
     return () => timers.forEach(clearTimeout);
   }, [active]);

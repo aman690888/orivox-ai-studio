@@ -98,7 +98,6 @@ function Sidebar() {
     { name: "Settings", path: "/settings", icon: Settings, emoji: "⚙️" },
   ];
 
-
   const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "You";
   const initials = userName.charAt(0).toUpperCase();
 
@@ -142,7 +141,7 @@ function Sidebar() {
           >
             <span>✨ New Presentation</span>
           </Link>
-          
+
           <button
             onClick={open}
             className="flex items-center gap-3 w-full bg-white border-[2px] border-[#2d2d2d] px-3 py-2 text-sm shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
@@ -161,7 +160,12 @@ function Sidebar() {
 
         {/* Nav */}
         <nav className="flex flex-col gap-1.5 px-1 mb-6">
-          <p className="text-xs font-bold text-[#6b6460] uppercase tracking-wider mb-1 px-2" style={{ fontFamily: "Kalam, cursive" }}>Menu</p>
+          <p
+            className="text-xs font-bold text-[#6b6460] uppercase tracking-wider mb-1 px-2"
+            style={{ fontFamily: "Kalam, cursive" }}
+          >
+            Menu
+          </p>
           {navItems.map((item) => {
             const isActive = loc.pathname.startsWith(item.path);
             return (
@@ -181,15 +185,15 @@ function Sidebar() {
             );
           })}
         </nav>
-
-
       </div>
 
       {/* Footer Area (Credits + User) */}
       <div className="p-4 border-t-[3px] border-dashed border-[#2d2d2d] bg-white flex flex-col gap-4">
-        
         {/* Credits */}
-        <div className="flex items-center justify-between px-2 text-sm" style={{ fontFamily: "Patrick Hand, cursive" }}>
+        <div
+          className="flex items-center justify-between px-2 text-sm"
+          style={{ fontFamily: "Patrick Hand, cursive" }}
+        >
           <div className="flex items-center gap-2 font-bold text-[#2d2d2d]">
             <span>💎</span> 120 credits
           </div>
@@ -215,10 +219,15 @@ function Sidebar() {
               >
                 {userName}
               </p>
-              <p className="text-[10px] text-[#6b6460] font-bold tracking-wider uppercase">Free Plan</p>
+              <p className="text-[10px] text-[#6b6460] font-bold tracking-wider uppercase">
+                Free Plan
+              </p>
             </div>
             <button
-              onClick={(e) => { e.stopPropagation(); handleSignOut(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSignOut();
+              }}
               title="Sign out"
               className="text-[#6b6460] group-hover:text-[#ff4d4d] transition-colors flex-shrink-0 bg-white border-[1.5px] border-[#2d2d2d] p-1.5 shadow-[2px_2px_0px_0px_#2d2d2d]"
               style={{ borderRadius: "6px" }}

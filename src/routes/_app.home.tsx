@@ -1,7 +1,16 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useState, useMemo } from "react";
-import { ArrowRight, Play, Presentation as PresIcon, Zap, Clock, BarChart2, Sparkles, BookOpen } from "lucide-react";
+import {
+  ArrowRight,
+  Play,
+  Presentation as PresIcon,
+  Zap,
+  Clock,
+  BarChart2,
+  Sparkles,
+  BookOpen,
+} from "lucide-react";
 import { PromptBox } from "@/components/prompt/PromptBox";
 import { suggestions, categories } from "@/lib/mock";
 import { useAuth } from "@/lib/auth-context";
@@ -44,11 +53,15 @@ function Home() {
 
   // Real stats derived from actual data
   const totalDecks = useMemo(() => presentations.length, [presentations.length]);
-  const recentActivity = useMemo(() => presentations.slice(0, 5).map((p) => ({
-    text: p.title,
-    time: p.updated, // already formatted by timeAgo() in mapToUi
-    icon: "📄",
-  })), [presentations]);
+  const recentActivity = useMemo(
+    () =>
+      presentations.slice(0, 5).map((p) => ({
+        text: p.title,
+        time: p.updated, // already formatted by timeAgo() in mapToUi
+        icon: "📄",
+      })),
+    [presentations],
+  );
 
   return (
     <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
@@ -163,7 +176,9 @@ function Home() {
             <div className="lg:col-span-2 flex flex-col gap-4">
               <Skeleton className="w-full h-40" />
               <div className="grid grid-cols-3 gap-4">
-                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24" />)}
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className="h-24" />
+                ))}
               </div>
             </div>
             <div className="flex flex-col gap-4">
@@ -208,7 +223,6 @@ function Home() {
           <div className="flex flex-col gap-8">
             {/* Dashboard Overview Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
               {/* Left Column (Featured + Stats) */}
               <div className="lg:col-span-2 flex flex-col gap-6">
                 {/* Featured (most recent) */}
@@ -296,10 +310,16 @@ function Home() {
                         style={{ borderRadius: R.tag }}
                       >
                         <span className="mb-1">{stat.icon}</span>
-                        <span className="text-base font-bold text-[#2d2d2d] leading-tight" style={{ fontFamily: "Kalam, cursive" }}>
+                        <span
+                          className="text-base font-bold text-[#2d2d2d] leading-tight"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
                           {stat.value}
                         </span>
-                        <span className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <span
+                          className="text-xs text-[#6b6460]"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           {stat.label}
                         </span>
                       </div>
@@ -322,7 +342,10 @@ function Home() {
                 >
                   <div className="flex flex-col gap-4 mt-2">
                     {recentActivity.length === 0 ? (
-                      <p className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                      <p
+                        className="text-xs text-[#6b6460]"
+                        style={{ fontFamily: "Patrick Hand, cursive" }}
+                      >
                         No recent activity yet.
                       </p>
                     ) : (
@@ -338,7 +361,10 @@ function Home() {
                             >
                               {activity.text}
                             </p>
-                            <p className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                            <p
+                              className="text-xs text-[#6b6460]"
+                              style={{ fontFamily: "Patrick Hand, cursive" }}
+                            >
                               {activity.time}
                             </p>
                           </div>

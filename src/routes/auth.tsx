@@ -284,7 +284,7 @@ function Auth() {
   const { user, loading, refreshSession } = useAuth();
   const search = Route.useSearch();
   const isResetting = search.reset;
-  
+
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("login");
   const [signupStep, setSignupStep] = useState<SignupStep>("email");
@@ -334,11 +334,11 @@ function Auth() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { 
+        options: {
           redirectTo: `${window.location.origin}/home`,
           queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
+            access_type: "offline",
+            prompt: "consent",
           },
         },
       });
@@ -363,7 +363,8 @@ function Auth() {
 
   const parseAuthError = (err: any): string => {
     if (err?.status === 429) return "Too many attempts. Please wait a moment and try again.";
-    if (err?.message?.includes("already registered")) return "An account with this email already exists.";
+    if (err?.message?.includes("already registered"))
+      return "An account with this email already exists.";
     if (err?.message?.includes("Invalid login credentials")) return "Incorrect email or password.";
     if (err?.message?.includes("Password should be at least")) return "Password is too weak.";
     return err?.message || "An unexpected error occurred.";
@@ -396,9 +397,9 @@ function Auth() {
     setActionLoading(true);
     try {
       const sanitizedEmail = email.trim().toLowerCase();
-      const { error } = await supabase.auth.signInWithPassword({ 
-        email: sanitizedEmail, 
-        password 
+      const { error } = await supabase.auth.signInWithPassword({
+        email: sanitizedEmail,
+        password,
       });
       if (error) throw error;
       toast.success("Welcome back!");
@@ -597,25 +598,26 @@ function Auth() {
               />
 
               {/* Mode tabs (shown on email/credentials steps only) */}
-              {!isResetting && ((mode === "signup" && signupStep === "email") ||
-                (mode === "login" && loginStep === "credentials")) && (
-                <div className="flex gap-2 mb-8">
-                  {(["login", "signup"] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => resetAll(t)}
-                      className={`flex-1 py-2.5 text-base font-bold border-[2.5px] border-[#2d2d2d] transition-all duration-100 ${
-                        mode === t
-                          ? "bg-[#2d2d2d] text-white shadow-[3px_3px_0px_0px_#ff4d4d]"
-                          : "bg-[#fdfbf7] text-[#2d2d2d] hover:bg-[#e5e0d8]"
-                      }`}
-                      style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
-                    >
-                      {t === "login" ? "✌️ Sign In" : "🚀 Join Free"}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {!isResetting &&
+                ((mode === "signup" && signupStep === "email") ||
+                  (mode === "login" && loginStep === "credentials")) && (
+                  <div className="flex gap-2 mb-8">
+                    {(["login", "signup"] as const).map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => resetAll(t)}
+                        className={`flex-1 py-2.5 text-base font-bold border-[2.5px] border-[#2d2d2d] transition-all duration-100 ${
+                          mode === t
+                            ? "bg-[#2d2d2d] text-white shadow-[3px_3px_0px_0px_#ff4d4d]"
+                            : "bg-[#fdfbf7] text-[#2d2d2d] hover:bg-[#e5e0d8]"
+                        }`}
+                        style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                      >
+                        {t === "login" ? "✌️ Sign In" : "🚀 Join Free"}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
               {/* Error message */}
               {authError && (

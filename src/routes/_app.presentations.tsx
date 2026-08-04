@@ -1,6 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Presentation as PresIcon, Plus, ExternalLink, Clock, Search, SlidersHorizontal, ArrowDownAZ } from "lucide-react";
+import {
+  Presentation as PresIcon,
+  Plus,
+  ExternalLink,
+  Clock,
+  Search,
+  SlidersHorizontal,
+  ArrowDownAZ,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { getPresentations } from "@/lib/database/presentations";
@@ -34,14 +42,14 @@ function Presentations() {
   });
 
   const filteredPresentations = useMemo(() => {
-    return presentations.filter(p => {
+    return presentations.filter((p) => {
       const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFilter = activeFilter === "All" || p.category === activeFilter;
       return matchesSearch && matchesFilter;
     });
   }, [presentations, searchQuery, activeFilter]);
 
-  const categories = ["All", ...Array.from(new Set(presentations.map(p => p.category)))];
+  const categories = ["All", ...Array.from(new Set(presentations.map((p) => p.category)))];
 
   return (
     <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
@@ -85,9 +93,12 @@ function Presentations() {
         </header>
 
         {/* Filters & Actions Bar */}
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white border-[2.5px] border-[#2d2d2d] p-3 shadow-[4px_4px_0px_0px_#2d2d2d]" style={{ borderRadius: R.md }}>
+        <div
+          className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white border-[2.5px] border-[#2d2d2d] p-3 shadow-[4px_4px_0px_0px_#2d2d2d]"
+          style={{ borderRadius: R.md }}
+        >
           <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-            {categories.map(cat => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveFilter(cat)}
@@ -98,7 +109,7 @@ function Presentations() {
               </button>
             ))}
           </div>
-          
+
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative w-full md:w-64">
               <input
@@ -111,7 +122,10 @@ function Presentations() {
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b6460]" />
             </div>
-            <button className="flex items-center gap-1.5 px-3 py-2 bg-[#fdfbf7] border-[2px] border-[#2d2d2d] text-xs font-bold hover:bg-[#e5e0d8] transition-colors whitespace-nowrap" style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}>
+            <button
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#fdfbf7] border-[2px] border-[#2d2d2d] text-xs font-bold hover:bg-[#e5e0d8] transition-colors whitespace-nowrap"
+              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+            >
               <ArrowDownAZ size={14} /> Sort
             </button>
           </div>
@@ -154,7 +168,9 @@ function Presentations() {
               className="mt-2 text-base text-[#6b6460] max-w-sm"
               style={{ fontFamily: "Patrick Hand, cursive" }}
             >
-              {searchQuery ? "Try a different keyword or clear your filters." : "Head back home, type an idea, and your first deck will live here in under 30 seconds."}
+              {searchQuery
+                ? "Try a different keyword or clear your filters."
+                : "Head back home, type an idea, and your first deck will live here in under 30 seconds."}
             </p>
             {!searchQuery && (
               <Link

@@ -202,7 +202,8 @@ function Landing() {
           </nav>
           <div className="flex items-center gap-3">
             <Link
-              to="/auth" search={{ reset: false }}
+              to="/auth"
+              search={{ reset: false }}
               className="hidden md:block text-sm text-[#2d2d2d] hover:text-[#ff4d4d] transition-colors"
               style={{ fontFamily: "Patrick Hand, cursive" }}
             >

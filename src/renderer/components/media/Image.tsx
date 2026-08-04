@@ -28,6 +28,7 @@ export const Image: React.FC<BaseComponentProps> = ({
       }
       alt={data.alt_text || "Presentation graphic"}
       className="w-full aspect-video object-cover transition-transform duration-700 group-hover:scale-105"
+      loading="lazy"
     />
     {data.caption && (
       <div className="absolute bottom-0 inset-x-0 bg-black/60 backdrop-blur-md p-3">

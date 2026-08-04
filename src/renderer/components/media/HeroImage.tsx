@@ -18,6 +18,7 @@ export const HeroImage: React.FC<BaseComponentProps> = ({
       }
       alt={data.alt_text || "Hero visual"}
       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+      loading="lazy"
     />
     <div className="absolute inset-0 bg-gradient-to-t from-[#09090b]/90 via-[#09090b]/40 to-transparent pointer-events-none" />
   </div>

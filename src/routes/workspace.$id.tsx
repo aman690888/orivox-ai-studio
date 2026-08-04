@@ -165,13 +165,16 @@ function Workspace() {
     canRedo,
   } = useEditorHistory(dbSlides || []);
 
-  const setSlides = useCallback((newSlides: Slide[] | ((prev: Slide[]) => Slide[])) => {
-    setSlidesHistory((prev) => {
-      const result = typeof newSlides === "function" ? newSlides(prev) : newSlides;
-      return result;
-    });
-  }, [setSlidesHistory]);
-  
+  const setSlides = useCallback(
+    (newSlides: Slide[] | ((prev: Slide[]) => Slide[])) => {
+      setSlidesHistory((prev) => {
+        const result = typeof newSlides === "function" ? newSlides(prev) : newSlides;
+        return result;
+      });
+    },
+    [setSlidesHistory],
+  );
+
   const [title, setTitle] = useState("New presentation");
   const [initError, setInitError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(id === "new");
@@ -182,11 +185,11 @@ function Workspace() {
 
   const { sync, retry, status: saveStatus, isOnline } = usePresentationSync(id);
   const renderSlidesList = slides;
-  
+
   const isExistingPresentation =
     dbPresentation?.status === "completed" || (dbSlides && dbSlides.length > 0);
   const active = effectivePrompt.length > 0 && !isExistingPresentation;
-  
+
   const progress = useGenerationProgress(active, isExistingPresentation || false);
   const { status: genStatus, setStatus: setGenStatus, savePromptToHistory, abortRef } = progress;
 
@@ -204,7 +207,7 @@ function Workspace() {
 
   useEffect(() => {
     if (dbSlides) setSlides(dbSlides);
-  }, [dbSlides]);
+  }, [dbSlides, setSlides]);
 
   useEffect(() => {
     if (dbPresentation) {
@@ -226,11 +229,12 @@ function Workspace() {
     generationStarted.current = true;
 
     startGeneration();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, effectivePrompt, user?.id, dbPresentation, dbSlides, isSlidesLoading, queryClient]);
 
   const startGeneration = async () => {
     abortRef.current = new AbortController();
-    setGenStatus('generating');
+    setGenStatus("generating");
     savePromptToHistory(effectivePrompt);
     try {
       const result = await generateFullPresentation(effectivePrompt, {
@@ -245,18 +249,18 @@ function Workspace() {
       }
       await updatePresentation(id, updates);
       setSlides(savedSlides);
-      setGenStatus('success');
+      setGenStatus("success");
       queryClient.invalidateQueries({ queryKey: ["slides", id] });
       queryClient.invalidateQueries({ queryKey: ["presentation", id] });
     } catch (err) {
       if (abortRef.current?.signal.aborted) return;
-      setGenStatus('error');
+      setGenStatus("error");
     }
   };
 
   useEffect(() => {
-    if (progress.status === 'cancelled') {
-      import('sonner').then(({ toast }) => toast.info('Generation cancelled'));
+    if (progress.status === "cancelled") {
+      import("sonner").then(({ toast }) => toast.info("Generation cancelled"));
     }
   }, [progress.status]);
 
@@ -367,13 +371,25 @@ function Workspace() {
           undo();
         }
       }
-      
+
       // Slide navigation
-      if (e.key === "ArrowRight" && !e.shiftKey && !e.metaKey && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
-        setActiveSlide(prev => Math.min(slides.length - 1, prev + 1));
+      if (
+        e.key === "ArrowRight" &&
+        !e.shiftKey &&
+        !e.metaKey &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
+      ) {
+        setActiveSlide((prev) => Math.min(slides.length - 1, prev + 1));
       }
-      if (e.key === "ArrowLeft" && !e.shiftKey && !e.metaKey && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
-        setActiveSlide(prev => Math.max(0, prev - 1));
+      if (
+        e.key === "ArrowLeft" &&
+        !e.shiftKey &&
+        !e.metaKey &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA"
+      ) {
+        setActiveSlide((prev) => Math.max(0, prev - 1));
       }
 
       // Deselect on Escape
@@ -387,13 +403,14 @@ function Workspace() {
   }, [undo, redo, slides.length]);
 
   const gen = {
-    isReady: progress.phase === "ready" || progress.status === "success" || progress.status === "idle",
-    showOutline: progress.phasePct > 0 || progress.phase === 'ready',
+    isReady:
+      progress.phase === "ready" || progress.status === "success" || progress.status === "idle",
+    showOutline: progress.phasePct > 0 || progress.phase === "ready",
     showSlides: progress.imagePct > 0,
     showCharts: progress.chartPct > 0,
     showDiagrams: progress.diagramPct > 0,
-    steps: progress.timeline.map(t => t.step),
-    stepStatus: (i: number) => progress.timeline[i]?.status || 'pending',
+    steps: progress.timeline.map((t) => t.step),
+    stepStatus: (i: number) => progress.timeline[i]?.status || "pending",
   };
 
   const generatedCount = useMemo(() => {
@@ -405,13 +422,16 @@ function Workspace() {
     );
   }, [progress.phase, progress.imagePct, progress.chartPct, progress.diagramPct, renderSlidesList]);
 
-  const handleSlideChange = useCallback((updatedFields: Partial<Slide>) => {
-    const updatedSlides = renderSlidesList.map((s, index) =>
-      index === activeSlide ? { ...s, ...updatedFields } : s,
-    );
-    setSlides(updatedSlides);
-    if (id !== "new") sync({ title, slides: updatedSlides });
-  }, [renderSlidesList, activeSlide, setSlides, id, sync, title]);
+  const handleSlideChange = useCallback(
+    (updatedFields: Partial<Slide>) => {
+      const updatedSlides = renderSlidesList.map((s, index) =>
+        index === activeSlide ? { ...s, ...updatedFields } : s,
+      );
+      setSlides(updatedSlides);
+      if (id !== "new") sync({ title, slides: updatedSlides });
+    },
+    [renderSlidesList, activeSlide, setSlides, id, sync, title],
+  );
 
   const send = (text: string) => {
     if (!text.trim()) return;
@@ -433,10 +453,13 @@ function Workspace() {
     }, 600);
   };
 
-  const handleTitleChange = useCallback((newTitle: string) => {
-    setTitle(newTitle);
-    if (id !== "new") sync({ title: newTitle, slides: renderSlidesList });
-  }, [id, sync, renderSlidesList]);
+  const handleTitleChange = useCallback(
+    (newTitle: string) => {
+      setTitle(newTitle);
+      if (id !== "new") sync({ title: newTitle, slides: renderSlidesList });
+    },
+    [id, sync, renderSlidesList],
+  );
 
   const visibleSlides = renderSlidesList.slice(0, generatedCount);
 
@@ -600,7 +623,7 @@ function Workspace() {
         {/* Right: generating pill + chat toggle + present */}
         <div className="flex items-center gap-2">
           {active && progress.status !== "success" && progress.status !== "idle" && (
-            <AIStatusBar 
+            <AIStatusBar
               status={progress.status}
               phase={progress.phase}
               elapsedMs={progress.elapsedMs}
@@ -630,7 +653,6 @@ function Workspace() {
           </button>
         </div>
       </header>
-
 
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden relative">
@@ -832,13 +854,13 @@ function Workspace() {
                     <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.5} />
                   </button>
                 </div>
-                <PromptHistoryDropdown 
-                  prompts={progress.promptHistory} 
-                  onSelect={(p) => setComposer(p)} 
+                <PromptHistoryDropdown
+                  prompts={progress.promptHistory}
+                  onSelect={(p) => setComposer(p)}
                   onClear={() => {
-                    localStorage.removeItem('orivox_prompts');
+                    localStorage.removeItem("orivox_prompts");
                     progress.savePromptToHistory("");
-                  }} 
+                  }}
                   isOpen={historyOpen}
                   setIsOpen={setHistoryOpen}
                 />
@@ -857,7 +879,7 @@ function Workspace() {
           onClick={() => setSelectedEl(null)}
         >
           {/* Error banner */}
-          {progress.status === 'error' && (
+          {progress.status === "error" && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -993,36 +1015,66 @@ function Workspace() {
 
                   {/* Active slide (fixed aspect ratio 16:9, no overflow) */}
                   <div className="w-full relative group flex flex-col gap-3">
-                    
                     {/* Editor Controls Toolbar */}
-                    <div className="flex items-center justify-between bg-white border-[2.5px] border-[#2d2d2d] px-3 py-2 shadow-[3px_3px_0px_0px_#2d2d2d]" style={{ borderRadius: R.tag }}>
+                    <div
+                      className="flex items-center justify-between bg-white border-[2.5px] border-[#2d2d2d] px-3 py-2 shadow-[3px_3px_0px_0px_#2d2d2d]"
+                      style={{ borderRadius: R.tag }}
+                    >
                       <div className="flex items-center gap-1">
-                        <button onClick={undo} disabled={!canUndo} className="p-1.5 hover:bg-[#e5e0d8] disabled:opacity-30 rounded transition-colors" title="Undo (Ctrl+Z)">
+                        <button
+                          onClick={undo}
+                          disabled={!canUndo}
+                          className="p-1.5 hover:bg-[#e5e0d8] disabled:opacity-30 rounded transition-colors"
+                          title="Undo (Ctrl+Z)"
+                        >
                           <Undo2 size={16} strokeWidth={2.5} className="text-[#2d2d2d]" />
                         </button>
-                        <button onClick={redo} disabled={!canRedo} className="p-1.5 hover:bg-[#e5e0d8] disabled:opacity-30 rounded transition-colors" title="Redo (Ctrl+Shift+Z)">
+                        <button
+                          onClick={redo}
+                          disabled={!canRedo}
+                          className="p-1.5 hover:bg-[#e5e0d8] disabled:opacity-30 rounded transition-colors"
+                          title="Redo (Ctrl+Shift+Z)"
+                        >
                           <Redo2 size={16} strokeWidth={2.5} className="text-[#2d2d2d]" />
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 border-l-[2px] border-dashed border-[#2d2d2d]/30 pl-3">
-                        <button onClick={() => setZoomLevel(z => Math.max(0.5, z - 0.1))} className="p-1.5 hover:bg-[#e5e0d8] rounded transition-colors">
+                        <button
+                          onClick={() => setZoomLevel((z) => Math.max(0.5, z - 0.1))}
+                          className="p-1.5 hover:bg-[#e5e0d8] rounded transition-colors"
+                        >
                           <ZoomOut size={16} strokeWidth={2.5} className="text-[#2d2d2d]" />
                         </button>
-                        <span className="text-xs font-bold w-12 text-center" style={{ fontFamily: "Patrick Hand, cursive" }}>{Math.round(zoomLevel * 100)}%</span>
-                        <button onClick={() => setZoomLevel(z => Math.min(2, z + 0.1))} className="p-1.5 hover:bg-[#e5e0d8] rounded transition-colors">
+                        <span
+                          className="text-xs font-bold w-12 text-center"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
+                          {Math.round(zoomLevel * 100)}%
+                        </span>
+                        <button
+                          onClick={() => setZoomLevel((z) => Math.min(2, z + 0.1))}
+                          className="p-1.5 hover:bg-[#e5e0d8] rounded transition-colors"
+                        >
                           <ZoomIn size={16} strokeWidth={2.5} className="text-[#2d2d2d]" />
                         </button>
                       </div>
 
                       <div className="flex items-center gap-2 border-l-[2px] border-dashed border-[#2d2d2d]/30 pl-3 ml-auto">
-                        <button onClick={() => setShowHistoryPanel(!showHistoryPanel)} className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold transition-all ${showHistoryPanel ? "bg-[#2d2d2d] text-white" : "hover:bg-[#e5e0d8] text-[#2d2d2d]"}`} style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}>
+                        <button
+                          onClick={() => setShowHistoryPanel(!showHistoryPanel)}
+                          className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold transition-all ${showHistoryPanel ? "bg-[#2d2d2d] text-white" : "hover:bg-[#e5e0d8] text-[#2d2d2d]"}`}
+                          style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+                        >
                           <History size={14} strokeWidth={2.5} /> History
                         </button>
                       </div>
                     </div>
 
-                    <div className="relative w-full transition-transform duration-200 origin-top" style={{ transform: `scale(${zoomLevel})` }}>
+                    <div
+                      className="relative w-full transition-transform duration-200 origin-top"
+                      style={{ transform: `scale(${zoomLevel})` }}
+                    >
                       {/* Tilted shadow behind */}
                       <div
                         className="absolute inset-0 bg-[#e5e0d8] border-[2px] border-[#2d2d2d]"
@@ -1043,7 +1095,10 @@ function Workspace() {
                             onSelect={(id) => {
                               setSelectedEl(id);
                               // Mock position for context menu
-                              setContextMenu({ x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 200 });
+                              setContextMenu({
+                                x: window.innerWidth / 2 - 100,
+                                y: window.innerHeight / 2 - 200,
+                              });
                             }}
                             selected={selectedEl}
                             onSlideChange={handleSlideChange}
@@ -1053,7 +1108,10 @@ function Workspace() {
                       {/* Tape decoration */}
                       <div
                         className="absolute -top-4 left-1/2 w-12 h-5 bg-gray-300/60 border border-dashed border-gray-400/50"
-                        style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1.5deg)" }}
+                        style={{
+                          borderRadius: "2px",
+                          transform: "translateX(-50%) rotate(-1.5deg)",
+                        }}
                       />
                     </div>
 
@@ -1073,11 +1131,19 @@ function Workspace() {
                           }}
                         >
                           <div className="flex items-center gap-1 border-r-[2px] border-dashed border-[#2d2d2d]/30 pr-1 mr-1">
-                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]"><Type size={14} strokeWidth={2.5} /></button>
-                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]"><Bold size={14} strokeWidth={2.5} /></button>
-                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]"><Italic size={14} strokeWidth={2.5} /></button>
+                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]">
+                              <Type size={14} strokeWidth={2.5} />
+                            </button>
+                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]">
+                              <Bold size={14} strokeWidth={2.5} />
+                            </button>
+                            <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]">
+                              <Italic size={14} strokeWidth={2.5} />
+                            </button>
                           </div>
-                          <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]"><AlignLeft size={14} strokeWidth={2.5} /></button>
+                          <button className="p-1.5 hover:bg-[#fff9c4] rounded transition-colors text-[#2d2d2d]">
+                            <AlignLeft size={14} strokeWidth={2.5} />
+                          </button>
                           <button className="p-1.5 hover:bg-[#ff4d4d]/10 hover:text-[#ff4d4d] rounded transition-colors ml-1 text-[#6b6460]">
                             <Trash size={14} strokeWidth={2.5} />
                           </button>
@@ -1192,22 +1258,51 @@ function Workspace() {
               </div>
               <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                  <div className="text-xs font-bold text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>Today</div>
-                  <button className="flex flex-col text-left p-3 border-[2.5px] border-[#2d2d2d] bg-white shadow-[3px_3px_0px_0px_#2d2d2d] transition-all hover:bg-[#fff9c4] group" style={{ borderRadius: R.tag }}>
+                  <div
+                    className="text-xs font-bold text-[#6b6460]"
+                    style={{ fontFamily: "Kalam, cursive" }}
+                  >
+                    Today
+                  </div>
+                  <button
+                    className="flex flex-col text-left p-3 border-[2.5px] border-[#2d2d2d] bg-white shadow-[3px_3px_0px_0px_#2d2d2d] transition-all hover:bg-[#fff9c4] group"
+                    style={{ borderRadius: R.tag }}
+                  >
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Patrick Hand, cursive" }}>Current Version</span>
+                      <span
+                        className="text-sm font-bold text-[#2d2d2d]"
+                        style={{ fontFamily: "Patrick Hand, cursive" }}
+                      >
+                        Current Version
+                      </span>
                       <span className="text-[10px] text-[#6b6460]">Just now</span>
                     </div>
                   </button>
-                  <button className="flex flex-col text-left p-3 border-[2.5px] border-dashed border-[#2d2d2d]/30 bg-transparent hover:border-solid hover:border-[#2d2d2d] hover:bg-white transition-all group" style={{ borderRadius: R.tag }}>
+                  <button
+                    className="flex flex-col text-left p-3 border-[2.5px] border-dashed border-[#2d2d2d]/30 bg-transparent hover:border-solid hover:border-[#2d2d2d] hover:bg-white transition-all group"
+                    style={{ borderRadius: R.tag }}
+                  >
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-sm font-bold text-[#6b6460] group-hover:text-[#2d2d2d]" style={{ fontFamily: "Patrick Hand, cursive" }}>AI Auto-save</span>
+                      <span
+                        className="text-sm font-bold text-[#6b6460] group-hover:text-[#2d2d2d]"
+                        style={{ fontFamily: "Patrick Hand, cursive" }}
+                      >
+                        AI Auto-save
+                      </span>
                       <span className="text-[10px] text-[#6b6460]">12:43 PM</span>
                     </div>
                   </button>
-                  <button className="flex flex-col text-left p-3 border-[2.5px] border-dashed border-[#2d2d2d]/30 bg-transparent hover:border-solid hover:border-[#2d2d2d] hover:bg-white transition-all group" style={{ borderRadius: R.tag }}>
+                  <button
+                    className="flex flex-col text-left p-3 border-[2.5px] border-dashed border-[#2d2d2d]/30 bg-transparent hover:border-solid hover:border-[#2d2d2d] hover:bg-white transition-all group"
+                    style={{ borderRadius: R.tag }}
+                  >
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-sm font-bold text-[#6b6460] group-hover:text-[#2d2d2d]" style={{ fontFamily: "Patrick Hand, cursive" }}>Initial Generation</span>
+                      <span
+                        className="text-sm font-bold text-[#6b6460] group-hover:text-[#2d2d2d]"
+                        style={{ fontFamily: "Patrick Hand, cursive" }}
+                      >
+                        Initial Generation
+                      </span>
                       <span className="text-[10px] text-[#6b6460]">11:20 AM</span>
                     </div>
                   </button>
