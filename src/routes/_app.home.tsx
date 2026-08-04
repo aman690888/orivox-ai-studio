@@ -279,61 +279,7 @@ function Home() {
                   </section>
                 )}
 
-                {/* Workspace Statistics */}
-                <section className="flex flex-col gap-3">
-                   <div
-                      className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
-                      style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
-                    >
-                      📊 Workspace Stats
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      {[
-                        { label: "Total Decks", value: "24", emoji: "📁" },
-                        { label: "AI Prompts", value: "142", emoji: "✨" },
-                        { label: "Views", value: "1.2k", emoji: "👀" },
-                      ].map((stat, i) => (
-                        <div key={i} className="bg-white border-[2px] border-[#2d2d2d] p-4 flex flex-col items-center justify-center text-center shadow-[3px_3px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#2d2d2d] transition-all" style={{ borderRadius: R.tag }}>
-                          <span className="text-2xl mb-1">{stat.emoji}</span>
-                          <span className="text-xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{stat.value}</span>
-                          <span className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>{stat.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                </section>
-              </div>
 
-              {/* Right Column (Recent Activity) */}
-              <div className="flex flex-col gap-3">
-                <div
-                    className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
-                    style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
-                  >
-                    ⚡ Recent Activity
-                  </div>
-                  <div className="flex-1 bg-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] p-4 overflow-hidden relative" style={{ borderRadius: R.md }}>
-                    <div className="absolute top-2 right-4 w-4 h-8 bg-gray-300/50 border border-dashed border-gray-400/40 rounded-[2px] rotate-[15deg]" />
-                    <div className="flex flex-col gap-4 mt-2">
-                      {[
-                        { text: "Created Marketing Plan", time: "2h ago", icon: "✨" },
-                        { text: "Exported Q3 Board Deck", time: "5h ago", icon: "📥" },
-                        { text: "Shared Pitch Deck", time: "1d ago", icon: "🔗" },
-                        { text: "Changed Theme to Neon", time: "2d ago", icon: "🎨" },
-                        { text: "Added 5 slides", time: "3d ago", icon: "➕" }
-                      ].map((activity, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <div className="w-6 h-6 shrink-0 bg-[#fdfbf7] border-[1.5px] border-[#2d2d2d] flex items-center justify-center text-[10px] rounded-full">
-                            {activity.icon}
-                          </div>
-                          <div>
-                            <p className="text-sm text-[#2d2d2d] font-bold" style={{ fontFamily: "Kalam, cursive" }}>{activity.text}</p>
-                            <p className="text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>{activity.time}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-              </div>
             </div>
 
             {/* Recent decks */}

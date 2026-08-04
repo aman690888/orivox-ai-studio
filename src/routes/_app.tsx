@@ -84,10 +84,6 @@ function Sidebar() {
     { name: "Settings", path: "/settings", icon: Settings, emoji: "⚙️" },
   ];
 
-  const favorites = [
-    { id: "fav1", name: "Q3 Board Deck", emoji: "📈" },
-    { id: "fav2", name: "Marketing Plan", emoji: "🎯" },
-  ];
 
   const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "You";
   const initials = userName.charAt(0).toUpperCase();
@@ -172,24 +168,7 @@ function Sidebar() {
           })}
         </nav>
 
-        {/* Favorites */}
-        <nav className="flex flex-col gap-1.5 px-1 mb-6">
-          <div className="flex items-center justify-between mb-1 px-2">
-            <p className="text-xs font-bold text-[#6b6460] uppercase tracking-wider" style={{ fontFamily: "Kalam, cursive" }}>Favorites</p>
-          </div>
-          {favorites.map((fav) => (
-            <Link
-              key={fav.id}
-              to="/workspace/$id"
-              params={{ id: fav.id }}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm transition-colors text-[#4a4440] hover:text-[#2d2d2d] hover:bg-[#e5e0d8]/50 rounded-md"
-              style={{ fontFamily: "Patrick Hand, cursive" }}
-            >
-              <span>{fav.emoji}</span>
-              <span className="truncate">{fav.name}</span>
-            </Link>
-          ))}
-        </nav>
+
       </div>
 
       {/* Footer Area (Credits + User) */}
