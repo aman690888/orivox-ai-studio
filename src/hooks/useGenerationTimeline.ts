@@ -41,9 +41,23 @@ const phaseToStepIndex: Record<GenPhase, number> = {
   ready: 10,
 };
 
+export const PHASE_DURATIONS: Record<GenPhase, number> = {
+  idle: 0,
+  understanding: 400,
+  researching: 1800,
+  outlining: 2200,
+  designing: 2500,
+  charting: 1800,
+  diagramming: 1800,
+  noting: 1500,
+  reviewing: 1200,
+  ready: 0,
+};
+
 export function useGenerationTimeline(active: boolean, done?: boolean) {
   const [phase, setPhase] = useState<GenPhase>("idle");
   const started = useRef(false);
+  const [actualStartTimes, setActualStartTimes] = useState<Partial<Record<GenPhase, number>>>({});
 
   // When done becomes true, immediately jump to "ready" phase
   useEffect(() => {
@@ -56,26 +70,31 @@ export function useGenerationTimeline(active: boolean, done?: boolean) {
     if (!active || started.current) return;
     started.current = true;
 
-    // Run through phases quickly (visual progress indicator).
-    // The "ready" phase is overridden by the `done` signal above.
-    const timings: [GenPhase, number][] = [
-      ["understanding", 400],
-      ["researching", 1800],
-      ["outlining", 2200],
-      ["designing", 2500],
-      ["charting", 1800],
-      ["diagramming", 1800],
-      ["noting", 1500],
-      ["reviewing", 1200],
-      // "ready" is NOT triggered here — it fires when done=true
-    ];
-
+    const now = Date.now();
     let cumulative = 0;
     const timers: number[] = [];
-    for (const [p, wait] of timings) {
-      cumulative += wait;
+    const actualStarts: Partial<Record<GenPhase, number>> = { understanding: now };
+
+    const phasesToRun: GenPhase[] = [
+      "understanding",
+      "researching",
+      "outlining",
+      "designing",
+      "charting",
+      "diagramming",
+      "noting",
+      "reviewing",
+    ];
+
+    for (const p of phasesToRun) {
+      cumulative += PHASE_DURATIONS[p];
+      if (p !== "understanding") {
+          actualStarts[p] = now + cumulative - PHASE_DURATIONS[p];
+      }
       timers.push(window.setTimeout(() => setPhase(p), cumulative));
     }
+    
+    setActualStartTimes(actualStarts);
     return () => timers.forEach(clearTimeout);
   }, [active]);
 
@@ -109,5 +128,6 @@ export function useGenerationTimeline(active: boolean, done?: boolean) {
     showCharts,
     showDiagrams,
     showNotes,
+    actualStartTimes,
   };
 }

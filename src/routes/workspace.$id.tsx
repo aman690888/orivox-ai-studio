@@ -33,7 +33,10 @@ import {
 import { AIThinking } from "@/components/workspace/AIThinking";
 import { AIAssistant, ElementSelectedPanel } from "@/components/workspace/RightPanels";
 import { SlideCanvas } from "@/components/workspace/SlideCanvas";
-import { useGenerationTimeline } from "@/hooks/useGenerationTimeline";
+import { useGenerationProgress } from "@/hooks/useGenerationProgress";
+import { GenerationOverlay } from "@/components/workspace/GenerationOverlay";
+import { AIStatusBar } from "@/components/workspace/AIStatusBar";
+import { PromptHistoryDropdown } from "@/components/workspace/PromptHistoryDropdown";
 import { useEditorHistory } from "@/hooks/useEditorHistory";
 import { Slide } from "@/lib/mock";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -168,16 +171,22 @@ function Workspace() {
   }, [setSlidesHistory]);
   
   const [title, setTitle] = useState("New presentation");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationError, setGenerationError] = useState<string | null>(null);
   const [initError, setInitError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(id === "new");
   const generationStarted = useRef(false);
   const creationStarted = useRef(false);
   const [effectivePrompt, setEffectivePrompt] = useState(seededPrompt);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const { sync, retry, status: saveStatus, isOnline } = usePresentationSync(id);
   const renderSlidesList = slides;
+  
+  const isExistingPresentation =
+    dbPresentation?.status === "completed" || (dbSlides && dbSlides.length > 0);
+  const active = effectivePrompt.length > 0 && !isExistingPresentation;
+  
+  const progress = useGenerationProgress(active, isExistingPresentation || false);
+  const { status: genStatus, setStatus: setGenStatus, savePromptToHistory, abortRef } = progress;
 
   useEffect(() => {
     if (presError) {
@@ -214,31 +223,40 @@ function Workspace() {
     if (isCompleted || hasExistingSlides || generationStarted.current) return;
     generationStarted.current = true;
 
-    const startGeneration = async () => {
-      setIsGenerating(true);
-      setGenerationError(null);
-      try {
-        const result = await generateFullPresentation(effectivePrompt, {
-          config: { provider: "gemini" },
-        });
-        const savedSlides = await saveSlides(id, result.slides);
-        const updates: any = { status: "completed" };
-        if (result.title) {
-          updates.title = result.title;
-          setTitle(result.title);
-        }
-        await updatePresentation(id, updates);
-        setSlides(savedSlides);
-        queryClient.invalidateQueries({ queryKey: ["slides", id] });
-        queryClient.invalidateQueries({ queryKey: ["presentation", id] });
-      } catch (err) {
-        setGenerationError(err instanceof Error ? err.message : "Generation failed. Please retry.");
-      } finally {
-        setIsGenerating(false);
-      }
-    };
     startGeneration();
   }, [id, effectivePrompt, user?.id, dbPresentation, dbSlides, isSlidesLoading, queryClient]);
+
+  const startGeneration = async () => {
+    abortRef.current = new AbortController();
+    setGenStatus('generating');
+    savePromptToHistory(effectivePrompt);
+    try {
+      const result = await generateFullPresentation(effectivePrompt, {
+        config: { provider: "gemini" },
+      });
+      if (abortRef.current.signal.aborted) return;
+      const savedSlides = await saveSlides(id, result.slides);
+      const updates: any = { status: "completed" };
+      if (result.title) {
+        updates.title = result.title;
+        setTitle(result.title);
+      }
+      await updatePresentation(id, updates);
+      setSlides(savedSlides);
+      setGenStatus('success');
+      queryClient.invalidateQueries({ queryKey: ["slides", id] });
+      queryClient.invalidateQueries({ queryKey: ["presentation", id] });
+    } catch (err) {
+      if (abortRef.current?.signal.aborted) return;
+      setGenStatus('error');
+    }
+  };
+
+  useEffect(() => {
+    if (progress.status === 'cancelled') {
+      import('sonner').then(({ toast }) => toast.info('Generation cancelled'));
+    }
+  }, [progress.status]);
 
   useEffect(() => {
     const initNew = async () => {
@@ -366,19 +384,14 @@ function Workspace() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [undo, redo, slides.length]);
 
-  const isExistingPresentation =
-    dbPresentation?.status === "completed" || (dbSlides && dbSlides.length > 0);
-  const active = effectivePrompt.length > 0 && !isExistingPresentation;
-  const generationCompleted = (active && !isGenerating && generationStarted.current) || false;
-  const gen = useGenerationTimeline(
-    active && isGenerating,
-    generationCompleted || !!isExistingPresentation,
-  );
-
-  const handleTitleChange = (newTitle: string) => {
-    setTitle(newTitle);
-    if (id !== "new") sync({ title: newTitle, slides: renderSlidesList });
-  };
+  const generatedCount = useMemo(() => {
+    if (progress.phase === "ready") return renderSlidesList.length;
+    if (!progress.imagePct) return 0;
+    return Math.min(
+      renderSlidesList.length,
+      2 + (progress.chartPct > 0 ? 2 : 0) + (progress.diagramPct > 0 ? 2 : 0),
+    );
+  }, [progress.phase, progress.imagePct, progress.chartPct, progress.diagramPct, renderSlidesList]);
 
   const handleSlideChange = (updatedFields: Partial<Slide>) => {
     const updatedSlides = renderSlidesList.map((s, index) =>
@@ -408,14 +421,10 @@ function Workspace() {
     }, 600);
   };
 
-  const generatedCount = useMemo(() => {
-    if (gen.isReady) return renderSlidesList.length;
-    if (!gen.showSlides) return 0;
-    return Math.min(
-      renderSlidesList.length,
-      2 + (gen.showCharts ? 2 : 0) + (gen.showDiagrams ? 2 : 0),
-    );
-  }, [gen.isReady, gen.showSlides, gen.showCharts, gen.showDiagrams, renderSlidesList]);
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    if (id !== "new") sync({ title: newTitle, slides: renderSlidesList });
+  };
 
   const visibleSlides = renderSlidesList.slice(0, generatedCount);
 
@@ -578,14 +587,14 @@ function Workspace() {
 
         {/* Right: generating pill + chat toggle + present */}
         <div className="flex items-center gap-2">
-          {active && !gen.isReady && (
-            <div
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] animate-wiggle"
-              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
-            >
-              <span className="w-2 h-2 rounded-full bg-[#ff4d4d] animate-pulse" />
-              Generating...
-            </div>
+          {active && progress.status !== "ready" && progress.status !== "success" && progress.status !== "idle" && (
+            <AIStatusBar 
+              status={progress.status}
+              phase={progress.phase}
+              elapsedMs={progress.elapsedMs}
+              networkError={progress.networkError}
+              onCancel={progress.cancel}
+            />
           )}
           <button
             onClick={() => setIsChatOpen(!isChatOpen)}
@@ -601,7 +610,7 @@ function Workspace() {
           </button>
           <button
             onClick={() => navigate({ to: "/present/$id", params: { id } })}
-            disabled={!gen.isReady}
+            disabled={progress.status !== "success" && !isExistingPresentation}
             className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold bg-[#ff4d4d] text-white border-[2.5px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-[3px_3px_0px_0px_#2d2d2d] disabled:hover:translate-x-0 disabled:hover:translate-y-0 transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
@@ -676,10 +685,10 @@ function Workspace() {
                         className="overflow-hidden"
                       >
                         <div className="space-y-2 px-4 pb-3">
-                          {gen.steps.map((s, i) => {
-                            const st = gen.stepStatus(i);
+                          {progress.timeline.map((s, i) => {
+                            const st = s.status;
                             return (
-                              <div key={s} className="flex items-center gap-2 text-xs">
+                              <div key={s.step} className="flex items-center gap-2 text-xs">
                                 <span className="flex h-4 w-4 items-center justify-center shrink-0">
                                   {st === "done" && (
                                     <Check
@@ -704,7 +713,7 @@ function Workspace() {
                                   }
                                   style={{ fontFamily: "Patrick Hand, cursive" }}
                                 >
-                                  {s}
+                                  {s.step}
                                 </span>
                               </div>
                             );
@@ -783,7 +792,7 @@ function Workspace() {
               </div>
 
               {/* Composer */}
-              <div className="p-3 border-t-[2px] border-dashed border-[#2d2d2d]">
+              <div className="p-3 border-t-[2px] border-dashed border-[#2d2d2d] flex flex-col gap-2">
                 <div
                   className="flex items-end gap-2 bg-white border-[2px] border-[#2d2d2d] p-1.5 focus-within:border-[#2d5da1] focus-within:ring-2 focus-within:ring-[#2d5da1]/20 transition-all"
                   style={{ borderRadius: R.input }}
@@ -811,6 +820,16 @@ function Workspace() {
                     <ArrowUp className="h-3.5 w-3.5" strokeWidth={2.5} />
                   </button>
                 </div>
+                <PromptHistoryDropdown 
+                  prompts={progress.promptHistory} 
+                  onSelect={(p) => setComposer(p)} 
+                  onClear={() => {
+                    localStorage.removeItem('orivox_prompts');
+                    progress.savePromptToHistory("");
+                  }} 
+                  isOpen={historyOpen}
+                  setIsOpen={setHistoryOpen}
+                />
               </div>
             </motion.aside>
           )}
