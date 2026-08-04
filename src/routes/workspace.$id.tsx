@@ -119,6 +119,8 @@ function Workspace() {
   const [title, setTitle] = useState("New presentation");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [initError, setInitError] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(id === "new");
   const generationStarted = useRef(false);
   const creationStarted = useRef(false);
   const [effectivePrompt, setEffectivePrompt] = useState(seededPrompt);
@@ -170,15 +172,28 @@ function Workspace() {
 
   useEffect(() => {
     const initNew = async () => {
-      if (id === "new" && user?.id && !creationStarted.current) {
-        creationStarted.current = true;
-        try {
-          const presentationTitle = seededPrompt
-            ? seededPrompt.length > 50 ? seededPrompt.slice(0, 50) + "..." : seededPrompt
-            : "Untitled Presentation";
-          const newPres = await createPresentation(user.id, presentationTitle, "Research", "electric", JSON.stringify({ prompt: seededPrompt || null }));
-          navigate({ to: "/workspace/$id", params: { id: newPres.id }, search: { prompt } });
-        } catch {}
+      if (id !== "new" || !user?.id || creationStarted.current) return;
+      creationStarted.current = true;
+      setIsCreating(true);
+      setInitError(null);
+      try {
+        const presentationTitle = seededPrompt
+          ? seededPrompt.length > 50 ? seededPrompt.slice(0, 50) + "..." : seededPrompt
+          : "Untitled Presentation";
+        const newPres = await createPresentation(
+          user.id,
+          presentationTitle,
+          "Research",
+          "electric",
+          JSON.stringify({ prompt: seededPrompt || null }),
+        );
+        navigate({ to: "/workspace/$id", params: { id: newPres.id }, search: { prompt } });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Could not create presentation. Check your connection and try again.";
+        console.error("createPresentation failed:", err);
+        setInitError(msg);
+        setIsCreating(false);
+        creationStarted.current = false; // allow retry
       }
     };
     initNew();
@@ -259,8 +274,47 @@ function Workspace() {
 
   const visibleSlides = renderSlidesList.slice(0, generatedCount);
 
-  // ── Loading state ──
-  if (loading || isPresLoading || isSlidesLoading || id === "new") {
+  // ── Init error state (createPresentation failed) ──
+  if (initError) {
+    return (
+      <div
+        className="flex min-h-screen flex-col items-center justify-center px-4 text-center"
+        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+      >
+        <div
+          className="p-10 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d] flex flex-col items-center gap-5 max-w-md"
+          style={{ borderRadius: R.card }}
+        >
+          <div className="text-5xl">😬</div>
+          <h1 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+            Couldn't create presentation
+          </h1>
+          <p className="text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+            {initError}
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setInitError(null); creationStarted.current = false; setIsCreating(true); }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#ff4d4d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+            >
+              Retry
+            </button>
+            <Link
+              to="/home"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:text-[#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+            >
+              <ArrowLeft size={14} strokeWidth={2.5} /> Back Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Loading state (initial load OR creating a new presentation) ──
+  if (loading || isPresLoading || isSlidesLoading || isCreating) {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
@@ -271,7 +325,7 @@ function Workspace() {
           style={{ borderRadius: R.card }}
         >
           <div
-            className="w-16 h-16 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-3xl animate-gentle-bounce shadow-[3px_3px_0px_0px_#2d2d2d]"
+            className="w-16 h-16 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-3xl animate-bounce shadow-[3px_3px_0px_0px_#2d2d2d]"
             style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
           >
             ✏️
@@ -279,12 +333,15 @@ function Workspace() {
           <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
             Setting up workspace...
           </p>
+          <p className="text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+            Creating your presentation in Supabase...
+          </p>
         </div>
       </div>
     );
   }
 
-  // ── Error state ──
+  // ── Presentation not found ──
   if (presError || !dbPresentation) {
     return (
       <div
@@ -295,7 +352,7 @@ function Workspace() {
           className="p-10 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d] flex flex-col items-center gap-5"
           style={{ borderRadius: R.card }}
         >
-          <div className="text-5xl animate-wiggle">😬</div>
+          <div className="text-5xl">😬</div>
           <h1 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
             Presentation not found
           </h1>
@@ -313,6 +370,7 @@ function Workspace() {
       </div>
     );
   }
+
 
   if (!user) return null;
 
