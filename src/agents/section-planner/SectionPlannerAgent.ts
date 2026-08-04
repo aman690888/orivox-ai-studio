@@ -3,9 +3,12 @@ import { IModelRouter } from "@/orchestrator/ModelRouter";
 import { ClarificationRequest } from "@/agents/intent/types";
 import { SectionPlannerInput, SectionPlanOutput, DetailedSectionPlan } from "./types";
 
-export class SectionPlannerAgent implements IAgent<SectionPlannerInput, SectionPlanOutput | ClarificationRequest> {
+export class SectionPlannerAgent implements IAgent<
+  SectionPlannerInput,
+  SectionPlanOutput | ClarificationRequest
+> {
   public id = "section-planner-agent";
-  
+
   public model_requirements: ModelCapabilities = {
     needs_reasoning: true,
     needs_json_mode: true,
@@ -15,11 +18,14 @@ export class SectionPlannerAgent implements IAgent<SectionPlannerInput, SectionP
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: SectionPlannerInput, signal: AbortSignal): Promise<SectionPlanOutput | ClarificationRequest> {
+  public async execute(
+    context: SectionPlannerInput,
+    signal: AbortSignal,
+  ): Promise<SectionPlanOutput | ClarificationRequest> {
     const rawResponse = await this.modelRouter.routeToJSON<any>(
       this.buildPrompt(context),
       this.model_requirements,
-      signal
+      signal,
     );
 
     if (rawResponse.clarificationRequired) {
@@ -39,34 +45,45 @@ export class SectionPlannerAgent implements IAgent<SectionPlannerInput, SectionP
   }
 
   private parse(rawPayload: any): SectionPlanOutput {
-    const sections: DetailedSectionPlan[] = Array.isArray(rawPayload?.sections) ? rawPayload.sections.map((sec: any) => ({
-      section_id: sec.section_id || `sec-${Math.random().toString(36).substr(2, 9)}`,
-      title: sec.title || "Untitled Section",
-      purpose: sec.purpose || "Context",
-      narrative_role: sec.narrative_role || "Introduction",
-      estimated_slide_count: typeof sec.estimated_slide_count === "number" ? sec.estimated_slide_count : 1,
-      priority: sec.priority || "Medium",
-      required: typeof sec.required === "boolean" ? sec.required : true,
-      dependencies: Array.isArray(sec.dependencies) ? sec.dependencies : [],
-      audience_focus: sec.audience_focus || "General",
-      complexity: sec.complexity || "Intermediate",
-      pacing: sec.pacing || "Moderate",
-      transition_strategy: sec.transition_strategy || "Direct cut",
-      confidence_score: typeof sec.confidence_score === "number" ? sec.confidence_score : 1.0,
-    })) : [];
+    const sections: DetailedSectionPlan[] = Array.isArray(rawPayload?.sections)
+      ? rawPayload.sections.map((sec: any) => ({
+          section_id: sec.section_id || `sec-${Math.random().toString(36).substr(2, 9)}`,
+          title: sec.title || "Untitled Section",
+          purpose: sec.purpose || "Context",
+          narrative_role: sec.narrative_role || "Introduction",
+          estimated_slide_count:
+            typeof sec.estimated_slide_count === "number" ? sec.estimated_slide_count : 1,
+          priority: sec.priority || "Medium",
+          required: typeof sec.required === "boolean" ? sec.required : true,
+          dependencies: Array.isArray(sec.dependencies) ? sec.dependencies : [],
+          audience_focus: sec.audience_focus || "General",
+          complexity: sec.complexity || "Intermediate",
+          pacing: sec.pacing || "Moderate",
+          transition_strategy: sec.transition_strategy || "Direct cut",
+          confidence_score: typeof sec.confidence_score === "number" ? sec.confidence_score : 1.0,
+        }))
+      : [];
 
     return {
       sections,
       overall_pacing_strategy: rawPayload?.overall_pacing_strategy || "Linear progression",
-      global_confidence_score: typeof rawPayload?.global_confidence_score === "number" ? rawPayload.global_confidence_score : 1.0,
+      global_confidence_score:
+        typeof rawPayload?.global_confidence_score === "number"
+          ? rawPayload.global_confidence_score
+          : 1.0,
     };
   }
 
-  private validate(plan: SectionPlanOutput, targetSlideCount: number): SectionPlanOutput | ClarificationRequest {
+  private validate(
+    plan: SectionPlanOutput,
+    targetSlideCount: number,
+  ): SectionPlanOutput | ClarificationRequest {
     if (plan.global_confidence_score < this.MIN_CONFIDENCE_THRESHOLD) {
       return {
         clarificationRequired: true,
-        questions: ["The presentation logic is disjointed. Can you clarify the relationship between the proposed sections?"],
+        questions: [
+          "The presentation logic is disjointed. Can you clarify the relationship between the proposed sections?",
+        ],
         missingFields: ["sections.dependencies", "sections.purpose"],
       };
     }
@@ -77,21 +94,25 @@ export class SectionPlannerAgent implements IAgent<SectionPlannerInput, SectionP
 
     // Verify slide math matches upstream presentation planner constraints
     let calculatedSlides = 0;
-    plan.sections.forEach(sec => {
+    plan.sections.forEach((sec) => {
       calculatedSlides += sec.estimated_slide_count;
     });
 
     if (calculatedSlides !== targetSlideCount) {
       // Throw an error intended to be caught by the Orchestrator's RetryManager for an intelligent retry
-      throw new Error(`[SectionPlannerAgent] Validation Error: Sum of section slide counts (${calculatedSlides}) does not match the target presentation slide count (${targetSlideCount}).`);
+      throw new Error(
+        `[SectionPlannerAgent] Validation Error: Sum of section slide counts (${calculatedSlides}) does not match the target presentation slide count (${targetSlideCount}).`,
+      );
     }
 
     // Verify all dependencies exist in the current plan
-    const sectionIds = new Set(plan.sections.map(s => s.section_id));
-    plan.sections.forEach(sec => {
-      sec.dependencies.forEach(dep => {
+    const sectionIds = new Set(plan.sections.map((s) => s.section_id));
+    plan.sections.forEach((sec) => {
+      sec.dependencies.forEach((dep) => {
         if (!sectionIds.has(dep)) {
-           throw new Error(`[SectionPlannerAgent] Validation Error: Section '${sec.section_id}' depends on non-existent section '${dep}'.`);
+          throw new Error(
+            `[SectionPlannerAgent] Validation Error: Section '${sec.section_id}' depends on non-existent section '${dep}'.`,
+          );
         }
       });
     });

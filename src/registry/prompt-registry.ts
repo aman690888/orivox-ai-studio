@@ -25,7 +25,7 @@ export const PromptRegistry: Record<string, PromptTemplateDef> = {
         template: "You are an expert Presentation Strategist...",
         compatible_models: ["gpt-4o", "claude-3-5-sonnet"],
         change_history: "Initial version",
-      }
-    }
-  }
+      },
+    },
+  },
 };

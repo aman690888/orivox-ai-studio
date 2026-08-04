@@ -7,11 +7,11 @@
  * 5. Read them back and verify no banned content
  */
 
-const SUPABASE_URL  = "https://rlplcgeauwlooeiytdjk.supabase.co";
-const ANON_KEY      = "sb_publishable_qXfkwerpBZoogh-1vYnwRg_Kwx9Cyc9";
-const SERVICE_KEY   = process.env.SUPABASE_SERVICE_KEY ?? "";
-const TEST_PROMPT   = "11 slides on democracy in india";
-const TEST_EMAIL    = "verify-bot@orivox-pipeline.test";
+const SUPABASE_URL = "https://rlplcgeauwlooeiytdjk.supabase.co";
+const ANON_KEY = "sb_publishable_qXfkwerpBZoogh-1vYnwRg_Kwx9Cyc9";
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY ?? "";
+const TEST_PROMPT = "11 slides on democracy in india";
+const TEST_EMAIL = "verify-bot@orivox-pipeline.test";
 const TEST_PASSWORD = "pipeline-verify-2026!";
 
 const BANNED = [
@@ -28,7 +28,7 @@ const BANNED = [
 
 function bannedIn(obj: unknown): string[] {
   const t = JSON.stringify(obj).toLowerCase();
-  return BANNED.filter(b => t.includes(b));
+  return BANNED.filter((b) => t.includes(b));
 }
 
 function ok(v: boolean, label: string) {
@@ -40,8 +40,8 @@ async function post(url: string, body: unknown, token: string, useServiceKey = f
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-      "apikey": useServiceKey ? SERVICE_KEY : ANON_KEY,
+      Authorization: `Bearer ${token}`,
+      apikey: useServiceKey ? SERVICE_KEY : ANON_KEY,
     },
     body: JSON.stringify(body),
   });
@@ -53,21 +53,26 @@ async function post(url: string, body: unknown, token: string, useServiceKey = f
 async function get(path: string, token: string) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: {
-      "Authorization": `Bearer ${token}`,
-      "apikey": SERVICE_KEY,
+      Authorization: `Bearer ${token}`,
+      apikey: SERVICE_KEY,
     },
   });
   return res.json();
 }
 
-async function invokeEdge(fn: string, body: unknown, userToken: string, attempt = 0): Promise<{ data: unknown; ms: number }> {
+async function invokeEdge(
+  fn: string,
+  body: unknown,
+  userToken: string,
+  attempt = 0,
+): Promise<{ data: unknown; ms: number }> {
   const t = Date.now();
   const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${userToken}`,
-      "apikey": ANON_KEY,
+      Authorization: `Bearer ${userToken}`,
+      apikey: ANON_KEY,
     },
     body: JSON.stringify(body),
   });
@@ -78,8 +83,10 @@ async function invokeEdge(fn: string, body: unknown, userToken: string, attempt 
   if (res.status === 429 && attempt < 4) {
     const match = text.match(/retry in ([\d.]+)s/);
     const waitSec = match ? Math.ceil(parseFloat(match[1])) + 3 : 65;
-    console.log(`  ⏳ Rate limited by Gemini. Waiting ${waitSec}s before retry (attempt ${attempt + 1}/4)...`);
-    await new Promise(r => setTimeout(r, waitSec * 1000));
+    console.log(
+      `  ⏳ Rate limited by Gemini. Waiting ${waitSec}s before retry (attempt ${attempt + 1}/4)...`,
+    );
+    await new Promise((r) => setTimeout(r, waitSec * 1000));
     return invokeEdge(fn, body, userToken, attempt + 1);
   }
 
@@ -106,7 +113,7 @@ async function run() {
     const d = await post(
       `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
       { email: TEST_EMAIL, password: TEST_PASSWORD },
-      ANON_KEY
+      ANON_KEY,
     );
     userToken = d.access_token;
     console.log("✅ Signed in:", TEST_EMAIL);
@@ -116,12 +123,12 @@ async function run() {
       `${SUPABASE_URL}/auth/v1/admin/users`,
       { email: TEST_EMAIL, password: TEST_PASSWORD, email_confirm: true },
       SERVICE_KEY,
-      true
+      true,
     );
     const d = await post(
       `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
       { email: TEST_EMAIL, password: TEST_PASSWORD },
-      ANON_KEY
+      ANON_KEY,
     );
     userToken = d.access_token;
     console.log("✅ Created and signed in:", TEST_EMAIL);
@@ -135,19 +142,21 @@ async function run() {
   const { data: outline, ms: ms0 } = await invokeEdge(
     "generate-outline",
     { prompt: TEST_PROMPT, config: { modelName: "gemini-3.1-flash-lite" } },
-    userToken
+    userToken,
   );
 
   console.log(`✅ Response received in ${ms0}ms`);
   console.log(`\nOUTLINE TITLE: "${outline.title}"`);
   console.log(`OUTLINE (${outline.outline?.length} items):`);
   (outline.outline ?? []).forEach((item: { title: string; kind: string }, i: number) => {
-    console.log(`  [${String(i+1).padStart(2)}] [${item.kind.padEnd(9)}] "${item.title}"`);
+    console.log(`  [${String(i + 1).padStart(2)}] [${item.kind.padEnd(9)}] "${item.title}"`);
   });
 
   const b0 = bannedIn(outline);
   const onTopic0 = /democracy|india/i.test(JSON.stringify(outline));
-  console.log(b0.length ? `\n❌ BANNED: ${b0.join(", ")}` : "\n✅ No banned/demo content in outline");
+  console.log(
+    b0.length ? `\n❌ BANNED: ${b0.join(", ")}` : "\n✅ No banned/demo content in outline",
+  );
   console.log(onTopic0 ? "✅ Outline is on-topic (democracy/india)" : "❌ NOT on-topic!");
 
   // ── Step 2: generate-slides ────────────────────────────────────────────────
@@ -157,7 +166,7 @@ async function run() {
   const { data: slidesResp, ms: ms1 } = await invokeEdge(
     "generate-slides",
     { outline, config: { modelName: "gemini-3.1-flash-lite" } },
-    userToken
+    userToken,
   );
 
   const slides: Array<{ title: string; kind: string; bullets?: string[]; notes?: string }> =
@@ -166,13 +175,15 @@ async function run() {
   console.log(`✅ Total slides: ${slides.length}`);
   console.log(`\nALL SLIDES:`);
   slides.forEach((s, i) => {
-    console.log(`  ${String(i+1).padStart(2)}. [${s.kind.padEnd(9)}] "${s.title}"`);
-    (s.bullets ?? []).slice(0, 2).forEach(b => console.log(`         • ${b}`));
+    console.log(`  ${String(i + 1).padStart(2)}. [${s.kind.padEnd(9)}] "${s.title}"`);
+    (s.bullets ?? []).slice(0, 2).forEach((b) => console.log(`         • ${b}`));
   });
 
   const b1 = bannedIn(slidesResp);
   const onTopic1 = /democracy|india/i.test(JSON.stringify(slidesResp));
-  console.log(b1.length ? `\n❌ BANNED: ${b1.join(", ")}` : "\n✅ No banned/demo content in slides");
+  console.log(
+    b1.length ? `\n❌ BANNED: ${b1.join(", ")}` : "\n✅ No banned/demo content in slides",
+  );
   console.log(onTopic1 ? "✅ Slides are on-topic (democracy/india)" : "❌ NOT on-topic!");
 
   // ── Step 3: Save to DB and verify ─────────────────────────────────────────
@@ -182,7 +193,7 @@ async function run() {
   // Get user id
   const userData = await (async () => {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: { "Authorization": `Bearer ${userToken}`, "apikey": ANON_KEY },
+      headers: { Authorization: `Bearer ${userToken}`, apikey: ANON_KEY },
     });
     return res.json();
   })();
@@ -193,9 +204,9 @@ async function run() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${userToken}`,
-      "apikey": ANON_KEY,
-      "Prefer": "return=representation",
+      Authorization: `Bearer ${userToken}`,
+      apikey: ANON_KEY,
+      Prefer: "return=representation",
     },
     body: JSON.stringify({
       user_id: userId,
@@ -209,7 +220,9 @@ async function run() {
   const presJson = await presRes.json();
   const createdPres = Array.isArray(presJson) ? presJson[0] : presJson;
   const presId = createdPres?.id ?? "test-pres-id";
-  console.log(`✅ Presentation created/verified: "${createdPres?.title ?? outline.title}" (${presId})`);
+  console.log(
+    `✅ Presentation created/verified: "${createdPres?.title ?? outline.title}" (${presId})`,
+  );
 
   // Insert slides
   const rows = slides.map((s, i) => ({
@@ -224,8 +237,8 @@ async function run() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${userToken}`,
-      "apikey": ANON_KEY,
+      Authorization: `Bearer ${userToken}`,
+      apikey: ANON_KEY,
     },
     body: JSON.stringify(rows),
   });
@@ -234,12 +247,16 @@ async function run() {
   // Read back
   const dbSlidesData = await get(
     `slides?select=slide_order,content,slide_type&presentation_id=eq.${presId}&order=slide_order.asc`,
-    SERVICE_KEY
+    SERVICE_KEY,
   );
-  const dbSlides: Array<{ slide_order: number; content: { title?: string; bullets?: string[] }; slide_type: string }> = Array.isArray(dbSlidesData) ? dbSlidesData : [];
+  const dbSlides: Array<{
+    slide_order: number;
+    content: { title?: string; bullets?: string[] };
+    slide_type: string;
+  }> = Array.isArray(dbSlidesData) ? dbSlidesData : [];
 
   console.log(`\nSlides read back from DB (${dbSlides.length}):`);
-  dbSlides.forEach(s => {
+  dbSlides.forEach((s) => {
     console.log(`  ${s.slide_order + 1}. [${s.slide_type.padEnd(9)}] "${s.content?.title}"`);
   });
 
@@ -247,13 +264,12 @@ async function run() {
   const dbOnTopic = /democracy|india/i.test(JSON.stringify(dbSlides));
 
   // Verify stored prompt
-  const dbPresData = await get(
-    `presentations?select=description&id=eq.${presId}`,
-    SERVICE_KEY
-  );
+  const dbPresData = await get(`presentations?select=description&id=eq.${presId}`, SERVICE_KEY);
   const dbPres = Array.isArray(dbPresData) ? dbPresData : [];
   let storedPrompt: string | null = null;
-  try { storedPrompt = JSON.parse(dbPres[0]?.description ?? "").prompt ?? null; } catch {}
+  try {
+    storedPrompt = JSON.parse(dbPres[0]?.description ?? "").prompt ?? null;
+  } catch {}
 
   console.log(`\nStored prompt in DB: "${storedPrompt}"`);
   const promptCorrect = storedPrompt === TEST_PROMPT;
@@ -261,11 +277,11 @@ async function run() {
   // ── Cleanup test presentation ──────────────────────────────────────────────
   await fetch(`${SUPABASE_URL}/rest/v1/slides?presentation_id=eq.${presId}`, {
     method: "DELETE",
-    headers: { "Authorization": `Bearer ${SERVICE_KEY}`, "apikey": SERVICE_KEY },
+    headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY },
   });
   await fetch(`${SUPABASE_URL}/rest/v1/presentations?id=eq.${presId}`, {
     method: "DELETE",
-    headers: { "Authorization": `Bearer ${SERVICE_KEY}`, "apikey": SERVICE_KEY },
+    headers: { Authorization: `Bearer ${SERVICE_KEY}`, apikey: SERVICE_KEY },
   });
   console.log(`\n🧹 Cleaned up test presentation from DB`);
 
@@ -274,17 +290,17 @@ async function run() {
   console.log("  FINAL CHECKLIST");
   console.log("=".repeat(65));
 
-  ok(onTopic0,              `Prompt forwarded correctly — outline about democracy/india`);
-  ok(b0.length === 0,       `No banned/mock content in outline`);
-  ok(onTopic1,              `Correct slides — about democracy/india`);
-  ok(b1.length === 0,       `No banned/mock content in slides`);
-  ok(slides.length >= 10,   `Slide count ≥10 (got ${slides.length})`);
-  ok(dbOnTopic,             `DB slides mention democracy/india`);
-  ok(dbB.length === 0,      `No banned content in DB`);
-  ok(promptCorrect,         `Correct prompt stored in DB: "${storedPrompt}"`);
-  ok(true,                  `No JSON.parse errors from either Edge Function`);
-  ok(true,                  `generate-outline called exactly once`);
-  ok(true,                  `generate-slides called exactly once`);
+  ok(onTopic0, `Prompt forwarded correctly — outline about democracy/india`);
+  ok(b0.length === 0, `No banned/mock content in outline`);
+  ok(onTopic1, `Correct slides — about democracy/india`);
+  ok(b1.length === 0, `No banned/mock content in slides`);
+  ok(slides.length >= 10, `Slide count ≥10 (got ${slides.length})`);
+  ok(dbOnTopic, `DB slides mention democracy/india`);
+  ok(dbB.length === 0, `No banned content in DB`);
+  ok(promptCorrect, `Correct prompt stored in DB: "${storedPrompt}"`);
+  ok(true, `No JSON.parse errors from either Edge Function`);
+  ok(true, `generate-outline called exactly once`);
+  ok(true, `generate-slides called exactly once`);
 
   console.log("\n" + "─".repeat(65));
   console.log(`Outline title : ${outline.title}`);
@@ -293,4 +309,7 @@ async function run() {
   console.log(`Slide ${slides.length}     : ${slides[slides.length - 1].title}`);
 }
 
-run().catch(e => { console.error("\n💥 FATAL:", e); process.exit(1); });
+run().catch((e) => {
+  console.error("\n💥 FATAL:", e);
+  process.exit(1);
+});

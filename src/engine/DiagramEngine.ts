@@ -12,7 +12,12 @@ export class DiagramEngine {
   public static generateDiagram(topic: string, purpose: string): DiagramSpec {
     const text = `${topic} ${purpose}`.toLowerCase();
 
-    if (text.includes("government") || text.includes("hierarchy") || text.includes("structure") || text.includes("org")) {
+    if (
+      text.includes("government") ||
+      text.includes("hierarchy") ||
+      text.includes("structure") ||
+      text.includes("org")
+    ) {
       return {
         variant: "hierarchy",
         title: "Organizational & Governance Structure",
@@ -26,7 +31,13 @@ export class DiagramEngine {
       };
     }
 
-    if (text.includes("network") || text.includes("cloud") || text.includes("system") || text.includes("tech") || text.includes("architecture")) {
+    if (
+      text.includes("network") ||
+      text.includes("cloud") ||
+      text.includes("system") ||
+      text.includes("tech") ||
+      text.includes("architecture")
+    ) {
       return {
         variant: "arch",
         title: "System Architecture & Network Flow",
@@ -39,7 +50,12 @@ export class DiagramEngine {
       };
     }
 
-    if (text.includes("cycle") || text.includes("loop") || text.includes("feedback") || text.includes("agile")) {
+    if (
+      text.includes("cycle") ||
+      text.includes("loop") ||
+      text.includes("feedback") ||
+      text.includes("agile")
+    ) {
       return {
         variant: "cycle",
         title: "Continuous Lifecycle",

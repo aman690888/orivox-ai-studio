@@ -31,11 +31,11 @@ export async function updateProfile(id: string, profile: ProfileUpdate): Promise
 
 export async function ensureProfile(user: any): Promise<Profile | null> {
   const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  
+
   if (data) {
     return data;
   }
-  
+
   if (error && error.code !== "PGRST116") {
     console.error("Error fetching profile during ensure:", error);
   }
@@ -57,6 +57,6 @@ export async function ensureProfile(user: any): Promise<Profile | null> {
     console.error("Error creating profile:", insertError);
     return null;
   }
-  
+
   return inserted;
 }

@@ -82,7 +82,9 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[AIKeyManager] [generate-slides] Initialized — ${apiKeys.length} Gemini API key(s) discovered.`);
+    console.log(
+      `[AIKeyManager] [generate-slides] Initialized — ${apiKeys.length} Gemini API key(s) discovered.`,
+    );
 
     const modelName = config?.modelName || "gemini-3.1-flash-lite";
 
@@ -125,7 +127,6 @@ ${JSON.stringify(outline.outline, null, 2)}
 
 Generate one slide object per outline item, in order. Match the 'kind' exactly. Include 2-4 bullets for content/cover/closing slides. Add speaker notes. Return only valid JSON.`;
 
-
     // 4. Generate content with key fallback
     let responseText = "";
     let lastError: unknown = null;
@@ -152,8 +153,15 @@ Generate one slide object per outline item, in order. Match the 'kind' exactly. 
         lastError = err;
         const errStatus = err?.status ?? err?.statusCode;
         const errStr = String(err);
-        if (errStatus === 429 || errStr.includes("429") || errStr.includes("quota") || errStr.includes("RESOURCE_EXHAUSTED")) {
-          console.warn(`[generate-slides] Key ${keyIdx + 1}/${apiKeys.length} rate limited (429). Trying next key...`);
+        if (
+          errStatus === 429 ||
+          errStr.includes("429") ||
+          errStr.includes("quota") ||
+          errStr.includes("RESOURCE_EXHAUSTED")
+        ) {
+          console.warn(
+            `[generate-slides] Key ${keyIdx + 1}/${apiKeys.length} rate limited (429). Trying next key...`,
+          );
           continue;
         }
         throw err; // Non-rate-limit error, throw immediately
@@ -167,14 +175,20 @@ Generate one slide object per outline item, in order. Match the 'kind' exactly. 
     // Sanitize: strip markdown code fences Gemini sometimes wraps JSON in
     responseText = responseText.trim();
     if (responseText.startsWith("```")) {
-      responseText = responseText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      responseText = responseText
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```\s*$/, "")
+        .trim();
     }
 
     // Validate that the response is parseable JSON before returning
     try {
       JSON.parse(responseText);
     } catch (parseErr) {
-      console.error(`[generate-slides] Gemini returned non-parseable JSON:`, responseText.slice(0, 500));
+      console.error(
+        `[generate-slides] Gemini returned non-parseable JSON:`,
+        responseText.slice(0, 500),
+      );
       throw new Error(`Gemini returned malformed JSON: ${String(parseErr)}`);
     }
 

@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as RendererRouteImport } from './routes/renderer'
+import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -20,9 +22,19 @@ import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppPresentationsRouteImport } from './routes/_app.presentations'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
 
+const UnauthorizedRoute = UnauthorizedRouteImport.update({
+  id: '/unauthorized',
+  path: '/unauthorized',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RendererRoute = RendererRouteImport.update({
   id: '/renderer',
   path: '/renderer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForbiddenRoute = ForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -73,7 +85,9 @@ const AppHomeRoute = AppHomeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/forbidden': typeof ForbiddenRoute
   '/renderer': typeof RendererRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/home': typeof AppHomeRoute
   '/presentations': typeof AppPresentationsRoute
   '/settings': typeof AppSettingsRoute
@@ -84,7 +98,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/forbidden': typeof ForbiddenRoute
   '/renderer': typeof RendererRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/home': typeof AppHomeRoute
   '/presentations': typeof AppPresentationsRoute
   '/settings': typeof AppSettingsRoute
@@ -97,7 +113,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/forbidden': typeof ForbiddenRoute
   '/renderer': typeof RendererRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/presentations': typeof AppPresentationsRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -110,7 +128,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/forbidden'
     | '/renderer'
+    | '/unauthorized'
     | '/home'
     | '/presentations'
     | '/settings'
@@ -121,7 +141,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/forbidden'
     | '/renderer'
+    | '/unauthorized'
     | '/home'
     | '/presentations'
     | '/settings'
@@ -133,7 +155,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/auth'
+    | '/forbidden'
     | '/renderer'
+    | '/unauthorized'
     | '/_app/home'
     | '/_app/presentations'
     | '/_app/settings'
@@ -146,7 +170,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ForbiddenRoute: typeof ForbiddenRoute
   RendererRoute: typeof RendererRoute
+  UnauthorizedRoute: typeof UnauthorizedRoute
   ExportIdRoute: typeof ExportIdRoute
   PresentIdRoute: typeof PresentIdRoute
   WorkspaceIdRoute: typeof WorkspaceIdRoute
@@ -154,11 +180,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unauthorized': {
+      id: '/unauthorized'
+      path: '/unauthorized'
+      fullPath: '/unauthorized'
+      preLoaderRoute: typeof UnauthorizedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/renderer': {
       id: '/renderer'
       path: '/renderer'
       fullPath: '/renderer'
       preLoaderRoute: typeof RendererRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forbidden': {
+      id: '/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof ForbiddenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -245,7 +285,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  ForbiddenRoute: ForbiddenRoute,
   RendererRoute: RendererRoute,
+  UnauthorizedRoute: UnauthorizedRoute,
   ExportIdRoute: ExportIdRoute,
   PresentIdRoute: PresentIdRoute,
   WorkspaceIdRoute: WorkspaceIdRoute,

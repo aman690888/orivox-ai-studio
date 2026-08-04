@@ -31,14 +31,20 @@ function AppLayout() {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
-        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        style={{
+          background: "#fdfbf7",
+          backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       >
         <div
           className="flex flex-col items-center gap-3 p-8 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d]"
           style={{ borderRadius: R.md }}
         >
           <Loader2 className="h-8 w-8 animate-spin text-[#ff4d4d]" />
-          <p style={{ fontFamily: "Kalam, cursive", color: "#2d2d2d", fontSize: "1rem" }}>Just a sec...</p>
+          <p style={{ fontFamily: "Kalam, cursive", color: "#2d2d2d", fontSize: "1rem" }}>
+            Just a sec...
+          </p>
         </div>
       </div>
     );
@@ -49,7 +55,13 @@ function AppLayout() {
   return (
     <div
       className="flex h-screen w-full overflow-hidden"
-      style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px", fontFamily: "Patrick Hand, cursive", color: "#2d2d2d" }}
+      style={{
+        background: "#fdfbf7",
+        backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+        fontFamily: "Patrick Hand, cursive",
+        color: "#2d2d2d",
+      }}
     >
       <Sidebar />
       <main className="flex-1 relative overflow-y-auto z-10">
@@ -81,9 +93,7 @@ function Sidebar() {
   };
 
   return (
-    <aside
-      className="w-[240px] shrink-0 flex flex-col px-4 py-6 border-r-[3px] border-dashed border-[#2d2d2d] bg-[#fdfbf7]"
-    >
+    <aside className="w-[240px] shrink-0 flex flex-col px-4 py-6 border-r-[3px] border-dashed border-[#2d2d2d] bg-[#fdfbf7]">
       {/* Logo */}
       <div className="px-2 mb-8">
         <Logo showWord={true} />
@@ -132,8 +142,14 @@ function Sidebar() {
       {/* User card */}
       <div className="px-1 mt-4">
         {/* tape strip */}
-        <div className="relative bg-white border-[2px] border-[#2d2d2d] p-3 shadow-[3px_3px_0px_0px_#2d2d2d]" style={{ borderRadius: R.md }}>
-          <div className="absolute -top-3 left-1/2 w-10 h-4 bg-gray-300/60 border border-dashed border-gray-400/50" style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1deg)" }} />
+        <div
+          className="relative bg-white border-[2px] border-[#2d2d2d] p-3 shadow-[3px_3px_0px_0px_#2d2d2d]"
+          style={{ borderRadius: R.md }}
+        >
+          <div
+            className="absolute -top-3 left-1/2 w-10 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
+            style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1deg)" }}
+          />
           <div className="flex items-center gap-2.5">
             <div
               className="w-9 h-9 border-[2px] border-[#2d2d2d] flex items-center justify-center text-sm font-bold text-white bg-[#ff4d4d] flex-shrink-0"
@@ -142,7 +158,12 @@ function Sidebar() {
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{userName}</p>
+              <p
+                className="text-xs font-bold truncate text-[#2d2d2d]"
+                style={{ fontFamily: "Kalam, cursive" }}
+              >
+                {userName}
+              </p>
               <p className="text-[10px] text-[#6b6460]">Free Plan</p>
             </div>
             <button

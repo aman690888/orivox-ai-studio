@@ -13,7 +13,8 @@ export class GeminiProvider extends BaseAIProvider {
     const errObj = err as Record<string, unknown> | null | undefined;
     const message = typeof errObj?.message === "string" ? errObj.message : String(err);
     const contextObj = errObj?.context as Record<string, unknown> | null | undefined;
-    const status = errObj?.status || errObj?.status_code || errObj?.statusCode || contextObj?.status;
+    const status =
+      errObj?.status || errObj?.status_code || errObj?.statusCode || contextObj?.status;
 
     if (
       status === 429 ||

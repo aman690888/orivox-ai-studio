@@ -31,7 +31,11 @@ export class GeminiModelRouter implements IModelRouter {
    * Route a prompt through the healthiest available Gemini key.
    * On 429: cools the key and retries with the next available key.
    */
-  public async routeToJSON<T>(prompt: string, capabilities: ModelCapabilities, signal: AbortSignal): Promise<T> {
+  public async routeToJSON<T>(
+    prompt: string,
+    capabilities: ModelCapabilities,
+    signal: AbortSignal,
+  ): Promise<T> {
     const model = CANONICAL_GEMINI_MODEL;
     const maxAttempts = this.keyManager.getPoolStatus().totalKeys + 1;
 
@@ -55,14 +59,16 @@ export class GeminiModelRouter implements IModelRouter {
         }
 
         let text = response.text;
-        text = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        text = text
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
 
         const parsed = JSON.parse(text) as T;
 
         // Success — release the key.
         lease.release(Date.now() - startTime);
         return parsed;
-
       } catch (err: unknown) {
         const latency = Date.now() - startTime;
 

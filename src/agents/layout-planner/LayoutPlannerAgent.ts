@@ -5,9 +5,12 @@ import { LayoutPlannerInput, LayoutPlanOutput, DetailedLayoutPlan } from "./type
 import { LayoutRankingEngine, LayoutCandidate } from "@/engine/LayoutRankingEngine";
 import { getLayoutDefinition, LayoutRegistry } from "@/registry/layout-registry";
 
-export class LayoutPlannerAgent implements IAgent<LayoutPlannerInput, LayoutPlanOutput | ClarificationRequest> {
+export class LayoutPlannerAgent implements IAgent<
+  LayoutPlannerInput,
+  LayoutPlanOutput | ClarificationRequest
+> {
   public id = "layout-planner-agent";
-  
+
   public model_requirements: ModelCapabilities = {
     needs_reasoning: true,
     needs_json_mode: true,
@@ -17,25 +20,27 @@ export class LayoutPlannerAgent implements IAgent<LayoutPlannerInput, LayoutPlan
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: LayoutPlannerInput, signal: AbortSignal): Promise<LayoutPlanOutput | ClarificationRequest> {
-    
+  public async execute(
+    context: LayoutPlannerInput,
+    signal: AbortSignal,
+  ): Promise<LayoutPlanOutput | ClarificationRequest> {
     // Programmatically pre-rank layouts for every slide to prevent hallucination
     // and give the LLM a strictly constrained list of valid candidates.
     const preRankedCandidates: Record<string, LayoutCandidate[]> = {};
-    context.slidePlan.slides.forEach(slide => {
+    context.slidePlan.slides.forEach((slide) => {
       preRankedCandidates[slide.slide_id] = LayoutRankingEngine.rankLayouts(
         slide.slide_purpose,
         slide.estimated_word_budget,
         slide.requires_visual,
         slide.requires_chart,
-        slide.requires_diagram
+        slide.requires_diagram,
       ).slice(0, 3); // Only top 3 candidates
     });
 
     const rawResponse = await this.modelRouter.routeToJSON<any>(
       this.buildPrompt(context, preRankedCandidates),
       this.model_requirements,
-      signal
+      signal,
     );
 
     if (rawResponse.clarificationRequired) {
@@ -55,48 +60,62 @@ export class LayoutPlannerAgent implements IAgent<LayoutPlannerInput, LayoutPlan
   }
 
   private parse(rawPayload: any): LayoutPlanOutput {
-    const layouts: DetailedLayoutPlan[] = Array.isArray(rawPayload?.layouts) ? rawPayload.layouts.map((ly: any) => {
-      
-      const layoutDef = LayoutRegistry[ly.selected_layout_id] || LayoutRegistry["layout-cover-minimal"];
+    const layouts: DetailedLayoutPlan[] = Array.isArray(rawPayload?.layouts)
+      ? rawPayload.layouts.map((ly: any) => {
+          const layoutDef =
+            LayoutRegistry[ly.selected_layout_id] || LayoutRegistry["layout-cover-minimal"];
 
-      return {
-        slide_id: ly.slide_id || "unknown",
-        selected_layout_id: layoutDef.id,
-        layout_score: typeof ly.layout_score === "number" ? ly.layout_score : 1.0,
-        rejected_layouts: [],
-        rejection_reasons: {},
-        layout_constraints: layoutDef.constraints,
-        supported_component_types: layoutDef.constraints.supported_components,
-        required_component_slots: layoutDef.constraints.required_components,
-        layout_metadata: layoutDef.intent,
-        confidence_score: typeof ly.confidence_score === "number" ? ly.confidence_score : 1.0,
-      };
-    }) : [];
+          return {
+            slide_id: ly.slide_id || "unknown",
+            selected_layout_id: layoutDef.id,
+            layout_score: typeof ly.layout_score === "number" ? ly.layout_score : 1.0,
+            rejected_layouts: [],
+            rejection_reasons: {},
+            layout_constraints: layoutDef.constraints,
+            supported_component_types: layoutDef.constraints.supported_components,
+            required_component_slots: layoutDef.constraints.required_components,
+            layout_metadata: layoutDef.intent,
+            confidence_score: typeof ly.confidence_score === "number" ? ly.confidence_score : 1.0,
+          };
+        })
+      : [];
 
     return {
       layouts,
-      global_confidence_score: typeof rawPayload?.global_confidence_score === "number" ? rawPayload.global_confidence_score : 1.0,
+      global_confidence_score:
+        typeof rawPayload?.global_confidence_score === "number"
+          ? rawPayload.global_confidence_score
+          : 1.0,
     };
   }
 
-  private validate(plan: LayoutPlanOutput, context: LayoutPlannerInput): LayoutPlanOutput | ClarificationRequest {
+  private validate(
+    plan: LayoutPlanOutput,
+    context: LayoutPlannerInput,
+  ): LayoutPlanOutput | ClarificationRequest {
     if (plan.global_confidence_score < this.MIN_CONFIDENCE_THRESHOLD) {
       return {
         clarificationRequired: true,
-        questions: ["Unable to find suitable layouts for the requested slide density. Should we split complex slides?"],
+        questions: [
+          "Unable to find suitable layouts for the requested slide density. Should we split complex slides?",
+        ],
         missingFields: [],
       };
     }
 
     if (plan.layouts.length !== context.slidePlan.slides.length) {
-      throw new Error(`[LayoutPlannerAgent] Validation Error: Expected ${context.slidePlan.slides.length} layouts, got ${plan.layouts.length}.`);
+      throw new Error(
+        `[LayoutPlannerAgent] Validation Error: Expected ${context.slidePlan.slides.length} layouts, got ${plan.layouts.length}.`,
+      );
     }
 
     // Strict registry constraints validation
-    plan.layouts.forEach(layout => {
-      const slideContext = context.slidePlan.slides.find(s => s.slide_id === layout.slide_id);
+    plan.layouts.forEach((layout) => {
+      const slideContext = context.slidePlan.slides.find((s) => s.slide_id === layout.slide_id);
       if (!slideContext) {
-        throw new Error(`[LayoutPlannerAgent] Validation Error: Generated layout for unknown slide_id '${layout.slide_id}'.`);
+        throw new Error(
+          `[LayoutPlannerAgent] Validation Error: Generated layout for unknown slide_id '${layout.slide_id}'.`,
+        );
       }
 
       const layoutDef = getLayoutDefinition(layout.selected_layout_id); // Throws if hallucinated
@@ -118,7 +137,10 @@ export class LayoutPlannerAgent implements IAgent<LayoutPlannerInput, LayoutPlan
     return plan;
   }
 
-  private buildPrompt(context: LayoutPlannerInput, preRankedCandidates: Record<string, LayoutCandidate[]>): string {
+  private buildPrompt(
+    context: LayoutPlannerInput,
+    preRankedCandidates: Record<string, LayoutCandidate[]>,
+  ): string {
     const upstreamSlidePlan = JSON.stringify(context.slidePlan, null, 2);
     const candidateData = JSON.stringify(preRankedCandidates, null, 2);
 

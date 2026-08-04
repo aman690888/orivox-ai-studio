@@ -33,15 +33,15 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     optional_fields: ["alignment"],
     payload_schema: {
       content: "string",
-      alignment: "string"
+      alignment: "string",
     },
     default_values: { alignment: "left" },
     constraints: { max_words: 10, max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["content"],
-    validation_metadata: { max_chars: 50 }
+    validation_metadata: { max_chars: 50 },
   },
-  
+
   Subtitle: {
     id: "Subtitle",
     semantic_purpose: "Secondary context or bridge.",
@@ -54,7 +54,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_words: 15, max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["content"],
-    validation_metadata: { max_chars: 80 }
+    validation_metadata: { max_chars: 80 },
   },
 
   Paragraph: {
@@ -69,13 +69,18 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_words: 45, max_nesting_depth: 0 },
     responsive_behavior: "reflow",
     editable_fields: ["content"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   BulletList: {
     id: "BulletList",
     semantic_purpose: "Scanning-optimized unordered list.",
-    supported_layouts: ["layout-split-img-left", "layout-split-img-right", "layout-two-column", "layout-three-column"],
+    supported_layouts: [
+      "layout-split-img-left",
+      "layout-split-img-right",
+      "layout-two-column",
+      "layout-three-column",
+    ],
     allowed_parent_layouts: "any",
     required_fields: ["items"],
     optional_fields: [],
@@ -84,7 +89,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 6, min_items: 2, max_nesting_depth: 1 },
     responsive_behavior: "stack",
     editable_fields: ["items"],
-    validation_metadata: { max_words_per_item: 15 }
+    validation_metadata: { max_words_per_item: 15 },
   },
 
   NumberedList: {
@@ -99,7 +104,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 6, min_items: 2, max_nesting_depth: 1 },
     responsive_behavior: "stack",
     editable_fields: ["items"],
-    validation_metadata: { max_words_per_item: 15 }
+    validation_metadata: { max_words_per_item: 15 },
   },
 
   Quote: {
@@ -114,7 +119,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_words: 35, max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["text", "author", "role"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Callout: {
@@ -129,7 +134,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_words: 25, max_nesting_depth: 0 },
     responsive_behavior: "reflow",
     editable_fields: ["text", "intent"],
-    validation_metadata: { intents_allowed: ["info", "warning", "success"] }
+    validation_metadata: { intents_allowed: ["info", "warning", "success"] },
   },
 
   Image: {
@@ -141,10 +146,13 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     optional_fields: ["caption", "bleed"],
     payload_schema: { asset_id: "string", caption: "string", bleed: "boolean" },
     default_values: { bleed: false },
-    constraints: { max_nesting_depth: 0, allowed_media_types: ["image/jpeg", "image/png", "image/webp"] },
+    constraints: {
+      max_nesting_depth: 0,
+      allowed_media_types: ["image/jpeg", "image/png", "image/webp"],
+    },
     responsive_behavior: "scale",
     editable_fields: ["asset_id", "caption"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   HeroImage: {
@@ -159,7 +167,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["asset_id", "overlay_opacity"],
-    validation_metadata: { required_aspect: "cover" }
+    validation_metadata: { required_aspect: "cover" },
   },
 
   Icon: {
@@ -174,7 +182,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["icon_name", "color"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   IconCard: {
@@ -189,7 +197,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "stack",
     editable_fields: ["icon", "title", "description"],
-    validation_metadata: { max_chars_title: 30 }
+    validation_metadata: { max_chars_title: 30 },
   },
 
   FeatureCard: {
@@ -199,12 +207,17 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     allowed_parent_layouts: "grid",
     required_fields: ["title", "description"],
     optional_fields: ["icon", "image_asset_id"],
-    payload_schema: { title: "string", description: "string", icon: "string", image_asset_id: "string" },
+    payload_schema: {
+      title: "string",
+      description: "string",
+      icon: "string",
+      image_asset_id: "string",
+    },
     default_values: {},
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "stack",
     editable_fields: ["title", "description", "icon"],
-    validation_metadata: { max_words: 30 }
+    validation_metadata: { max_words: 30 },
   },
 
   IconGrid: {
@@ -219,7 +232,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 8, max_nesting_depth: 2 },
     responsive_behavior: "stack",
     editable_fields: ["items"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Timeline: {
@@ -234,7 +247,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 8, max_nesting_depth: 2 },
     responsive_behavior: "stack",
     editable_fields: ["nodes"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Process: {
@@ -249,7 +262,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 5, max_nesting_depth: 1 },
     responsive_behavior: "stack",
     editable_fields: ["steps"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Comparison: {
@@ -264,7 +277,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 2 },
     responsive_behavior: "stack",
     editable_fields: ["left_column", "right_column"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Table: {
@@ -279,7 +292,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 8, max_nesting_depth: 0 },
     responsive_behavior: "scroll",
     editable_fields: ["headers", "rows"],
-    validation_metadata: { max_columns: 5, max_rows: 8 }
+    validation_metadata: { max_columns: 5, max_rows: 8 },
   },
 
   KPICard: {
@@ -294,7 +307,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["label", "value", "trend"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Statistic: {
@@ -309,7 +322,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["value", "label", "trend"],
-    validation_metadata: { max_chars_value: 6, max_chars_label: 20 }
+    validation_metadata: { max_chars_value: 6, max_chars_label: 20 },
   },
 
   MetricGrid: {
@@ -324,13 +337,19 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 6, max_nesting_depth: 2 },
     responsive_behavior: "stack",
     editable_fields: ["metrics"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Chart: {
     id: "Chart",
     semantic_purpose: "Visualizing numerical datasets.",
-    supported_layouts: ["layout-chart-left", "layout-chart-right", "layout-chart-bar-full", "layout-chart-pie-full", "layout-chart-line-full"],
+    supported_layouts: [
+      "layout-chart-left",
+      "layout-chart-right",
+      "layout-chart-bar-full",
+      "layout-chart-pie-full",
+      "layout-chart-line-full",
+    ],
     allowed_parent_layouts: "slide",
     required_fields: ["variant", "datasets", "labels"],
     optional_fields: [],
@@ -339,7 +358,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 6, max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["datasets", "labels"],
-    validation_metadata: { variants: ["bar", "line", "pie", "area", "scatter"] }
+    validation_metadata: { variants: ["bar", "line", "pie", "area", "scatter"] },
   },
 
   Diagram: {
@@ -354,7 +373,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["mermaid_string"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Flowchart: {
@@ -369,7 +388,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["mermaid_string"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   MindMap: {
@@ -384,7 +403,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["mermaid_string"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   CodeBlock: {
@@ -399,7 +418,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scroll",
     editable_fields: ["language", "code"],
-    validation_metadata: { max_lines: 20 }
+    validation_metadata: { max_lines: 20 },
   },
 
   Video: {
@@ -414,7 +433,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0, allowed_media_types: ["video/mp4", "video/webm"] },
     responsive_behavior: "scale",
     editable_fields: ["asset_id"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   CTA: {
@@ -429,7 +448,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "reflow",
     editable_fields: ["label", "url"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Testimonial: {
@@ -439,12 +458,17 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     allowed_parent_layouts: "any",
     required_fields: ["quote", "author"],
     optional_fields: ["role", "avatar_asset_id"],
-    payload_schema: { quote: "string", author: "string", role: "string", avatar_asset_id: "string" },
+    payload_schema: {
+      quote: "string",
+      author: "string",
+      role: "string",
+      avatar_asset_id: "string",
+    },
     default_values: {},
     constraints: { max_words: 40, max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["quote", "author", "role"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   TeamCard: {
@@ -459,7 +483,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "stack",
     editable_fields: ["name", "role", "bio"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   PricingCard: {
@@ -474,7 +498,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 10, max_nesting_depth: 1 },
     responsive_behavior: "stack",
     editable_fields: ["tier", "price", "features"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   FAQ: {
@@ -489,7 +513,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_items: 5, max_nesting_depth: 1 },
     responsive_behavior: "stack",
     editable_fields: ["items"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   Footer: {
@@ -504,7 +528,7 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_words: 10, max_nesting_depth: 0 },
     responsive_behavior: "hide",
     editable_fields: ["content"],
-    validation_metadata: {}
+    validation_metadata: {},
   },
 
   SectionDivider: {
@@ -519,8 +543,8 @@ export const ComponentRegistry: Record<ComponentType, ComponentDefinition> = {
     constraints: { max_nesting_depth: 0 },
     responsive_behavior: "scale",
     editable_fields: ["title", "subtitle"],
-    validation_metadata: {}
-  }
+    validation_metadata: {},
+  },
 };
 
 /**

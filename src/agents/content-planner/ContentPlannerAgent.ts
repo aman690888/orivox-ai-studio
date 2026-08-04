@@ -1,12 +1,20 @@
 import { IAgent, ModelCapabilities } from "@/orchestrator/types";
 import { IModelRouter } from "@/orchestrator/ModelRouter";
 import { ClarificationRequest } from "@/agents/intent/types";
-import { ContentPlannerInput, ContentPlanOutput, SlideContentPlan, DetailedContentPlaceholder } from "./types";
+import {
+  ContentPlannerInput,
+  ContentPlanOutput,
+  SlideContentPlan,
+  DetailedContentPlaceholder,
+} from "./types";
 import { ComponentNode } from "@/agents/component-planner/types";
 
-export class ContentPlannerAgent implements IAgent<ContentPlannerInput, ContentPlanOutput | ClarificationRequest> {
+export class ContentPlannerAgent implements IAgent<
+  ContentPlannerInput,
+  ContentPlanOutput | ClarificationRequest
+> {
   public id = "content-planner-agent";
-  
+
   public model_requirements: ModelCapabilities = {
     needs_reasoning: true,
     needs_json_mode: true,
@@ -16,11 +24,14 @@ export class ContentPlannerAgent implements IAgent<ContentPlannerInput, ContentP
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: ContentPlannerInput, signal: AbortSignal): Promise<ContentPlanOutput | ClarificationRequest> {
+  public async execute(
+    context: ContentPlannerInput,
+    signal: AbortSignal,
+  ): Promise<ContentPlanOutput | ClarificationRequest> {
     const rawResponse = await this.modelRouter.routeToJSON<any>(
       this.buildPrompt(context),
       this.model_requirements,
-      signal
+      signal,
     );
 
     if (rawResponse.clarificationRequired) {
@@ -40,30 +51,41 @@ export class ContentPlannerAgent implements IAgent<ContentPlannerInput, ContentP
   }
 
   private parse(rawPayload: any): ContentPlanOutput {
-    const slides: SlideContentPlan[] = Array.isArray(rawPayload?.slides) ? rawPayload.slides.map((sl: any) => ({
-      slide_id: sl.slide_id || "unknown",
-      total_slide_word_budget: typeof sl.total_slide_word_budget === "number" ? sl.total_slide_word_budget : 0,
-      placeholders: Array.isArray(sl.placeholders) ? sl.placeholders.map((ph: any) => ({
-        placeholder_id: ph.placeholder_id || `{{placeholder_${Math.random().toString(36).substr(2, 6)}}}`,
-        owning_component_id: ph.owning_component_id || "unknown",
-        content_type: ph.content_type || "paragraph",
-        semantic_role: ph.semantic_role || "Information",
-        priority: ph.priority || "Medium",
-        estimated_word_count: typeof ph.estimated_word_count === "number" ? ph.estimated_word_count : 10,
-        min_words: typeof ph.min_words === "number" ? ph.min_words : 1,
-        max_words: typeof ph.max_words === "number" ? ph.max_words : 50,
-        tone: ph.tone || "Professional",
-        reading_level: ph.reading_level || "Intermediate",
-        audience: ph.audience || "General",
-        language: ph.language || "en",
-        formatting_rules: Array.isArray(ph.formatting_rules) ? ph.formatting_rules : [],
-        validation_metadata: typeof ph.validation_metadata === "object" ? ph.validation_metadata : {}
-      })) : []
-    })) : [];
+    const slides: SlideContentPlan[] = Array.isArray(rawPayload?.slides)
+      ? rawPayload.slides.map((sl: any) => ({
+          slide_id: sl.slide_id || "unknown",
+          total_slide_word_budget:
+            typeof sl.total_slide_word_budget === "number" ? sl.total_slide_word_budget : 0,
+          placeholders: Array.isArray(sl.placeholders)
+            ? sl.placeholders.map((ph: any) => ({
+                placeholder_id:
+                  ph.placeholder_id || `{{placeholder_${Math.random().toString(36).substr(2, 6)}}}`,
+                owning_component_id: ph.owning_component_id || "unknown",
+                content_type: ph.content_type || "paragraph",
+                semantic_role: ph.semantic_role || "Information",
+                priority: ph.priority || "Medium",
+                estimated_word_count:
+                  typeof ph.estimated_word_count === "number" ? ph.estimated_word_count : 10,
+                min_words: typeof ph.min_words === "number" ? ph.min_words : 1,
+                max_words: typeof ph.max_words === "number" ? ph.max_words : 50,
+                tone: ph.tone || "Professional",
+                reading_level: ph.reading_level || "Intermediate",
+                audience: ph.audience || "General",
+                language: ph.language || "en",
+                formatting_rules: Array.isArray(ph.formatting_rules) ? ph.formatting_rules : [],
+                validation_metadata:
+                  typeof ph.validation_metadata === "object" ? ph.validation_metadata : {},
+              }))
+            : [],
+        }))
+      : [];
 
     return {
       slides,
-      global_confidence_score: typeof rawPayload?.global_confidence_score === "number" ? rawPayload.global_confidence_score : 1.0,
+      global_confidence_score:
+        typeof rawPayload?.global_confidence_score === "number"
+          ? rawPayload.global_confidence_score
+          : 1.0,
     };
   }
 
@@ -80,11 +102,16 @@ export class ContentPlannerAgent implements IAgent<ContentPlannerInput, ContentP
     return ids;
   }
 
-  private validate(plan: ContentPlanOutput, context: ContentPlannerInput): ContentPlanOutput | ClarificationRequest {
+  private validate(
+    plan: ContentPlanOutput,
+    context: ContentPlannerInput,
+  ): ContentPlanOutput | ClarificationRequest {
     if (plan.global_confidence_score < this.MIN_CONFIDENCE_THRESHOLD) {
       return {
         clarificationRequired: true,
-        questions: ["Content placeholders cannot be mapped cleanly to the requested components. Should we revise the structure?"],
+        questions: [
+          "Content placeholders cannot be mapped cleanly to the requested components. Should we revise the structure?",
+        ],
         missingFields: [],
       };
     }
@@ -92,35 +119,43 @@ export class ContentPlannerAgent implements IAgent<ContentPlannerInput, ContentP
     const placeholderIds = new Set<string>();
 
     const validComponentIdsPerSlide: Record<string, Set<string>> = {};
-    context.componentPlan.slides.forEach(s => {
+    context.componentPlan.slides.forEach((s) => {
       validComponentIdsPerSlide[s.slide_id] = this.getAllComponentIds(s.component_tree);
     });
 
-    plan.slides.forEach(slidePlan => {
+    plan.slides.forEach((slidePlan) => {
       // Validate Word Budgets
-      const slideRef = context.slidePlan.slides.find(s => s.slide_id === slidePlan.slide_id);
+      const slideRef = context.slidePlan.slides.find((s) => s.slide_id === slidePlan.slide_id);
       if (!slideRef) {
-        throw new Error(`[ContentPlannerAgent] Validation Error: Slide ID '${slidePlan.slide_id}' not found in upstream slide plan.`);
+        throw new Error(
+          `[ContentPlannerAgent] Validation Error: Slide ID '${slidePlan.slide_id}' not found in upstream slide plan.`,
+        );
       }
 
       let totalCalculatedWords = 0;
 
-      slidePlan.placeholders.forEach(ph => {
+      slidePlan.placeholders.forEach((ph) => {
         // Validate duplicates
         if (placeholderIds.has(ph.placeholder_id)) {
-          throw new Error(`[ContentPlannerAgent] Validation Error: Duplicate placeholder_id '${ph.placeholder_id}'.`);
+          throw new Error(
+            `[ContentPlannerAgent] Validation Error: Duplicate placeholder_id '${ph.placeholder_id}'.`,
+          );
         }
         placeholderIds.add(ph.placeholder_id);
 
         // Validate component existence
         const allowedComps = validComponentIdsPerSlide[slidePlan.slide_id];
         if (!allowedComps || !allowedComps.has(ph.owning_component_id)) {
-          throw new Error(`[ContentPlannerAgent] Validation Error: Placeholder '${ph.placeholder_id}' references non-existent component '${ph.owning_component_id}' on slide '${slidePlan.slide_id}'.`);
+          throw new Error(
+            `[ContentPlannerAgent] Validation Error: Placeholder '${ph.placeholder_id}' references non-existent component '${ph.owning_component_id}' on slide '${slidePlan.slide_id}'.`,
+          );
         }
 
         // Validate max >= min
         if (ph.max_words < ph.min_words) {
-          throw new Error(`[ContentPlannerAgent] Validation Error: Placeholder '${ph.placeholder_id}' has max_words < min_words.`);
+          throw new Error(
+            `[ContentPlannerAgent] Validation Error: Placeholder '${ph.placeholder_id}' has max_words < min_words.`,
+          );
         }
 
         totalCalculatedWords += ph.max_words;
@@ -129,7 +164,9 @@ export class ContentPlannerAgent implements IAgent<ContentPlannerInput, ContentP
       // We allow standard variance for maximum bounds checking, but if they explicitly blow way past
       // the slide's estimated budget, throw for retry.
       if (totalCalculatedWords > slideRef.estimated_word_budget * 1.5) {
-        throw new Error(`[ContentPlannerAgent] Validation Error: The sum of max_words across placeholders (${totalCalculatedWords}) drastically exceeds the slide's word budget (${slideRef.estimated_word_budget}).`);
+        throw new Error(
+          `[ContentPlannerAgent] Validation Error: The sum of max_words across placeholders (${totalCalculatedWords}) drastically exceeds the slide's word budget (${slideRef.estimated_word_budget}).`,
+        );
       }
     });
 

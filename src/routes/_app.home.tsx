@@ -7,6 +7,7 @@ import { suggestions, categories } from "@/lib/mock";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { getPresentations } from "@/lib/database/presentations";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_app/home")({
   head: () => ({ meta: [{ title: "Home — Orivox" }] }),
@@ -43,7 +44,6 @@ function Home() {
   return (
     <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
       <div className="max-w-4xl mx-auto flex flex-col gap-12">
-
         {/* ── Header ── */}
         <header className="flex flex-col gap-3">
           <motion.div
@@ -64,8 +64,19 @@ function Home() {
             {greeting},{" "}
             <span className="relative">
               {userName} ✌️
-              <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 100 6" preserveAspectRatio="none" height="6">
-                <path d="M0,3 Q25,0 50,3 Q75,6 100,3" stroke="#ff4d4d" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+              <svg
+                className="absolute -bottom-1 left-0 w-full"
+                viewBox="0 0 100 6"
+                preserveAspectRatio="none"
+                height="6"
+              >
+                <path
+                  d="M0,3 Q25,0 50,3 Q75,6 100,3"
+                  stroke="#ff4d4d"
+                  strokeWidth="2.5"
+                  fill="none"
+                  strokeLinecap="round"
+                />
               </svg>
             </span>
           </motion.h1>
@@ -101,7 +112,10 @@ function Home() {
               className="absolute -top-4 left-1/2 w-12 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
               style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1deg)" }}
             />
-            <p className="text-sm font-bold mb-3 text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>
+            <p
+              className="text-sm font-bold mb-3 text-[#6b6460]"
+              style={{ fontFamily: "Kalam, cursive" }}
+            >
               ✍️ Describe your presentation...
             </p>
             <div
@@ -136,16 +150,18 @@ function Home() {
 
         {/* ── Presentations ── */}
         {isLoading ? (
-          <div className="flex flex-col items-center gap-3 py-12">
-            <div
-              className="w-12 h-12 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-2xl animate-gentle-bounce shadow-[2px_2px_0px_0px_#2d2d2d]"
-              style={{ borderRadius: "50%" }}
-            >
-              ✏️
-            </div>
-            <p className="text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
-              Loading your decks...
-            </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex flex-col gap-3">
+                <Skeleton className="w-full aspect-video" />
+                <div className="flex justify-between items-center px-1">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : presentations.length === 0 ? (
           <motion.div
@@ -161,10 +177,16 @@ function Home() {
             >
               <PresIcon className="w-7 h-7 text-[#2d2d2d]" strokeWidth={2.5} />
             </div>
-            <h2 className="text-xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+            <h2
+              className="text-xl font-bold text-[#2d2d2d]"
+              style={{ fontFamily: "Kalam, cursive" }}
+            >
               Nothing here yet!
             </h2>
-            <p className="mt-2 text-sm text-[#6b6460] max-w-xs" style={{ fontFamily: "Patrick Hand, cursive" }}>
+            <p
+              className="mt-2 text-sm text-[#6b6460] max-w-xs"
+              style={{ fontFamily: "Patrick Hand, cursive" }}
+            >
               Type an idea in the box above and watch it come to life in seconds. ✨
             </p>
             <button
@@ -217,16 +239,27 @@ function Home() {
                         className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-[#2d2d2d] text-white border-[2px] border-[#2d2d2d] shrink-0"
                         style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                       >
-                        Resume Editing <ArrowRight size={14} strokeWidth={2.5} className="transition-transform group-hover:translate-x-1" />
+                        Resume Editing{" "}
+                        <ArrowRight
+                          size={14}
+                          strokeWidth={2.5}
+                          className="transition-transform group-hover:translate-x-1"
+                        />
                       </div>
                     </div>
                     {featured.progress !== undefined && (
                       <div className="mt-5 space-y-1.5">
-                        <div className="flex justify-between text-xs" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <div
+                          className="flex justify-between text-xs"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           <span className="text-[#6b6460]">Completion</span>
                           <span className="font-bold text-[#2d2d2d]">{featured.progress}%</span>
                         </div>
-                        <div className="h-3 bg-[#fdfbf7] border-[2px] border-[#2d2d2d]" style={{ borderRadius: "2px", overflow: "hidden" }}>
+                        <div
+                          className="h-3 bg-[#fdfbf7] border-[2px] border-[#2d2d2d]"
+                          style={{ borderRadius: "2px", overflow: "hidden" }}
+                        >
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${featured.progress}%` }}
@@ -279,10 +312,16 @@ function Home() {
                             <Play size={14} strokeWidth={2.5} className="text-[#2d2d2d]" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold truncate text-[#2d2d2d] group-hover:text-[#ff4d4d] transition-colors" style={{ fontFamily: "Kalam, cursive" }}>
+                            <p
+                              className="text-sm font-bold truncate text-[#2d2d2d] group-hover:text-[#ff4d4d] transition-colors"
+                              style={{ fontFamily: "Kalam, cursive" }}
+                            >
                               {p.title}
                             </p>
-                            <p className="text-xs text-[#6b6460] truncate" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                            <p
+                              className="text-xs text-[#6b6460] truncate"
+                              style={{ fontFamily: "Patrick Hand, cursive" }}
+                            >
                               {p.category} · {p.updated}
                             </p>
                           </div>
@@ -313,7 +352,10 @@ function Home() {
                 transition={{ delay: 0.2 + i * 0.06 }}
                 onClick={() => setPrompt(`A ${c.name.toLowerCase()} on `)}
                 className="group flex flex-col items-start gap-3 bg-white border-[2.5px] border-[#2d2d2d] p-5 text-left shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#fff9c4] transition-all duration-100"
-                style={{ borderRadius: R.tag, transform: `rotate(${[-0.8, 0.6, -0.5, 0.7][i % 4]}deg)` }}
+                style={{
+                  borderRadius: R.tag,
+                  transform: `rotate(${[-0.8, 0.6, -0.5, 0.7][i % 4]}deg)`,
+                }}
               >
                 <div
                   className="text-xl w-10 h-10 bg-[#fdfbf7] border-[2px] border-[#2d2d2d] flex items-center justify-center"
@@ -322,14 +364,23 @@ function Home() {
                   {["🚀", "📊", "🎓", "💡", "🌍", "🏆", "📈", "🔬"][i % 8]}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{c.name}</p>
-                  <p className="mt-1 text-xs text-[#6b6460] line-clamp-2 leading-relaxed" style={{ fontFamily: "Patrick Hand, cursive" }}>{c.hint}</p>
+                  <p
+                    className="text-sm font-bold text-[#2d2d2d]"
+                    style={{ fontFamily: "Kalam, cursive" }}
+                  >
+                    {c.name}
+                  </p>
+                  <p
+                    className="mt-1 text-xs text-[#6b6460] line-clamp-2 leading-relaxed"
+                    style={{ fontFamily: "Patrick Hand, cursive" }}
+                  >
+                    {c.hint}
+                  </p>
                 </div>
               </motion.button>
             ))}
           </div>
         </section>
-
       </div>
     </div>
   );

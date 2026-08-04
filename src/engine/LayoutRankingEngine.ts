@@ -16,7 +16,7 @@ export class LayoutRankingEngine {
     estimatedWordCount: number,
     requiresImage: boolean,
     requiresChart: boolean,
-    requiresDiagram: boolean = false
+    requiresDiagram: boolean = false,
   ): LayoutCandidate[] {
     const candidates: LayoutCandidate[] = [];
 
@@ -27,9 +27,16 @@ export class LayoutRankingEngine {
       // Constraint filters (hard boundaries)
       if (estimatedWordCount > layout.constraints.max_words_total) {
         score = 0;
-        reasons.push(`Estimated words (${estimatedWordCount}) exceed max (${layout.constraints.max_words_total}).`);
+        reasons.push(
+          `Estimated words (${estimatedWordCount}) exceed max (${layout.constraints.max_words_total}).`,
+        );
       }
-      if (requiresImage && !requiresChart && !requiresDiagram && layout.constraints.max_images === 0) {
+      if (
+        requiresImage &&
+        !requiresChart &&
+        !requiresDiagram &&
+        layout.constraints.max_images === 0
+      ) {
         score = 0;
         reasons.push(`Layout does not support images.`);
       }
@@ -48,13 +55,16 @@ export class LayoutRankingEngine {
       }
 
       // Priority 1: Heavily penalize grid layouts if text count is high
-      if (layout.id.toLowerCase().includes('grid') && estimatedWordCount > 100) {
+      if (layout.id.toLowerCase().includes("grid") && estimatedWordCount > 100) {
         score -= 0.5;
         reasons.push(`Penalized grid layout due to high text count (${estimatedWordCount}).`);
       }
 
       // Intent boosting (soft boundaries)
-      if (layout.intent.slide_purposes.includes(purpose) || layout.intent.slide_purposes.includes("any")) {
+      if (
+        layout.intent.slide_purposes.includes(purpose) ||
+        layout.intent.slide_purposes.includes("any")
+      ) {
         score += 0.2;
         reasons.push(`Matches purpose '${purpose}'.`);
       } else {

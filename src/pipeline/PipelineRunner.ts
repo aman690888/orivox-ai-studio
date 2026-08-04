@@ -209,10 +209,19 @@ export class PipelineRunner {
         research: state.getEphemeral("ResearchOutput"),
         critic: state.getEphemeral("CriticOutput"),
       }),
-      mutator: (state, output: ValidatedIR) => state.updateIR((draft) => Object.assign(draft, output)),
+      mutator: (state, output: ValidatedIR) =>
+        state.updateIR((draft) => Object.assign(draft, output)),
     });
 
-    const initialIR = { id: "", version: "3.0.0", stage: "prompt", metadata: {}, theme: {}, slide_order: [], slides: {} } as any;
+    const initialIR = {
+      id: "",
+      version: "3.0.0",
+      stage: "prompt",
+      metadata: {},
+      theme: {},
+      slide_order: [],
+      slides: {},
+    } as any;
 
     this.orchestrator = new AIWorkflowOrchestrator(
       { workflow_id: "orivox-v3-generation", enable_telemetry: true },
@@ -222,9 +231,15 @@ export class PipelineRunner {
     );
 
     // Setup logging telemetry
-    this.orchestrator.on("AGENT_STARTED", (p) => this.log(`[AGENT_STARTED] ${p.payload?.agent_id}`));
-    this.orchestrator.on("AGENT_COMPLETED", (p) => this.log(`[AGENT_COMPLETED] ${p.payload?.agent_id} (${p.payload?.duration_ms}ms)`));
-    this.orchestrator.on("AGENT_FAILED", (p) => this.log(`[AGENT_FAILED] ${p.payload?.agent_id} - ${p.payload?.error}`));
+    this.orchestrator.on("AGENT_STARTED", (p) =>
+      this.log(`[AGENT_STARTED] ${p.payload?.agent_id}`),
+    );
+    this.orchestrator.on("AGENT_COMPLETED", (p) =>
+      this.log(`[AGENT_COMPLETED] ${p.payload?.agent_id} (${p.payload?.duration_ms}ms)`),
+    );
+    this.orchestrator.on("AGENT_FAILED", (p) =>
+      this.log(`[AGENT_FAILED] ${p.payload?.agent_id} - ${p.payload?.error}`),
+    );
     this.orchestrator.on("WORKFLOW_STARTED", () => this.log(`[WORKFLOW_STARTED]`));
     this.orchestrator.on("WORKFLOW_COMPLETED", () => this.log(`[WORKFLOW_COMPLETED]`));
   }

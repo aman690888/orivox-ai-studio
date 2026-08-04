@@ -87,7 +87,9 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[AIKeyManager] [generate-outline] Initialized — ${apiKeys.length} Gemini API key(s) discovered.`);
+    console.log(
+      `[AIKeyManager] [generate-outline] Initialized — ${apiKeys.length} Gemini API key(s) discovered.`,
+    );
 
     const modelName = config?.modelName || "gemini-3.1-flash-lite";
 
@@ -131,7 +133,6 @@ For each slide specify:
 
 The first slide must be kind "cover". The last must be kind "closing". Return only valid JSON.`;
 
-
     // 4. Generate content with key fallback
     let responseText = "";
     let lastError: unknown = null;
@@ -158,8 +159,15 @@ The first slide must be kind "cover". The last must be kind "closing". Return on
         lastError = err;
         const errStatus = err?.status ?? err?.statusCode;
         const errStr = String(err);
-        if (errStatus === 429 || errStr.includes("429") || errStr.includes("quota") || errStr.includes("RESOURCE_EXHAUSTED")) {
-          console.warn(`[generate-outline] Key ${keyIdx + 1}/${apiKeys.length} rate limited (429). Trying next key...`);
+        if (
+          errStatus === 429 ||
+          errStr.includes("429") ||
+          errStr.includes("quota") ||
+          errStr.includes("RESOURCE_EXHAUSTED")
+        ) {
+          console.warn(
+            `[generate-outline] Key ${keyIdx + 1}/${apiKeys.length} rate limited (429). Trying next key...`,
+          );
           continue;
         }
         throw err; // Non-rate-limit error, throw immediately
@@ -173,14 +181,20 @@ The first slide must be kind "cover". The last must be kind "closing". Return on
     // Sanitize: strip markdown code fences Gemini sometimes wraps JSON in
     responseText = responseText.trim();
     if (responseText.startsWith("```")) {
-      responseText = responseText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      responseText = responseText
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```\s*$/, "")
+        .trim();
     }
 
     // Validate that the response is parseable JSON before returning
     try {
       JSON.parse(responseText);
     } catch (parseErr) {
-      console.error(`[generate-outline] Gemini returned non-parseable JSON:`, responseText.slice(0, 500));
+      console.error(
+        `[generate-outline] Gemini returned non-parseable JSON:`,
+        responseText.slice(0, 500),
+      );
       throw new Error(`Gemini returned malformed JSON: ${String(parseErr)}`);
     }
 

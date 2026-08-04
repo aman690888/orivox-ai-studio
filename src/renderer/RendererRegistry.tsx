@@ -1,11 +1,39 @@
 import React from "react";
 import type { ComponentType } from "../types/presentation-ir.types";
 import {
-  Title, Subtitle, Paragraph, Quote, Callout, SectionDivider, Footer,
-  Image, HeroImage, Icon, Video,
-  IconCard, FeatureCard, KPICard, TeamCard, PricingCard, Testimonial, Statistic, MetricGrid,
-  BulletList, NumberedList, Table, IconGrid, Timeline, Process, Comparison, FAQ,
-  CTA, Chart, Diagram, Flowchart, MindMap, CodeBlock
+  Title,
+  Subtitle,
+  Paragraph,
+  Quote,
+  Callout,
+  SectionDivider,
+  Footer,
+  Image,
+  HeroImage,
+  Icon,
+  Video,
+  IconCard,
+  FeatureCard,
+  KPICard,
+  TeamCard,
+  PricingCard,
+  Testimonial,
+  Statistic,
+  MetricGrid,
+  BulletList,
+  NumberedList,
+  Table,
+  IconGrid,
+  Timeline,
+  Process,
+  Comparison,
+  FAQ,
+  CTA,
+  Chart,
+  Diagram,
+  Flowchart,
+  MindMap,
+  CodeBlock,
 } from "./components";
 
 export interface BaseComponentProps<T = any> {
@@ -50,5 +78,5 @@ export const RendererRegistry: Record<ComponentType, React.FC<BaseComponentProps
   PricingCard,
   FAQ,
   Footer,
-  SectionDivider
+  SectionDivider,
 };

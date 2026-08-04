@@ -7,18 +7,18 @@ export const SlideCanvas: React.FC = () => {
   const { ir: presentation } = useEditor();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-  const slides = presentation.slide_order.map(id => presentation.slides[id]).filter(Boolean);
+  const slides = presentation.slide_order.map((id) => presentation.slides[id]).filter(Boolean);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
         return;
       }
       if (e.key === "ArrowRight" || e.key === " ") {
-        setCurrentSlideIndex(prev => Math.min(prev + 1, slides.length - 1));
+        setCurrentSlideIndex((prev) => Math.min(prev + 1, slides.length - 1));
       } else if (e.key === "ArrowLeft") {
-        setCurrentSlideIndex(prev => Math.max(prev - 1, 0));
+        setCurrentSlideIndex((prev) => Math.max(prev - 1, 0));
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -43,14 +43,14 @@ export const SlideCanvas: React.FC = () => {
 
       {/* Main Canvas Area */}
       <main className="flex-1 p-8 flex items-center justify-center overflow-auto">
-        <div 
-          className="relative w-full max-w-6xl shadow-2xl transition-transform duration-500 ease-in-out" 
+        <div
+          className="relative w-full max-w-6xl shadow-2xl transition-transform duration-500 ease-in-out"
           style={{ aspectRatio: "16/9" }}
         >
           {currentSlide && (
-            <SlideRenderer 
+            <SlideRenderer
               key={currentSlide.id}
-              slide={currentSlide} 
+              slide={currentSlide}
               componentsData={currentSlide.components_data}
               theme={presentation.theme}
               assets={presentation.assets || {}}
@@ -61,17 +61,19 @@ export const SlideCanvas: React.FC = () => {
 
       {/* Controls */}
       <footer className="h-16 bg-gray-800 border-t border-gray-700 flex items-center justify-center gap-6 shrink-0">
-        <button 
+        <button
           className="p-2 rounded-full hover:bg-gray-700 disabled:opacity-50"
-          onClick={() => setCurrentSlideIndex(prev => Math.max(prev - 1, 0))}
+          onClick={() => setCurrentSlideIndex((prev) => Math.max(prev - 1, 0))}
           disabled={currentSlideIndex === 0}
         >
           ← Prev
         </button>
-        <span className="text-sm">{currentSlideIndex + 1} / {slides.length}</span>
-        <button 
+        <span className="text-sm">
+          {currentSlideIndex + 1} / {slides.length}
+        </span>
+        <button
           className="p-2 rounded-full hover:bg-gray-700 disabled:opacity-50"
-          onClick={() => setCurrentSlideIndex(prev => Math.min(prev + 1, slides.length - 1))}
+          onClick={() => setCurrentSlideIndex((prev) => Math.min(prev + 1, slides.length - 1))}
           disabled={currentSlideIndex === slides.length - 1}
         >
           Next →

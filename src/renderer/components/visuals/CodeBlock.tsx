@@ -1,10 +1,14 @@
 import React from "react";
-import { EditableText } from '../../EditableText';
-import { BaseComponentProps } from '../../RendererRegistry';
+import { EditableText } from "../../EditableText";
+import { BaseComponentProps } from "../../RendererRegistry";
 
-
-export const CodeBlock: React.FC<BaseComponentProps> = ({ data, theme, slideId, componentId, assets }) => (
-  
+export const CodeBlock: React.FC<BaseComponentProps> = ({
+  data,
+  theme,
+  slideId,
+  componentId,
+  assets,
+}) => (
   <div className="w-full my-4 rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-[#0d1117] relative group">
     <div className="flex items-center px-4 py-3 bg-[#161b22] border-b border-white/10">
       <div className="flex gap-2 mr-4">
@@ -18,5 +22,4 @@ export const CodeBlock: React.FC<BaseComponentProps> = ({ data, theme, slideId, 
       <code>{data.code || "// Core Logic Output"}</code>
     </pre>
   </div>
-
 );

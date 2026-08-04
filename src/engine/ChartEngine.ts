@@ -15,15 +15,18 @@ export interface ChartDataSpec {
 }
 
 export class ChartEngine {
-  public static createChartFromResearch(topic: string, stats: Array<{ label: string; value: string; context?: string }>): ChartDataSpec | null {
+  public static createChartFromResearch(
+    topic: string,
+    stats: Array<{ label: string; value: string; context?: string }>,
+  ): ChartDataSpec | null {
     if (!stats || stats.length === 0) return null;
 
     // Filter stats that have parseable numbers
-    const validStats = stats.filter(s => /[\d.]/.test(s.value));
+    const validStats = stats.filter((s) => /[\d.]/.test(s.value));
     if (validStats.length < 2) return null;
 
-    const labels = validStats.slice(0, 5).map(s => s.label);
-    const values = validStats.slice(0, 5).map(s => {
+    const labels = validStats.slice(0, 5).map((s) => s.label);
+    const values = validStats.slice(0, 5).map((s) => {
       const num = parseFloat(s.value.replace(/[^\d.]/g, ""));
       return isNaN(num) ? 50 : num;
     });

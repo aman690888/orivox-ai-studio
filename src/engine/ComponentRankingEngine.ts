@@ -14,7 +14,7 @@ export class ComponentRankingEngine {
   public static rankComponents(
     dataComplexity: "low" | "medium" | "high",
     isSequential: boolean,
-    hasQuantitativeData: boolean
+    hasQuantitativeData: boolean,
   ): ComponentCandidate[] {
     const candidates: ComponentCandidate[] = [];
 

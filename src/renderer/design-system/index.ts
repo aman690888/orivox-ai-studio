@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import { spacing } from "./spacing";
 import { typography } from "./typography";
 import { geometry } from "./geometry";

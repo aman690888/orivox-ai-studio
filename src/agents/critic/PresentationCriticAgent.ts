@@ -52,7 +52,11 @@ Return JSON matching:
 }`;
 
     try {
-      const result = await this.modelRouter.routeToJSON<CriticOutput>(prompt, this.model_requirements, signal);
+      const result = await this.modelRouter.routeToJSON<CriticOutput>(
+        prompt,
+        this.model_requirements,
+        signal,
+      );
       return result;
     } catch (e) {
       console.warn("[PresentationCriticAgent] Falling back to default high quality score:", e);
@@ -65,7 +69,9 @@ Return JSON matching:
           feedback: "Meets Gamma quality standards",
           needs_refinement: false,
         })),
-        general_recommendations: ["Deck achieves high visual variety and concise presentation phrasing"],
+        general_recommendations: [
+          "Deck achieves high visual variety and concise presentation phrasing",
+        ],
       };
     }
   }

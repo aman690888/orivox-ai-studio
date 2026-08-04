@@ -54,7 +54,8 @@ export class TelemetryTracker {
 
     this.eventBus.subscribe("AGENT_COMPLETED", (e) => {
       const { agent_id, duration_ms } = e.payload;
-      this.metrics.agent_durations_ms[agent_id] = (this.metrics.agent_durations_ms[agent_id] || 0) + duration_ms;
+      this.metrics.agent_durations_ms[agent_id] =
+        (this.metrics.agent_durations_ms[agent_id] || 0) + duration_ms;
     });
 
     this.eventBus.subscribe("AGENT_RETRY", () => {
@@ -83,7 +84,7 @@ export class TelemetryTracker {
   public getMetrics(cache: AssetCache, budget: WorkflowBudget): TelemetryMetrics {
     const cacheStats = cache.getStats();
     const budgetStats = budget.getStats();
-    
+
     this.metrics.cache_hit_ratio = cacheStats.hit_ratio;
     this.metrics.token_usage = budgetStats.real_tokens;
     this.metrics.total_cost_usd = budgetStats.total_cost_usd;

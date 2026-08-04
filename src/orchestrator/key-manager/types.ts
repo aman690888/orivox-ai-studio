@@ -45,7 +45,7 @@ export interface PoolStatus {
 
 export interface AllKeysExhaustedError {
   type: "ALL_KEYS_RATE_LIMITED";
-  retryAfter: number;  // seconds
+  retryAfter: number; // seconds
   provider: string;
 }
 

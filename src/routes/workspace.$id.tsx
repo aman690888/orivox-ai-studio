@@ -54,38 +54,59 @@ const R = {
 
 // ─── Save Status ──────────────────────────────────────────────────────────────
 function SaveStatusIndicator({
-  status, isOnline, onRetry,
+  status,
+  isOnline,
+  onRetry,
 }: {
   status: "idle" | "saving" | "saved" | "failed";
   isOnline: boolean;
   onRetry: () => void;
 }) {
-  const base = "flex items-center gap-1.5 text-xs px-2.5 py-1 border-[2px] border-[#2d2d2d] font-bold";
+  const base =
+    "flex items-center gap-1.5 text-xs px-2.5 py-1 border-[2px] border-[#2d2d2d] font-bold";
 
-  if (!isOnline) return (
-    <div className={base} style={{ borderRadius: R.tag, background: "#fff9c4", fontFamily: "Kalam, cursive" }}>
-      <CloudOff className="h-3.5 w-3.5" /> Offline
-    </div>
-  );
-  if (status === "saving") return (
-    <div className={base} style={{ borderRadius: R.tag, background: "#fdfbf7", fontFamily: "Kalam, cursive" }}>
-      <RefreshCw className="h-3 w-3 animate-spin text-[#2d5da1]" /> Saving...
-    </div>
-  );
-  if (status === "saved") return (
-    <div className={base} style={{ borderRadius: R.tag, background: "#e5e0d8", fontFamily: "Kalam, cursive" }}>
-      <Cloud className="h-3.5 w-3.5 text-[#2d5da1]" /> Saved ✓
-    </div>
-  );
-  if (status === "failed") return (
-    <button
-      onClick={onRetry}
-      className={`${base} cursor-pointer`}
-      style={{ borderRadius: R.tag, background: "#fff9c4", color: "#ff4d4d", fontFamily: "Kalam, cursive" }}
-    >
-      <CloudLightning className="h-3.5 w-3.5 animate-bounce" /> Failed — Retry
-    </button>
-  );
+  if (!isOnline)
+    return (
+      <div
+        className={base}
+        style={{ borderRadius: R.tag, background: "#fff9c4", fontFamily: "Kalam, cursive" }}
+      >
+        <CloudOff className="h-3.5 w-3.5" /> Offline
+      </div>
+    );
+  if (status === "saving")
+    return (
+      <div
+        className={base}
+        style={{ borderRadius: R.tag, background: "#fdfbf7", fontFamily: "Kalam, cursive" }}
+      >
+        <RefreshCw className="h-3 w-3 animate-spin text-[#2d5da1]" /> Saving...
+      </div>
+    );
+  if (status === "saved")
+    return (
+      <div
+        className={base}
+        style={{ borderRadius: R.tag, background: "#e5e0d8", fontFamily: "Kalam, cursive" }}
+      >
+        <Cloud className="h-3.5 w-3.5 text-[#2d5da1]" /> Saved ✓
+      </div>
+    );
+  if (status === "failed")
+    return (
+      <button
+        onClick={onRetry}
+        className={`${base} cursor-pointer`}
+        style={{
+          borderRadius: R.tag,
+          background: "#fff9c4",
+          color: "#ff4d4d",
+          fontFamily: "Kalam, cursive",
+        }}
+      >
+        <CloudLightning className="h-3.5 w-3.5 animate-bounce" /> Failed — Retry
+      </button>
+    );
   return null;
 }
 
@@ -103,7 +124,11 @@ function Workspace() {
   const { prompt } = Route.useSearch();
   const seededPrompt = prompt || "";
 
-  const { data: dbPresentation, isLoading: isPresLoading, error: presError } = useQuery({
+  const {
+    data: dbPresentation,
+    isLoading: isPresLoading,
+    error: presError,
+  } = useQuery({
     queryKey: ["presentation", id],
     queryFn: () => getPresentation(id),
     enabled: id !== "new" && !!user?.id,
@@ -128,7 +153,21 @@ function Workspace() {
   const { sync, retry, status: saveStatus, isOnline } = usePresentationSync(id);
   const renderSlidesList = slides;
 
-  useEffect(() => { if (dbSlides) setSlides(dbSlides); }, [dbSlides]);
+  useEffect(() => {
+    if (presError) {
+      const msg = presError.message.toLowerCase();
+      if (msg.includes("not found") || msg.includes("row not found") || msg.includes("406")) {
+        navigate({ to: "/forbidden" }); // or 404 depending on error. We use forbidden to be safe for RLS.
+      } else {
+        // generic error, maybe throw to error boundary
+        throw presError;
+      }
+    }
+  }, [presError, navigate]);
+
+  useEffect(() => {
+    if (dbSlides) setSlides(dbSlides);
+  }, [dbSlides]);
 
   useEffect(() => {
     if (dbPresentation) {
@@ -153,10 +192,15 @@ function Workspace() {
       setIsGenerating(true);
       setGenerationError(null);
       try {
-        const result = await generateFullPresentation(effectivePrompt, { config: { provider: "gemini" } });
+        const result = await generateFullPresentation(effectivePrompt, {
+          config: { provider: "gemini" },
+        });
         const savedSlides = await saveSlides(id, result.slides);
         const updates: any = { status: "completed" };
-        if (result.title) { updates.title = result.title; setTitle(result.title); }
+        if (result.title) {
+          updates.title = result.title;
+          setTitle(result.title);
+        }
         await updatePresentation(id, updates);
         setSlides(savedSlides);
         queryClient.invalidateQueries({ queryKey: ["slides", id] });
@@ -178,7 +222,9 @@ function Workspace() {
       setInitError(null);
       try {
         const presentationTitle = seededPrompt
-          ? seededPrompt.length > 50 ? seededPrompt.slice(0, 50) + "..." : seededPrompt
+          ? seededPrompt.length > 50
+            ? seededPrompt.slice(0, 50) + "..."
+            : seededPrompt
           : "Untitled Presentation";
         const newPres = await createPresentation(
           user.id,
@@ -189,7 +235,10 @@ function Workspace() {
         );
         navigate({ to: "/workspace/$id", params: { id: newPres.id }, search: { prompt } });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Could not create presentation. Check your connection and try again.";
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "Could not create presentation. Check your connection and try again.";
         console.error("createPresentation failed:", err);
         setInitError(msg);
         setIsCreating(false);
@@ -209,7 +258,14 @@ function Workspace() {
   const messagesSeeded = useRef(false);
 
   useEffect(() => {
-    if (isPresLoading || isSlidesLoading || !dbPresentation || !effectivePrompt || messagesSeeded.current) return;
+    if (
+      isPresLoading ||
+      isSlidesLoading ||
+      !dbPresentation ||
+      !effectivePrompt ||
+      messagesSeeded.current
+    )
+      return;
     messagesSeeded.current = true;
     const isExisting = dbPresentation.status === "completed" || (dbSlides && dbSlides.length > 0);
     const uId = nextIdRef.current++;
@@ -217,18 +273,30 @@ function Workspace() {
     if (isExisting) {
       setMessages([
         { id: uId, role: "user", text: effectivePrompt, ts: Date.now() },
-        { id: aiId, role: "ai", text: "Presentation loaded. Ask me to edit anything! ✏️", ts: Date.now() + 1 },
+        {
+          id: aiId,
+          role: "ai",
+          text: "Presentation loaded. Ask me to edit anything! ✏️",
+          ts: Date.now() + 1,
+        },
       ]);
     } else {
       setMessages([
         { id: uId, role: "user", text: effectivePrompt, ts: Date.now() },
-        { id: aiId, role: "ai", text: "Got it! Researching the topic and drafting an outline now... ✨", ts: Date.now() + 1, stream: true },
+        {
+          id: aiId,
+          role: "ai",
+          text: "Got it! Researching the topic and drafting an outline now... ✨",
+          ts: Date.now() + 1,
+          stream: true,
+        },
       ]);
     }
   }, [effectivePrompt, isPresLoading, isSlidesLoading, dbPresentation, dbSlides]);
 
   useEffect(() => {
-    if (conversationRef.current) conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+    if (conversationRef.current)
+      conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
   }, [messages]);
 
   const [selectedEl, setSelectedEl] = useState<string | null>(null);
@@ -237,10 +305,14 @@ function Workspace() {
   const [timelineOpen, setTimelineOpen] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(true);
 
-  const isExistingPresentation = dbPresentation?.status === "completed" || (dbSlides && dbSlides.length > 0);
+  const isExistingPresentation =
+    dbPresentation?.status === "completed" || (dbSlides && dbSlides.length > 0);
   const active = effectivePrompt.length > 0 && !isExistingPresentation;
   const generationCompleted = (active && !isGenerating && generationStarted.current) || false;
-  const gen = useGenerationTimeline(active && isGenerating, generationCompleted || !!isExistingPresentation);
+  const gen = useGenerationTimeline(
+    active && isGenerating,
+    generationCompleted || !!isExistingPresentation,
+  );
 
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle);
@@ -262,14 +334,26 @@ function Workspace() {
     setComposer("");
     setTimeout(() => {
       const aiId = nextIdRef.current++;
-      setMessages((m) => [...m, { id: aiId, role: "ai", text: "On it — updating the deck now. ✏️", ts: Date.now(), stream: true }]);
+      setMessages((m) => [
+        ...m,
+        {
+          id: aiId,
+          role: "ai",
+          text: "On it — updating the deck now. ✏️",
+          ts: Date.now(),
+          stream: true,
+        },
+      ]);
     }, 600);
   };
 
   const generatedCount = useMemo(() => {
     if (gen.isReady) return renderSlidesList.length;
     if (!gen.showSlides) return 0;
-    return Math.min(renderSlidesList.length, 2 + (gen.showCharts ? 2 : 0) + (gen.showDiagrams ? 2 : 0));
+    return Math.min(
+      renderSlidesList.length,
+      2 + (gen.showCharts ? 2 : 0) + (gen.showDiagrams ? 2 : 0),
+    );
   }, [gen.isReady, gen.showSlides, gen.showCharts, gen.showDiagrams, renderSlidesList]);
 
   const visibleSlides = renderSlidesList.slice(0, generatedCount);
@@ -279,14 +363,21 @@ function Workspace() {
     return (
       <div
         className="flex min-h-screen flex-col items-center justify-center px-4 text-center"
-        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        style={{
+          background: "#fdfbf7",
+          backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       >
         <div
           className="p-10 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d] flex flex-col items-center gap-5 max-w-md"
           style={{ borderRadius: R.card }}
         >
           <div className="text-5xl">😬</div>
-          <h1 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+          <h1
+            className="text-2xl font-bold text-[#2d2d2d]"
+            style={{ fontFamily: "Kalam, cursive" }}
+          >
             Couldn't create presentation
           </h1>
           <p className="text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
@@ -294,7 +385,11 @@ function Workspace() {
           </p>
           <div className="flex gap-3">
             <button
-              onClick={() => { setInitError(null); creationStarted.current = false; setIsCreating(true); }}
+              onClick={() => {
+                setInitError(null);
+                creationStarted.current = false;
+                setIsCreating(true);
+              }}
               className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#ff4d4d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
               style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
             >
@@ -318,7 +413,11 @@ function Workspace() {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
-        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        style={{
+          background: "#fdfbf7",
+          backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       >
         <div
           className="flex flex-col items-center gap-4 p-10 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d]"
@@ -346,17 +445,27 @@ function Workspace() {
     return (
       <div
         className="flex min-h-screen flex-col items-center justify-center px-4 text-center"
-        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        style={{
+          background: "#fdfbf7",
+          backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       >
         <div
           className="p-10 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d] flex flex-col items-center gap-5"
           style={{ borderRadius: R.card }}
         >
           <div className="text-5xl">😬</div>
-          <h1 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+          <h1
+            className="text-2xl font-bold text-[#2d2d2d]"
+            style={{ fontFamily: "Kalam, cursive" }}
+          >
             Presentation not found
           </h1>
-          <p className="text-base text-[#6b6460] max-w-sm" style={{ fontFamily: "Patrick Hand, cursive" }}>
+          <p
+            className="text-base text-[#6b6460] max-w-sm"
+            style={{ fontFamily: "Patrick Hand, cursive" }}
+          >
             This deck doesn't exist or you don't have access.
           </p>
           <Link
@@ -371,18 +480,21 @@ function Workspace() {
     );
   }
 
-
   if (!user) return null;
 
   return (
     <div
       className="flex h-screen w-full flex-col overflow-hidden"
-      style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px", fontFamily: "Patrick Hand, cursive", color: "#2d2d2d" }}
+      style={{
+        background: "#fdfbf7",
+        backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+        fontFamily: "Patrick Hand, cursive",
+        color: "#2d2d2d",
+      }}
     >
       {/* ── Top Toolbar ── */}
-      <header
-        className="flex h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-4 z-20"
-      >
+      <header className="flex h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-4 z-20">
         {/* Left: back + title */}
         <div className="flex items-center gap-3">
           <Link
@@ -439,7 +551,6 @@ function Workspace() {
 
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden relative">
-
         {/* ── Chat Panel (floating left drawer) ── */}
         <AnimatePresence>
           {isChatOpen && (
@@ -459,7 +570,10 @@ function Workspace() {
                   >
                     ✨
                   </div>
-                  <span className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                  <span
+                    className="text-sm font-bold text-[#2d2d2d]"
+                    style={{ fontFamily: "Kalam, cursive" }}
+                  >
                     AI Chat
                   </span>
                 </div>
@@ -478,12 +592,18 @@ function Workspace() {
                     onClick={() => setTimelineOpen((o) => !o)}
                     className="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-[#e5e0d8] transition-colors"
                   >
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>
-                      <Sparkles className="h-3.5 w-3.5 text-[#2d5da1]" strokeWidth={2.5} /> AI Timeline
+                    <div
+                      className="flex items-center gap-2 text-xs font-bold text-[#6b6460]"
+                      style={{ fontFamily: "Kalam, cursive" }}
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-[#2d5da1]" strokeWidth={2.5} /> AI
+                      Timeline
                     </div>
-                    {timelineOpen
-                      ? <ChevronUp className="h-3.5 w-3.5 text-[#6b6460]" strokeWidth={2.5} />
-                      : <ChevronDown className="h-3.5 w-3.5 text-[#6b6460]" strokeWidth={2.5} />}
+                    {timelineOpen ? (
+                      <ChevronUp className="h-3.5 w-3.5 text-[#6b6460]" strokeWidth={2.5} />
+                    ) : (
+                      <ChevronDown className="h-3.5 w-3.5 text-[#6b6460]" strokeWidth={2.5} />
+                    )}
                   </button>
                   <AnimatePresence initial={false}>
                     {timelineOpen && (
@@ -499,12 +619,27 @@ function Workspace() {
                             return (
                               <div key={s} className="flex items-center gap-2 text-xs">
                                 <span className="flex h-4 w-4 items-center justify-center shrink-0">
-                                  {st === "done" && <Check className="h-3.5 w-3.5 text-[#2d8a5b]" strokeWidth={2.5} />}
-                                  {st === "active" && <span className="h-2 w-2 animate-pulse rounded-full bg-[#ff4d4d]" />}
-                                  {st === "pending" && <span className="h-1.5 w-1.5 rounded-full bg-[#2d2d2d]/20" />}
+                                  {st === "done" && (
+                                    <Check
+                                      className="h-3.5 w-3.5 text-[#2d8a5b]"
+                                      strokeWidth={2.5}
+                                    />
+                                  )}
+                                  {st === "active" && (
+                                    <span className="h-2 w-2 animate-pulse rounded-full bg-[#ff4d4d]" />
+                                  )}
+                                  {st === "pending" && (
+                                    <span className="h-1.5 w-1.5 rounded-full bg-[#2d2d2d]/20" />
+                                  )}
                                 </span>
                                 <span
-                                  className={st === "pending" ? "text-[#2d2d2d]/40" : st === "active" ? "text-[#2d2d2d] font-bold" : "text-[#2d2d2d]/40 line-through"}
+                                  className={
+                                    st === "pending"
+                                      ? "text-[#2d2d2d]/40"
+                                      : st === "active"
+                                        ? "text-[#2d2d2d] font-bold"
+                                        : "text-[#2d2d2d]/40 line-through"
+                                  }
                                   style={{ fontFamily: "Patrick Hand, cursive" }}
                                 >
                                   {s}
@@ -538,13 +673,19 @@ function Workspace() {
                             >
                               ✨
                             </div>
-                            <span className="text-[10px] text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                            <span
+                              className="text-[10px] text-[#6b6460]"
+                              style={{ fontFamily: "Patrick Hand, cursive" }}
+                            >
                               Orivox · {formatTs(m.ts)}
                             </span>
                           </div>
                           <div
                             className="text-sm leading-relaxed text-[#2d2d2d] bg-white border-[2px] border-[#2d2d2d] px-3 py-2 shadow-[2px_2px_0px_0px_#2d2d2d]"
-                            style={{ borderRadius: "4px 18px 18px 18px", fontFamily: "Patrick Hand, cursive" }}
+                            style={{
+                              borderRadius: "4px 18px 18px 18px",
+                              fontFamily: "Patrick Hand, cursive",
+                            }}
                           >
                             {m.text}
                           </div>
@@ -553,7 +694,10 @@ function Workspace() {
                         <div className="max-w-[90%] flex flex-col gap-1 items-end">
                           <div
                             className="text-sm leading-relaxed text-white bg-[#2d2d2d] px-3 py-2 shadow-[2px_2px_0px_0px_#ff4d4d]"
-                            style={{ borderRadius: "18px 4px 18px 18px", fontFamily: "Patrick Hand, cursive" }}
+                            style={{
+                              borderRadius: "18px 4px 18px 18px",
+                              fontFamily: "Patrick Hand, cursive",
+                            }}
                           >
                             {m.text}
                           </div>
@@ -566,7 +710,10 @@ function Workspace() {
                 {messages.length === 0 && (
                   <div className="mt-12 text-center flex flex-col items-center gap-2">
                     <span className="text-3xl animate-wiggle">✏️</span>
-                    <p className="text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                    <p
+                      className="text-sm text-[#6b6460]"
+                      style={{ fontFamily: "Patrick Hand, cursive" }}
+                    >
                       Describe a presentation to begin.
                     </p>
                   </div>
@@ -583,7 +730,10 @@ function Workspace() {
                     value={composer}
                     onChange={(e) => setComposer(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(composer); }
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        send(composer);
+                      }
                     }}
                     placeholder="Ask Orivox..."
                     rows={1}
@@ -607,7 +757,10 @@ function Workspace() {
         {/* ── Canvas Area ── */}
         <main
           className="flex-1 h-full overflow-y-auto relative"
-          style={{ marginLeft: isChatOpen ? "300px" : "0", transition: "margin-left 0.3s cubic-bezier(0.22, 1, 0.36, 1)" }}
+          style={{
+            marginLeft: isChatOpen ? "300px" : "0",
+            transition: "margin-left 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
           onClick={() => setSelectedEl(null)}
         >
           {/* Error banner */}
@@ -628,7 +781,6 @@ function Workspace() {
 
           <div className="relative min-h-full flex flex-col items-center justify-start py-10 px-6 md:px-10">
             <div className="w-full max-w-4xl">
-
               {/* Empty state */}
               {messages.length === 0 && (
                 <div className="flex h-[60vh] items-center justify-center">
@@ -642,11 +794,18 @@ function Workspace() {
                     >
                       ✏️
                     </div>
-                    <h2 className="text-xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                    <h2
+                      className="text-xl font-bold text-[#2d2d2d]"
+                      style={{ fontFamily: "Kalam, cursive" }}
+                    >
                       Canvas ready!
                     </h2>
-                    <p className="text-sm text-[#6b6460] max-w-xs" style={{ fontFamily: "Patrick Hand, cursive" }}>
-                      Use the AI Chat panel to describe your presentation and it'll appear right here.
+                    <p
+                      className="text-sm text-[#6b6460] max-w-xs"
+                      style={{ fontFamily: "Patrick Hand, cursive" }}
+                    >
+                      Use the AI Chat panel to describe your presentation and it'll appear right
+                      here.
                     </p>
                   </div>
                 </div>
@@ -669,7 +828,10 @@ function Workspace() {
                       style={{ borderRadius: "2px", transform: "rotate(-1deg)" }}
                     />
                     <div className="mb-5 flex items-center justify-between">
-                      <div className="text-sm font-bold text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>
+                      <div
+                        className="text-sm font-bold text-[#6b6460]"
+                        style={{ fontFamily: "Kalam, cursive" }}
+                      >
                         📋 Proposed Outline
                       </div>
                       <button
@@ -694,7 +856,10 @@ function Workspace() {
                           >
                             {i + 1}
                           </div>
-                          <div className="text-sm text-[#2d2d2d]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                          <div
+                            className="text-sm text-[#2d2d2d]"
+                            style={{ fontFamily: "Patrick Hand, cursive" }}
+                          >
                             {s.title}
                           </div>
                         </motion.div>
@@ -713,8 +878,15 @@ function Workspace() {
                       className="flex items-center gap-3 self-stretch px-4 py-2.5 bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
                       style={{ borderRadius: R.tag }}
                     >
-                      <Loader2 size={14} className="animate-spin text-[#ff4d4d] shrink-0" strokeWidth={2.5} />
-                      <span className="text-xs font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                      <Loader2
+                        size={14}
+                        className="animate-spin text-[#ff4d4d] shrink-0"
+                        strokeWidth={2.5}
+                      />
+                      <span
+                        className="text-xs font-bold text-[#2d2d2d]"
+                        style={{ fontFamily: "Kalam, cursive" }}
+                      >
                         Rendering slides...
                       </span>
                       <span
@@ -731,7 +903,10 @@ function Workspace() {
                     {/* Tilted shadow behind */}
                     <div
                       className="absolute inset-0 bg-[#e5e0d8] border-[2px] border-[#2d2d2d]"
-                      style={{ borderRadius: R.card, transform: "rotate(1deg) translate(5px, 5px)" }}
+                      style={{
+                        borderRadius: R.card,
+                        transform: "rotate(1deg) translate(5px, 5px)",
+                      }}
                     />
                     <motion.div
                       key={visibleSlides[activeSlide]?.id}
@@ -767,7 +942,10 @@ function Workspace() {
                         return (
                           <button
                             key={s.id}
-                            onClick={(e) => { e.stopPropagation(); if (shown) setActiveSlide(i); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (shown) setActiveSlide(i);
+                            }}
                             className={`relative aspect-video w-36 shrink-0 snap-center border-[2.5px] transition-all duration-100 ${
                               isActive
                                 ? "border-[#ff4d4d] shadow-[3px_3px_0px_0px_#ff4d4d] -translate-y-1 bg-white"
@@ -805,7 +983,9 @@ function Workspace() {
                             {/* Slide number badge */}
                             <div
                               className={`absolute left-1.5 top-1.5 px-1.5 py-0.5 text-[9px] font-bold ${
-                                isActive ? "bg-[#ff4d4d] text-white border-[#ff4d4d]" : "bg-[#2d2d2d]/10 text-[#2d2d2d]/60"
+                                isActive
+                                  ? "bg-[#ff4d4d] text-white border-[#ff4d4d]"
+                                  : "bg-[#2d2d2d]/10 text-[#2d2d2d]/60"
                               }`}
                               style={{ borderRadius: "3px", fontFamily: "Kalam, cursive" }}
                             >

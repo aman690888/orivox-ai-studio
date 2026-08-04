@@ -1,12 +1,20 @@
 import { IAgent, ModelCapabilities } from "@/orchestrator/types";
 import { IModelRouter } from "@/orchestrator/ModelRouter";
 import { ClarificationRequest } from "@/agents/intent/types";
-import { ContentWriterInput, ContentOutput, SlideContentOutput, PopulatedPlaceholder } from "./types";
+import {
+  ContentWriterInput,
+  ContentOutput,
+  SlideContentOutput,
+  PopulatedPlaceholder,
+} from "./types";
 import { DetailedContentPlaceholder } from "@/agents/content-planner/types";
 
-export class ContentWriterAgent implements IAgent<ContentWriterInput, ContentOutput | ClarificationRequest> {
+export class ContentWriterAgent implements IAgent<
+  ContentWriterInput,
+  ContentOutput | ClarificationRequest
+> {
   public id = "content-writer-agent";
-  
+
   public model_requirements: ModelCapabilities = {
     needs_reasoning: true,
     needs_json_mode: true,
@@ -16,11 +24,14 @@ export class ContentWriterAgent implements IAgent<ContentWriterInput, ContentOut
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: ContentWriterInput, signal: AbortSignal): Promise<ContentOutput | ClarificationRequest> {
+  public async execute(
+    context: ContentWriterInput,
+    signal: AbortSignal,
+  ): Promise<ContentOutput | ClarificationRequest> {
     const rawResponse = await this.modelRouter.routeToJSON<any>(
       this.buildPrompt(context),
       this.model_requirements,
-      signal
+      signal,
     );
 
     if (rawResponse.clarificationRequired) {
@@ -40,19 +51,29 @@ export class ContentWriterAgent implements IAgent<ContentWriterInput, ContentOut
   }
 
   private parse(rawPayload: any): ContentOutput {
-    const slides: SlideContentOutput[] = Array.isArray(rawPayload?.slides) ? rawPayload.slides.map((sl: any) => ({
-      slide_id: sl.slide_id || "unknown",
-      populated_placeholders: Array.isArray(sl.populated_placeholders) ? sl.populated_placeholders.map((ph: any) => ({
-        placeholder_id: ph.placeholder_id || "unknown",
-        value: ph.value,
-        word_count: typeof ph.word_count === "number" ? ph.word_count : this.calculateWordCount(ph.value),
-        content_type: ph.content_type || "unknown",
-      })) : []
-    })) : [];
+    const slides: SlideContentOutput[] = Array.isArray(rawPayload?.slides)
+      ? rawPayload.slides.map((sl: any) => ({
+          slide_id: sl.slide_id || "unknown",
+          populated_placeholders: Array.isArray(sl.populated_placeholders)
+            ? sl.populated_placeholders.map((ph: any) => ({
+                placeholder_id: ph.placeholder_id || "unknown",
+                value: ph.value,
+                word_count:
+                  typeof ph.word_count === "number"
+                    ? ph.word_count
+                    : this.calculateWordCount(ph.value),
+                content_type: ph.content_type || "unknown",
+              }))
+            : [],
+        }))
+      : [];
 
     return {
       slides,
-      global_confidence_score: typeof rawPayload?.global_confidence_score === "number" ? rawPayload.global_confidence_score : 1.0,
+      global_confidence_score:
+        typeof rawPayload?.global_confidence_score === "number"
+          ? rawPayload.global_confidence_score
+          : 1.0,
     };
   }
 
@@ -62,25 +83,36 @@ export class ContentWriterAgent implements IAgent<ContentWriterInput, ContentOut
     } else if (Array.isArray(value)) {
       return value.reduce((sum: number, item: any) => sum + this.calculateWordCount(item), 0);
     } else if (typeof value === "object" && value !== null) {
-      return Object.values(value).reduce((sum: number, item: any) => sum + this.calculateWordCount(item), 0);
+      return Object.values(value).reduce(
+        (sum: number, item: any) => sum + this.calculateWordCount(item),
+        0,
+      );
     }
     return 0;
   }
 
-  private validate(output: ContentOutput, context: ContentWriterInput): ContentOutput | ClarificationRequest {
+  private validate(
+    output: ContentOutput,
+    context: ContentWriterInput,
+  ): ContentOutput | ClarificationRequest {
     if (output.global_confidence_score < this.MIN_CONFIDENCE_THRESHOLD) {
       return {
         clarificationRequired: true,
-        questions: ["The required tone and formatting rules clash with the provided subject matter. Please clarify."],
+        questions: [
+          "The required tone and formatting rules clash with the provided subject matter. Please clarify.",
+        ],
         missingFields: [],
       };
     }
 
     // Determine the expected universe of placeholders to validate against
     const expectedPlaceholders = new Map<string, DetailedContentPlaceholder>();
-    context.contentPlan.slides.forEach(slide => {
-      slide.placeholders.forEach(ph => {
-        if (!context.target_placeholder_ids || context.target_placeholder_ids.includes(ph.placeholder_id)) {
+    context.contentPlan.slides.forEach((slide) => {
+      slide.placeholders.forEach((ph) => {
+        if (
+          !context.target_placeholder_ids ||
+          context.target_placeholder_ids.includes(ph.placeholder_id)
+        ) {
           expectedPlaceholders.set(ph.placeholder_id, ph);
         }
       });
@@ -88,27 +120,35 @@ export class ContentWriterAgent implements IAgent<ContentWriterInput, ContentOut
 
     const filledPlaceholders = new Set<string>();
 
-    output.slides.forEach(slideOut => {
-      slideOut.populated_placeholders.forEach(phOut => {
+    output.slides.forEach((slideOut) => {
+      slideOut.populated_placeholders.forEach((phOut) => {
         // Validation: No duplicate placeholders
         if (filledPlaceholders.has(phOut.placeholder_id)) {
-          throw new Error(`[ContentWriterAgent] Validation Error: Duplicate placeholder_id populated '${phOut.placeholder_id}'.`);
+          throw new Error(
+            `[ContentWriterAgent] Validation Error: Duplicate placeholder_id populated '${phOut.placeholder_id}'.`,
+          );
         }
         filledPlaceholders.add(phOut.placeholder_id);
 
         const expected = expectedPlaceholders.get(phOut.placeholder_id);
         if (!expected) {
-          throw new Error(`[ContentWriterAgent] Validation Error: Populated unknown placeholder '${phOut.placeholder_id}'.`);
+          throw new Error(
+            `[ContentWriterAgent] Validation Error: Populated unknown placeholder '${phOut.placeholder_id}'.`,
+          );
         }
 
         // Validation: Word Count Limits
         const actualWordCount = this.calculateWordCount(phOut.value);
         // Add a small 10% buffer for mathematical safety
         if (actualWordCount > expected.max_words * 1.1) {
-           throw new Error(`[ContentWriterAgent] Validation Error: Placeholder '${phOut.placeholder_id}' exceeded max word count (${actualWordCount} > ${expected.max_words}).`);
+          throw new Error(
+            `[ContentWriterAgent] Validation Error: Placeholder '${phOut.placeholder_id}' exceeded max word count (${actualWordCount} > ${expected.max_words}).`,
+          );
         }
         if (actualWordCount < Math.floor(expected.min_words * 0.9)) {
-           throw new Error(`[ContentWriterAgent] Validation Error: Placeholder '${phOut.placeholder_id}' failed to meet min word count (${actualWordCount} < ${expected.min_words}).`);
+          throw new Error(
+            `[ContentWriterAgent] Validation Error: Placeholder '${phOut.placeholder_id}' failed to meet min word count (${actualWordCount} < ${expected.min_words}).`,
+          );
         }
 
         // Auto-correct the word count in the output for downstream metrics
@@ -119,7 +159,9 @@ export class ContentWriterAgent implements IAgent<ContentWriterInput, ContentOut
     // Validation: Every targeted placeholder must be filled
     for (const [placeholderId, _] of expectedPlaceholders.entries()) {
       if (!filledPlaceholders.has(placeholderId)) {
-        throw new Error(`[ContentWriterAgent] Validation Error: Required placeholder '${placeholderId}' was not populated.`);
+        throw new Error(
+          `[ContentWriterAgent] Validation Error: Required placeholder '${placeholderId}' was not populated.`,
+        );
       }
     }
 
@@ -127,16 +169,24 @@ export class ContentWriterAgent implements IAgent<ContentWriterInput, ContentOut
   }
 
   private buildPrompt(context: ContentWriterInput): string {
-    const targetSubset = context.target_placeholder_ids 
+    const targetSubset = context.target_placeholder_ids
       ? `\nCRITICAL: YOU MUST ONLY GENERATE CONTENT FOR THE FOLLOWING PLACEHOLDERS:\n${JSON.stringify(context.target_placeholder_ids)}`
       : "";
 
     // Strip out all the upstream noise to keep the prompt laser focused on the Content Plan
-    const contentPlanSubset = context.target_placeholder_ids 
-      ? JSON.stringify(context.contentPlan.slides.map(s => ({
-          slide_id: s.slide_id,
-          placeholders: s.placeholders.filter(p => context.target_placeholder_ids!.includes(p.placeholder_id))
-        })).filter(s => s.placeholders.length > 0), null, 2)
+    const contentPlanSubset = context.target_placeholder_ids
+      ? JSON.stringify(
+          context.contentPlan.slides
+            .map((s) => ({
+              slide_id: s.slide_id,
+              placeholders: s.placeholders.filter((p) =>
+                context.target_placeholder_ids!.includes(p.placeholder_id),
+              ),
+            }))
+            .filter((s) => s.placeholders.length > 0),
+          null,
+          2,
+        )
       : JSON.stringify(context.contentPlan, null, 2);
 
     return `

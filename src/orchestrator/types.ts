@@ -1,7 +1,14 @@
 import { PresentationIR, UUID } from "@/types/presentation-ir.types";
 import { ValidationReport } from "@/validation/types";
 
-export type ExecutionState = "PENDING" | "RUNNING" | "VALIDATING" | "FAILED" | "COMPLETED" | "CANCELLED" | "CLARIFICATION_REQUIRED";
+export type ExecutionState =
+  | "PENDING"
+  | "RUNNING"
+  | "VALIDATING"
+  | "FAILED"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "CLARIFICATION_REQUIRED";
 
 export interface ModelCapabilities {
   needs_reasoning?: boolean;

@@ -14,6 +14,11 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Sign in or create your Orivox account." },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      reset: search.reset === "true",
+    };
+  },
   component: Auth,
 });
 
@@ -29,7 +34,6 @@ const R = {
   tag: "4px 22px 6px 18px / 22px 6px 18px 4px",
   input: "4px 18px 4px 16px / 18px 4px 16px 4px",
 };
-
 
 // ─── Hand-Drawn Input ─────────────────────────────────────────────────────────
 function HandInput({
@@ -125,7 +129,10 @@ function SecondaryBtn({
 // ─── Divider ──────────────────────────────────────────────────────────────────
 function Divider() {
   return (
-    <div className="my-6 flex items-center gap-4 text-sm text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>
+    <div
+      className="my-6 flex items-center gap-4 text-sm text-[#6b6460]"
+      style={{ fontFamily: "Kalam, cursive" }}
+    >
       <span className="h-[2px] flex-1 border-t-[2px] border-dashed border-[#2d2d2d]/30" />
       <span>or</span>
       <span className="h-[2px] flex-1 border-t-[2px] border-dashed border-[#2d2d2d]/30" />
@@ -182,11 +189,19 @@ function isValidEmail(e: string) {
 
 // ─── Password Fields ──────────────────────────────────────────────────────────
 function PasswordFields({
-  pw, setPw, confirm, setConfirm, onSubmit, disabled,
+  pw,
+  setPw,
+  confirm,
+  setConfirm,
+  onSubmit,
+  disabled,
 }: {
-  pw: string; setPw: (v: string) => void;
-  confirm: string; setConfirm: (v: string) => void;
-  onSubmit: () => void; disabled?: boolean;
+  pw: string;
+  setPw: (v: string) => void;
+  confirm: string;
+  setConfirm: (v: string) => void;
+  onSubmit: () => void;
+  disabled?: boolean;
 }) {
   const [showPw, setShowPw] = useState(false);
   const strength = useMemo(() => scorePassword(pw), [pw]);
@@ -203,7 +218,11 @@ function PasswordFields({
         autoFocus
         placeholder="Something sneaky..."
         rightElement={
-          <button type="button" onClick={() => setShowPw((s) => !s)} className="text-[#2d2d2d]/60 hover:text-[#2d2d2d]">
+          <button
+            type="button"
+            onClick={() => setShowPw((s) => !s)}
+            className="text-[#2d2d2d]/60 hover:text-[#2d2d2d]"
+          >
             {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         }
@@ -221,7 +240,10 @@ function PasswordFields({
               >
                 <motion.div
                   initial={false}
-                  animate={{ width: i < strength.score ? "100%" : "0%", backgroundColor: strength.color }}
+                  animate={{
+                    width: i < strength.score ? "100%" : "0%",
+                    backgroundColor: strength.color,
+                  }}
                   transition={{ duration: 0.3 }}
                   className="h-full"
                 />
@@ -259,7 +281,10 @@ function PasswordFields({
 
 // ─── Main Auth Component ──────────────────────────────────────────────────────
 function Auth() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshSession } = useAuth();
+  const search = Route.useSearch();
+  const isResetting = search.reset;
+  
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("login");
   const [signupStep, setSignupStep] = useState<SignupStep>("email");
@@ -272,8 +297,28 @@ function Auth() {
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/home" });
-  }, [user, loading, navigate]);
+    // We only navigate away if the user is fully logged in AND they are NOT actively trying to reset their password
+    if (!loading && user && !isResetting) {
+      navigate({ to: "/home" });
+    }
+  }, [user, loading, navigate, isResetting]);
+
+  const handleUpdatePassword = async () => {
+    setAuthError(null);
+    setActionLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      toast.success("Password updated successfully!");
+      navigate({ to: "/home" });
+    } catch (err: any) {
+      const msg = parseAuthError(err);
+      setAuthError(msg);
+      toast.error(msg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const resetAll = (m: Mode) => {
     setMode(m);
@@ -289,70 +334,113 @@ function Auth() {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/home` },
+        options: { 
+          redirectTo: `${window.location.origin}/home`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
       });
       if (error) throw error;
-    } catch (err) {
-      const msg = (err as Error).message || "Failed Google Authentication";
+    } catch (err: any) {
+      const msg = err?.message || "Failed Google Authentication";
       setAuthError(msg);
       toast.error(msg);
     }
   };
 
-  const handleEmailStep = () => { setAuthError(null); setSignupStep("password"); };
+  const handleEmailStep = () => {
+    setAuthError(null);
+    const sanitizedEmail = email.trim().toLowerCase();
+    setEmail(sanitizedEmail);
+    if (!isValidEmail(sanitizedEmail)) {
+      setAuthError("Please enter a valid email address.");
+      return;
+    }
+    setSignupStep("password");
+  };
+
+  const parseAuthError = (err: any): string => {
+    if (err?.status === 429) return "Too many attempts. Please wait a moment and try again.";
+    if (err?.message?.includes("already registered")) return "An account with this email already exists.";
+    if (err?.message?.includes("Invalid login credentials")) return "Incorrect email or password.";
+    if (err?.message?.includes("Password should be at least")) return "Password is too weak.";
+    return err?.message || "An unexpected error occurred.";
+  };
 
   const handleSignUp = async () => {
-    setAuthError(null); setActionLoading(true);
+    setAuthError(null);
+    setActionLoading(true);
     try {
+      const sanitizedEmail = email.trim().toLowerCase();
       const { error } = await supabase.auth.signUp({
-        email, password,
+        email: sanitizedEmail,
+        password,
         options: { emailRedirectTo: `${window.location.origin}/home` },
       });
       if (error) throw error;
       setSignupStep("confirm-sent");
       toast.success("Account created! Check your email.");
-    } catch (err) {
-      const msg = (err as Error).message || "Sign up failed. Please try again.";
+    } catch (err: any) {
+      const msg = parseAuthError(err);
       setAuthError(msg);
       toast.error(msg);
-    } finally { setActionLoading(false); }
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleLogin = async () => {
-    setAuthError(null); setActionLoading(true);
+    setAuthError(null);
+    setActionLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const sanitizedEmail = email.trim().toLowerCase();
+      const { error } = await supabase.auth.signInWithPassword({ 
+        email: sanitizedEmail, 
+        password 
+      });
       if (error) throw error;
       toast.success("Welcome back!");
       navigate({ to: "/home" });
-    } catch (err) {
-      const msg = (err as Error).message || "Invalid credentials.";
+    } catch (err: any) {
+      const msg = parseAuthError(err);
       setAuthError(msg);
       toast.error(msg);
-    } finally { setActionLoading(false); }
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleResetPassword = async () => {
-    setAuthError(null); setActionLoading(true);
+    setAuthError(null);
+    setActionLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+      const sanitizedEmail = email.trim().toLowerCase();
+      const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
       });
       if (error) throw error;
       setLoginStep("forgot-sent");
       toast.success("Password reset link sent!");
-    } catch (err) {
-      const msg = (err as Error).message || "Failed to send reset link.";
+    } catch (err: any) {
+      const msg = parseAuthError(err);
       setAuthError(msg);
       toast.error(msg);
-    } finally { setActionLoading(false); }
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   if (loading) {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
-        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        style={{
+          background: "#fdfbf7",
+          backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       >
         <div
           className="flex flex-col items-center gap-4 p-8 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d]"
@@ -368,7 +456,13 @@ function Auth() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px", fontFamily: "Patrick Hand, cursive", color: "#2d2d2d" }}
+      style={{
+        background: "#fdfbf7",
+        backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+        fontFamily: "Patrick Hand, cursive",
+        color: "#2d2d2d",
+      }}
     >
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 bg-[#fdfbf7]/90 backdrop-blur-sm border-b-[3px] border-dashed border-[#2d2d2d]">
@@ -388,7 +482,6 @@ function Auth() {
       {/* ── Main ── */}
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-
           {/* ── Left: Branding Panel ── */}
           <div className="hidden md:flex flex-col gap-8 relative">
             {/* Decorative tilted card behind */}
@@ -419,7 +512,8 @@ function Auth() {
                 style={{ fontFamily: "Patrick Hand, cursive" }}
               >
                 Sign in and get back to building{" "}
-                <span className="font-bold text-[#ff4d4d]">beautiful decks</span>. Your slides are waiting.
+                <span className="font-bold text-[#ff4d4d]">beautiful decks</span>. Your slides are
+                waiting.
               </p>
 
               {/* Feature bullets */}
@@ -447,7 +541,11 @@ function Auth() {
                     <div
                       key={i}
                       className="w-9 h-9 border-2 border-white flex items-center justify-center text-white text-xs font-bold"
-                      style={{ background: c, borderRadius: "50% 45% 50% 45% / 45% 50% 45% 50%", zIndex: 4 - i }}
+                      style={{
+                        background: c,
+                        borderRadius: "50% 45% 50% 45% / 45% 50% 45% 50%",
+                        zIndex: 4 - i,
+                      }}
                     >
                       {["K", "A", "J", "M"][i]}
                     </div>
@@ -482,7 +580,10 @@ function Auth() {
             {/* Tilted card behind */}
             <div
               className="absolute inset-0 bg-[#e5e0d8] border-[3px] border-[#2d2d2d] -z-10"
-              style={{ borderRadius: R.wobblyCard, transform: "rotate(-2deg) translate(-4px, 4px)" }}
+              style={{
+                borderRadius: R.wobblyCard,
+                transform: "rotate(-2deg) translate(-4px, 4px)",
+              }}
             />
 
             <div
@@ -496,7 +597,7 @@ function Auth() {
               />
 
               {/* Mode tabs (shown on email/credentials steps only) */}
-              {((mode === "signup" && signupStep === "email") ||
+              {!isResetting && ((mode === "signup" && signupStep === "email") ||
                 (mode === "login" && loginStep === "credentials")) && (
                 <div className="flex gap-2 mb-8">
                   {(["login", "signup"] as const).map((t) => (
@@ -526,18 +627,51 @@ function Auth() {
                 </div>
               )}
 
-              {/* ── Form Steps ── */}
+              {/* Form Steps */}
               <div className="flex-1 flex flex-col">
                 <AnimatePresence mode="wait">
+                  {/* Reset Password Flow */}
+                  {isResetting && (
+                    <StepShell key="reset-password">
+                      <div className="mb-6">
+                        <h2
+                          className="text-3xl font-bold text-[#2d2d2d]"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
+                          New Password 🗝️
+                        </h2>
+                        <p
+                          className="text-[#6b6460] mt-1"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
+                          You're almost back in! Enter your new password below.
+                        </p>
+                      </div>
+                      <PasswordFields
+                        pw={password}
+                        setPw={setPassword}
+                        confirm={confirmPassword}
+                        setConfirm={setConfirmPassword}
+                        onSubmit={handleUpdatePassword}
+                        disabled={actionLoading}
+                      />
+                    </StepShell>
+                  )}
 
                   {/* Signup — email step */}
-                  {mode === "signup" && signupStep === "email" && (
+                  {!isResetting && mode === "signup" && signupStep === "email" && (
                     <StepShell key="signup-email">
                       <div className="mb-6">
-                        <h2 className="text-3xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                        <h2
+                          className="text-3xl font-bold text-[#2d2d2d]"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
                           Create your account 🎉
                         </h2>
-                        <p className="text-[#6b6460] mt-1" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <p
+                          className="text-[#6b6460] mt-1"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           It's free. No credit card needed.
                         </p>
                       </div>
@@ -550,7 +684,10 @@ function Auth() {
                           autoFocus
                           placeholder="you@example.com"
                         />
-                        <PrimaryBtn disabled={!isValidEmail(email) || actionLoading} onClick={handleEmailStep}>
+                        <PrimaryBtn
+                          disabled={!isValidEmail(email) || actionLoading}
+                          onClick={handleEmailStep}
+                        >
                           Continue with Email →
                         </PrimaryBtn>
                         <Divider />
@@ -562,20 +699,29 @@ function Auth() {
                   )}
 
                   {/* Signup — password step */}
-                  {mode === "signup" && signupStep === "password" && (
+                  {!isResetting && mode === "signup" && signupStep === "password" && (
                     <StepShell key="signup-password">
                       <div className="mb-6">
-                        <h2 className="text-3xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                        <h2
+                          className="text-3xl font-bold text-[#2d2d2d]"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
                           Set your password 🔒
                         </h2>
-                        <p className="text-[#6b6460] mt-1" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <p
+                          className="text-[#6b6460] mt-1"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           Make it good — you'll be back often.
                         </p>
                       </div>
                       <PasswordFields
-                        pw={password} setPw={setPassword}
-                        confirm={confirmPassword} setConfirm={setConfirmPassword}
-                        onSubmit={handleSignUp} disabled={actionLoading}
+                        pw={password}
+                        setPw={setPassword}
+                        confirm={confirmPassword}
+                        setConfirm={setConfirmPassword}
+                        onSubmit={handleSignUp}
+                        disabled={actionLoading}
                       />
                       <button
                         onClick={() => setSignupStep("email")}
@@ -588,11 +734,9 @@ function Auth() {
                   )}
 
                   {/* Signup — confirm sent */}
-                  {mode === "signup" && signupStep === "confirm-sent" && (
+                  {!isResetting && mode === "signup" && signupStep === "confirm-sent" && (
                     <StepShell key="confirm-sent">
-                      <div
-                        className="flex flex-col items-center text-center py-8 gap-5"
-                      >
+                      <div className="flex flex-col items-center text-center py-8 gap-5">
                         <div
                           className="w-20 h-20 bg-[#fff9c4] border-[3px] border-[#2d2d2d] flex items-center justify-center text-4xl shadow-[4px_4px_0px_0px_#2d2d2d] animate-gentle-bounce"
                           style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
@@ -602,10 +746,13 @@ function Auth() {
                         <h2 className="text-3xl font-bold" style={{ fontFamily: "Kalam, cursive" }}>
                           Check your inbox!
                         </h2>
-                        <p className="text-[#4a4440]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <p
+                          className="text-[#4a4440]"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           We sent a confirmation link to{" "}
-                          <strong className="text-[#2d2d2d]">{email}</strong>.
-                          Click it and you're in! 🎉
+                          <strong className="text-[#2d2d2d]">{email}</strong>. Click it and you're
+                          in! 🎉
                         </p>
                         <button
                           onClick={() => resetAll("login")}
@@ -619,13 +766,19 @@ function Auth() {
                   )}
 
                   {/* Login — credentials step */}
-                  {mode === "login" && loginStep === "credentials" && (
+                  {!isResetting && mode === "login" && loginStep === "credentials" && (
                     <StepShell key="login">
                       <div className="mb-6">
-                        <h2 className="text-3xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                        <h2
+                          className="text-3xl font-bold text-[#2d2d2d]"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
                           Welcome back! ✌️
                         </h2>
-                        <p className="text-[#6b6460] mt-1" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <p
+                          className="text-[#6b6460] mt-1"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           Let's get you back to your slides.
                         </p>
                       </div>
@@ -645,7 +798,11 @@ function Auth() {
                           label="Password"
                           placeholder="Your secret..."
                           rightElement={
-                            <button type="button" onClick={() => setShowPassword((s) => !s)} className="text-[#2d2d2d]/60 hover:text-[#2d2d2d]">
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword((s) => !s)}
+                              className="text-[#2d2d2d]/60 hover:text-[#2d2d2d]"
+                            >
                               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                             </button>
                           }
@@ -674,13 +831,19 @@ function Auth() {
                   )}
 
                   {/* Login — forgot password */}
-                  {mode === "login" && loginStep === "forgot" && (
+                  {!isResetting && mode === "login" && loginStep === "forgot" && (
                     <StepShell key="forgot">
                       <div className="mb-6">
-                        <h2 className="text-3xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                        <h2
+                          className="text-3xl font-bold text-[#2d2d2d]"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
                           Forgot password? 🤔
                         </h2>
-                        <p className="text-[#6b6460] mt-1" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <p
+                          className="text-[#6b6460] mt-1"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           No worries! We'll send you a reset link.
                         </p>
                       </div>
@@ -711,7 +874,7 @@ function Auth() {
                   )}
 
                   {/* Login — forgot sent */}
-                  {mode === "login" && loginStep === "forgot-sent" && (
+                  {!isResetting && mode === "login" && loginStep === "forgot-sent" && (
                     <StepShell key="forgot-sent">
                       <div className="flex flex-col items-center text-center py-8 gap-5">
                         <div
@@ -723,7 +886,10 @@ function Auth() {
                         <h2 className="text-3xl font-bold" style={{ fontFamily: "Kalam, cursive" }}>
                           Check your inbox!
                         </h2>
-                        <p className="text-[#4a4440]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <p
+                          className="text-[#4a4440]"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           If <strong className="text-[#2d2d2d]">{email}</strong> has an account,
                           you'll get a reset link shortly.
                         </p>
@@ -737,20 +903,24 @@ function Auth() {
                       </div>
                     </StepShell>
                   )}
-
                 </AnimatePresence>
               </div>
 
               {/* Footer note */}
-              <p className="text-xs text-[#6b6460] text-center mt-6 pt-4 border-t-[2px] border-dashed border-[#2d2d2d]/20" style={{ fontFamily: "Patrick Hand, cursive" }}>
+              <p
+                className="text-xs text-[#6b6460] text-center mt-6 pt-4 border-t-[2px] border-dashed border-[#2d2d2d]/20"
+                style={{ fontFamily: "Patrick Hand, cursive" }}
+              >
                 By continuing you agree to our{" "}
                 <span className="underline cursor-pointer hover:text-[#ff4d4d]">Terms</span>
                 {" & "}
-                <span className="underline cursor-pointer hover:text-[#ff4d4d]">Privacy Policy</span>.
+                <span className="underline cursor-pointer hover:text-[#ff4d4d]">
+                  Privacy Policy
+                </span>
+                .
               </p>
             </div>
           </div>
-
         </div>
       </main>
 

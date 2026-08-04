@@ -2,7 +2,22 @@ import { SlidePlanOutput } from "@/agents/slide-planner/types";
 import { ComponentPlanOutput } from "@/agents/component-planner/types";
 import { AssetPlanOutput } from "@/agents/asset-planner/types";
 
-export type ContentPlaceholderType = "title" | "subtitle" | "paragraph" | "bullet" | "statistic" | "quote" | "caption" | "table_data" | "chart_dataset" | "image_caption" | "speaker_note" | "reference" | "callout" | "icon_label" | "footer";
+export type ContentPlaceholderType =
+  | "title"
+  | "subtitle"
+  | "paragraph"
+  | "bullet"
+  | "statistic"
+  | "quote"
+  | "caption"
+  | "table_data"
+  | "chart_dataset"
+  | "image_caption"
+  | "speaker_note"
+  | "reference"
+  | "callout"
+  | "icon_label"
+  | "footer";
 
 export interface DetailedContentPlaceholder {
   placeholder_id: string; // e.g. "{{slide_03_title}}"

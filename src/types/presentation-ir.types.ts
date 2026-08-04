@@ -1,7 +1,7 @@
 /**
  * Orivox V3 - Presentation Intermediate Representation (IR)
  * Source of Truth: docs/presentation-ir.md
- * 
+ *
  * This file contains the foundational type definitions for the Orivox V3 architecture.
  * Every agent, validator, and renderer must communicate via these types.
  */
@@ -96,39 +96,39 @@ export interface ComponentIR {
   semantic_role?: string;
 }
 
-export type ComponentType = 
-  | "Title" 
-  | "Subtitle" 
-  | "Paragraph" 
-  | "BulletList" 
-  | "NumberedList" 
-  | "Quote" 
+export type ComponentType =
+  | "Title"
+  | "Subtitle"
+  | "Paragraph"
+  | "BulletList"
+  | "NumberedList"
+  | "Quote"
   | "Callout"
-  | "Image" 
+  | "Image"
   | "HeroImage"
-  | "Icon" 
+  | "Icon"
   | "IconCard"
   | "FeatureCard"
-  | "IconGrid" 
-  | "Timeline" 
-  | "Process" 
-  | "Comparison" 
-  | "Table" 
-  | "KPICard" 
-  | "Statistic" 
-  | "MetricGrid" 
-  | "Chart" 
-  | "Diagram" 
-  | "Flowchart" 
-  | "MindMap" 
-  | "CodeBlock" 
-  | "Video" 
-  | "CTA" 
-  | "Testimonial" 
-  | "TeamCard" 
-  | "PricingCard" 
-  | "FAQ" 
-  | "Footer" 
+  | "IconGrid"
+  | "Timeline"
+  | "Process"
+  | "Comparison"
+  | "Table"
+  | "KPICard"
+  | "Statistic"
+  | "MetricGrid"
+  | "Chart"
+  | "Diagram"
+  | "Flowchart"
+  | "MindMap"
+  | "CodeBlock"
+  | "Video"
+  | "CTA"
+  | "Testimonial"
+  | "TeamCard"
+  | "PricingCard"
+  | "FAQ"
+  | "Footer"
   | "SectionDivider";
 
 // Component Payload Examples (Enforced by Validator, conceptually defined here)

@@ -1,4 +1,15 @@
-import { Sparkles, Wand2, Zap, Palette, Type as TypeIcon, Layout, Repeat, Scissors, ArrowUp, X } from "lucide-react";
+import {
+  Sparkles,
+  Wand2,
+  Zap,
+  Palette,
+  Type as TypeIcon,
+  Layout,
+  Repeat,
+  Scissors,
+  ArrowUp,
+  X,
+} from "lucide-react";
 import { quickActions } from "@/lib/mock";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -29,10 +40,16 @@ export function AIAssistant() {
           ✨
         </div>
         <div>
-          <div className="text-xs font-bold text-[#6b6460] uppercase tracking-widest" style={{ fontFamily: "Patrick Hand, cursive" }}>
+          <div
+            className="text-xs font-bold text-[#6b6460] uppercase tracking-widest"
+            style={{ fontFamily: "Patrick Hand, cursive" }}
+          >
             AI Assistant
           </div>
-          <div className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+          <div
+            className="text-sm font-bold text-[#2d2d2d]"
+            style={{ fontFamily: "Kalam, cursive" }}
+          >
             Refine anything
           </div>
         </div>
@@ -40,7 +57,10 @@ export function AIAssistant() {
 
       {/* Quick Actions */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460] mb-2" style={{ fontFamily: "Patrick Hand, cursive" }}>
+        <div
+          className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460] mb-2"
+          style={{ fontFamily: "Patrick Hand, cursive" }}
+        >
           Quick Actions
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -60,7 +80,10 @@ export function AIAssistant() {
 
       {/* Recent Actions */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460] mb-2" style={{ fontFamily: "Patrick Hand, cursive" }}>
+        <div
+          className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460] mb-2"
+          style={{ fontFamily: "Patrick Hand, cursive" }}
+        >
           Recent Actions
         </div>
         <div className="flex flex-col gap-1.5">
@@ -79,7 +102,10 @@ export function AIAssistant() {
 
       {/* Suggestion */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460] mb-2" style={{ fontFamily: "Patrick Hand, cursive" }}>
+        <div
+          className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460] mb-2"
+          style={{ fontFamily: "Patrick Hand, cursive" }}
+        >
           Suggestion
         </div>
         <motion.button
@@ -115,7 +141,10 @@ export function AIAssistant() {
             <ArrowUp size={13} strokeWidth={2.5} />
           </button>
         </div>
-        <p className="mt-1.5 text-center text-[10px] text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+        <p
+          className="mt-1.5 text-center text-[10px] text-[#6b6460]"
+          style={{ fontFamily: "Patrick Hand, cursive" }}
+        >
           Shift+Enter for newline
         </p>
       </div>
@@ -144,10 +173,16 @@ export function ElementSelectedPanel({
             🎯
           </div>
           <div>
-            <div className="text-xs text-[#ff4d4d] font-bold uppercase tracking-widest" style={{ fontFamily: "Patrick Hand, cursive" }}>
+            <div
+              className="text-xs text-[#ff4d4d] font-bold uppercase tracking-widest"
+              style={{ fontFamily: "Patrick Hand, cursive" }}
+            >
               Selected
             </div>
-            <div className="text-sm font-bold text-[#2d2d2d] capitalize" style={{ fontFamily: "Kalam, cursive" }}>
+            <div
+              className="text-sm font-bold text-[#2d2d2d] capitalize"
+              style={{ fontFamily: "Kalam, cursive" }}
+            >
               {element}
             </div>
           </div>
@@ -185,7 +220,10 @@ export function ElementSelectedPanel({
 
       {/* Quick style actions */}
       <div>
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460] mb-2" style={{ fontFamily: "Patrick Hand, cursive" }}>
+        <div
+          className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460] mb-2"
+          style={{ fontFamily: "Patrick Hand, cursive" }}
+        >
           Quick Actions
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -211,18 +249,33 @@ export function ElementSelectedPanel({
 
       {/* Manual controls */}
       <div className="mt-auto border-t-[2px] border-dashed border-[#2d2d2d]/30 pt-4 flex flex-col gap-2.5">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+        <div
+          className="text-[10px] font-bold uppercase tracking-widest text-[#6b6460]"
+          style={{ fontFamily: "Patrick Hand, cursive" }}
+        >
           Manual Controls
         </div>
         {[
           { icon: Layout, label: "Size", value: "Medium" },
-          { icon: Palette, label: "Color", value: <div className="w-5 h-4 bg-[#ff4d4d] border-[1.5px] border-[#2d2d2d]" style={{ borderRadius: "3px" }} /> },
+          {
+            icon: Palette,
+            label: "Color",
+            value: (
+              <div
+                className="w-5 h-4 bg-[#ff4d4d] border-[1.5px] border-[#2d2d2d]"
+                style={{ borderRadius: "3px" }}
+              />
+            ),
+          },
           { icon: TypeIcon, label: "Font", value: "Kalam" },
           { icon: Layout, label: "Align", value: "Center" },
           { icon: Sparkles, label: "Animation", value: "Fade" },
         ].map(({ icon: Icon, label, value }) => (
           <div key={label} className="flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1.5 text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+            <span
+              className="flex items-center gap-1.5 text-[#6b6460]"
+              style={{ fontFamily: "Patrick Hand, cursive" }}
+            >
               <Icon className="h-3 w-3" strokeWidth={2.5} /> {label}
             </span>
             <span className="font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>

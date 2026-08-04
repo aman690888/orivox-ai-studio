@@ -1,14 +1,22 @@
 import { IAgent, ModelCapabilities } from "@/orchestrator/types";
 import { IModelRouter } from "@/orchestrator/ModelRouter";
 import { ClarificationRequest } from "@/agents/intent/types";
-import { ComponentPlannerInput, ComponentPlanOutput, DetailedComponentPlan, ComponentNode } from "./types";
+import {
+  ComponentPlannerInput,
+  ComponentPlanOutput,
+  DetailedComponentPlan,
+  ComponentNode,
+} from "./types";
 import { ComponentRankingEngine, ComponentCandidate } from "@/engine/ComponentRankingEngine";
 import { getComponentDefinition, ComponentRegistry } from "@/registry/component-registry";
 import { ComponentType } from "@/types/presentation-ir.types";
 
-export class ComponentPlannerAgent implements IAgent<ComponentPlannerInput, ComponentPlanOutput | ClarificationRequest> {
+export class ComponentPlannerAgent implements IAgent<
+  ComponentPlannerInput,
+  ComponentPlanOutput | ClarificationRequest
+> {
   public id = "component-planner-agent";
-  
+
   public model_requirements: ModelCapabilities = {
     needs_reasoning: true,
     needs_json_mode: true,
@@ -18,20 +26,26 @@ export class ComponentPlannerAgent implements IAgent<ComponentPlannerInput, Comp
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: ComponentPlannerInput, signal: AbortSignal): Promise<ComponentPlanOutput | ClarificationRequest> {
-    
+  public async execute(
+    context: ComponentPlannerInput,
+    signal: AbortSignal,
+  ): Promise<ComponentPlanOutput | ClarificationRequest> {
     // Pre-calculate component candidates to prevent hallucination
     const preRankedCandidates: Record<string, ComponentCandidate[]> = {};
-    context.layoutPlan.layouts.forEach(layout => {
-      // Typically we'd use the slide's underlying data complexity from the SlidePlan, 
+    context.layoutPlan.layouts.forEach((layout) => {
+      // Typically we'd use the slide's underlying data complexity from the SlidePlan,
       // but the LayoutPlan encompasses the structural intent. Let's assume medium complexity by default.
-      preRankedCandidates[layout.slide_id] = ComponentRankingEngine.rankComponents("medium", false, layout.required_component_slots.includes("Chart"));
+      preRankedCandidates[layout.slide_id] = ComponentRankingEngine.rankComponents(
+        "medium",
+        false,
+        layout.required_component_slots.includes("Chart"),
+      );
     });
 
     const rawResponse = await this.modelRouter.routeToJSON<any>(
       this.buildPrompt(context, preRankedCandidates),
       this.model_requirements,
-      signal
+      signal,
     );
 
     if (rawResponse.clarificationRequired) {
@@ -51,22 +65,32 @@ export class ComponentPlannerAgent implements IAgent<ComponentPlannerInput, Comp
   }
 
   private parse(rawPayload: any, context: ComponentPlannerInput): ComponentPlanOutput {
-    const slides: DetailedComponentPlan[] = Array.isArray(rawPayload?.slides) ? rawPayload.slides.map((sl: any) => ({
-      slide_id: sl.slide_id || "unknown",
-      component_tree: Array.isArray(sl.component_tree) ? sl.component_tree : [],
-      component_order: Array.isArray(sl.component_order) ? sl.component_order : [],
-      placeholder_map: typeof sl.placeholder_map === "object" ? sl.placeholder_map : {},
-      validation_metadata: typeof sl.validation_metadata === "object" ? sl.validation_metadata : {},
-      confidence_score: typeof sl.confidence_score === "number" ? sl.confidence_score : 1.0,
-    })) : [];
+    const slides: DetailedComponentPlan[] = Array.isArray(rawPayload?.slides)
+      ? rawPayload.slides.map((sl: any) => ({
+          slide_id: sl.slide_id || "unknown",
+          component_tree: Array.isArray(sl.component_tree) ? sl.component_tree : [],
+          component_order: Array.isArray(sl.component_order) ? sl.component_order : [],
+          placeholder_map: typeof sl.placeholder_map === "object" ? sl.placeholder_map : {},
+          validation_metadata:
+            typeof sl.validation_metadata === "object" ? sl.validation_metadata : {},
+          confidence_score: typeof sl.confidence_score === "number" ? sl.confidence_score : 1.0,
+        }))
+      : [];
 
     return {
       slides,
-      global_confidence_score: typeof rawPayload?.global_confidence_score === "number" ? rawPayload.global_confidence_score : 1.0,
+      global_confidence_score:
+        typeof rawPayload?.global_confidence_score === "number"
+          ? rawPayload.global_confidence_score
+          : 1.0,
     };
   }
 
-  private traverseTree(nodes: ComponentNode[], callback: (node: ComponentNode, depth: number) => void, currentDepth = 0) {
+  private traverseTree(
+    nodes: ComponentNode[],
+    callback: (node: ComponentNode, depth: number) => void,
+    currentDepth = 0,
+  ) {
     for (const node of nodes) {
       callback(node, currentDepth);
       if (Array.isArray(node.children)) {
@@ -75,23 +99,34 @@ export class ComponentPlannerAgent implements IAgent<ComponentPlannerInput, Comp
     }
   }
 
-  private validate(plan: ComponentPlanOutput, context: ComponentPlannerInput): ComponentPlanOutput | ClarificationRequest {
+  private validate(
+    plan: ComponentPlanOutput,
+    context: ComponentPlannerInput,
+  ): ComponentPlanOutput | ClarificationRequest {
     if (plan.global_confidence_score < this.MIN_CONFIDENCE_THRESHOLD) {
       return {
         clarificationRequired: true,
-        questions: ["Component planning failed due to conflicting constraints. Can we simplify the slide structures?"],
+        questions: [
+          "Component planning failed due to conflicting constraints. Can we simplify the slide structures?",
+        ],
         missingFields: [],
       };
     }
 
     if (plan.slides.length !== context.layoutPlan.layouts.length) {
-      throw new Error(`[ComponentPlannerAgent] Validation Error: Expected ${context.layoutPlan.layouts.length} slides, got ${plan.slides.length}.`);
+      throw new Error(
+        `[ComponentPlannerAgent] Validation Error: Expected ${context.layoutPlan.layouts.length} slides, got ${plan.slides.length}.`,
+      );
     }
 
-    plan.slides.forEach(slidePlan => {
-      const layoutContext = context.layoutPlan.layouts.find(l => l.slide_id === slidePlan.slide_id);
+    plan.slides.forEach((slidePlan) => {
+      const layoutContext = context.layoutPlan.layouts.find(
+        (l) => l.slide_id === slidePlan.slide_id,
+      );
       if (!layoutContext) {
-        throw new Error(`[ComponentPlannerAgent] Validation Error: Slide ID '${slidePlan.slide_id}' not found in layout plan.`);
+        throw new Error(
+          `[ComponentPlannerAgent] Validation Error: Slide ID '${slidePlan.slide_id}' not found in layout plan.`,
+        );
       }
 
       let totalComponents = 0;
@@ -117,7 +152,7 @@ export class ComponentPlannerAgent implements IAgent<ComponentPlannerInput, Comp
       });
 
       // Validate required layout components are present
-      layoutContext.required_component_slots.forEach(requiredType => {
+      layoutContext.required_component_slots.forEach((requiredType) => {
         if (!foundTypes.has(requiredType)) {
           // throw new Error(`[ComponentPlannerAgent] Validation Error: Layout '${layoutContext.selected_layout_id}' requires component '${requiredType}', but it is missing.`);
         }
@@ -132,7 +167,10 @@ export class ComponentPlannerAgent implements IAgent<ComponentPlannerInput, Comp
     return plan;
   }
 
-  private buildPrompt(context: ComponentPlannerInput, candidates: Record<string, ComponentCandidate[]>): string {
+  private buildPrompt(
+    context: ComponentPlannerInput,
+    candidates: Record<string, ComponentCandidate[]>,
+  ): string {
     const layoutPlanData = JSON.stringify(context.layoutPlan, null, 2);
     const candidateData = JSON.stringify(candidates, null, 2);
 

@@ -18,7 +18,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
   value,
   className,
   style,
-  multiline = false
+  multiline = false,
 }) => {
   const { isEditable, updateComponentData } = useEditor();
   const [isEditing, setIsEditing] = useState(false);
@@ -54,29 +54,34 @@ export const EditableText: React.FC<EditableTextProps> = ({
   };
 
   if (!isEditable) {
-    return <span className={className} style={style}>{value}</span>;
+    return (
+      <span className={className} style={style}>
+        {value}
+      </span>
+    );
   }
 
   if (isEditing) {
     const commonProps = {
       ref: inputRef as any,
       value: tempValue,
-      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setTempValue(e.target.value),
+      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+        setTempValue(e.target.value),
       onBlur: handleSave,
       onKeyDown: handleKeyDown,
       className: `${className || ""} bg-blue-50 border-b-2 border-blue-500 outline-none w-full`,
-      style: { ...style, resize: 'none' } as React.CSSProperties
+      style: { ...style, resize: "none" } as React.CSSProperties,
     };
 
     return multiline ? (
-      <textarea {...commonProps} rows={tempValue.split('\n').length} />
+      <textarea {...commonProps} rows={tempValue.split("\n").length} />
     ) : (
       <input type="text" {...commonProps} />
     );
   }
 
   return (
-    <span 
+    <span
       className={`cursor-pointer hover:ring-2 hover:ring-blue-400 hover:ring-offset-2 rounded transition-shadow ${className || ""}`}
       style={style}
       onClick={() => setIsEditing(true)}

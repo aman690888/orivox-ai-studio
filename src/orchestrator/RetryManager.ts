@@ -4,7 +4,7 @@ export class RetryManager {
   public static async withRetry<T>(
     operation: () => Promise<T>,
     policy: RetryPolicy,
-    onRetry?: (error: any, attempt: number) => void
+    onRetry?: (error: any, attempt: number) => void,
   ): Promise<T> {
     let attempt = 0;
     while (attempt < policy.max_retries) {
@@ -13,7 +13,9 @@ export class RetryManager {
       } catch (error) {
         attempt++;
         if (attempt >= policy.max_retries) {
-          throw new Error(`[RetryManager] Exhausted ${policy.max_retries} retries. Final error: ${error}`);
+          throw new Error(
+            `[RetryManager] Exhausted ${policy.max_retries} retries. Final error: ${error}`,
+          );
         }
         if (onRetry) {
           onRetry(error, attempt);

@@ -84,9 +84,8 @@ export class KeyPool {
         activeRequests: entry.activeRequests,
         totalRequests: entry.totalRequests,
         failures: entry.failures,
-        averageLatencyMs: entry.totalRequests > 0
-          ? Math.round(entry.totalLatencyMs / entry.totalRequests)
-          : 0,
+        averageLatencyMs:
+          entry.totalRequests > 0 ? Math.round(entry.totalLatencyMs / entry.totalRequests) : 0,
         lastUsedAt: entry.lastUsedAt,
       });
     }
@@ -159,8 +158,12 @@ export class KeyPool {
     entry.consecutiveFailures++;
 
     // Calculate cooldown duration.
-    const backoff = retryAfterMs ??
-      Math.min(this.defaultCooldownMs * Math.pow(2, entry.consecutiveFailures - 1), this.maxCooldownMs);
+    const backoff =
+      retryAfterMs ??
+      Math.min(
+        this.defaultCooldownMs * Math.pow(2, entry.consecutiveFailures - 1),
+        this.maxCooldownMs,
+      );
 
     entry.cooldownUntil = Date.now() + backoff;
     entry.health = "COOLING_DOWN";

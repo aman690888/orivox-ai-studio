@@ -1,5 +1,3 @@
-
-
 export const suggestions = [
   "A pitch deck for a solo-founder AI startup",
   "The state of generative video in 2026",
@@ -26,8 +24,6 @@ export type Slide = {
   notes?: string;
 };
 
-
-
 export const thinkingSteps = [
   "Understanding request",
   "Researching",
@@ -48,5 +44,3 @@ export const quickActions = [
   "More visual",
   "Add closing CTA",
 ];
-
-

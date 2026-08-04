@@ -1,6 +1,12 @@
 import { IAgent, ModelCapabilities } from "@/orchestrator/types";
 import { IModelRouter } from "@/orchestrator/ModelRouter";
-import { IntentAgentOutput, IntentAgentInput, PresentationIntent, ClarificationRequest, InferredField } from "./types";
+import {
+  IntentAgentOutput,
+  IntentAgentInput,
+  PresentationIntent,
+  ClarificationRequest,
+  InferredField,
+} from "./types";
 
 export class IntentAgent implements IAgent<IntentAgentInput, IntentAgentOutput> {
   public id = "intent-agent";
@@ -17,7 +23,7 @@ export class IntentAgent implements IAgent<IntentAgentInput, IntentAgentOutput> 
     const rawResponse = await this.modelRouter.routeToJSON<any>(
       this.buildPrompt(context.userPrompt),
       this.model_requirements,
-      signal
+      signal,
     );
 
     if (rawResponse.clarificationRequired) {
@@ -50,7 +56,9 @@ export class IntentAgent implements IAgent<IntentAgentInput, IntentAgentOutput> 
       purpose: wrap(rawPayload?.purpose || "Inform"),
       presentation_goal: wrap(rawPayload?.presentation_goal || "Educate"),
       presentation_type: wrap(rawPayload?.presentation_type || "Presentation"),
-      presentation_length: wrap(typeof rawPayload?.presentation_length === "number" ? rawPayload.presentation_length : 10),
+      presentation_length: wrap(
+        typeof rawPayload?.presentation_length === "number" ? rawPayload.presentation_length : 10,
+      ),
       language: wrap(rawPayload?.language || "English"),
       culture: wrap(rawPayload?.culture || "Global"),
       tone: wrap(rawPayload?.tone || "Professional"),
@@ -72,7 +80,7 @@ export class IntentAgent implements IAgent<IntentAgentInput, IntentAgentOutput> 
 
   public validate(intent: PresentationIntent): IntentAgentOutput {
     const lowConfidenceFields: string[] = [];
-    
+
     // Check all fields for confidence threshold
     Object.entries(intent).forEach(([key, field]) => {
       if (field.confidence < this.MIN_CONFIDENCE_THRESHOLD) {
@@ -89,7 +97,9 @@ export class IntentAgent implements IAgent<IntentAgentInput, IntentAgentOutput> 
     // }
 
     if (intent.presentation_length.value <= 0 || intent.presentation_length.value > 100) {
-      throw new Error(`[IntentAgent] Validation Error: Invalid presentation length (${intent.presentation_length.value}).`);
+      throw new Error(
+        `[IntentAgent] Validation Error: Invalid presentation length (${intent.presentation_length.value}).`,
+      );
     }
 
     return intent;

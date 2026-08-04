@@ -14,5 +14,5 @@ export const components = {
     slideAspectRatio: "16/9",
     sidebarWidth: "350px",
     gap: "var(--spacing-8)",
-  }
+  },
 } as const;

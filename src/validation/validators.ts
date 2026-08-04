@@ -201,7 +201,7 @@ export function validateDesign(ir: PresentationIR): ValidationIssue[] {
       } else if (comp.data.text && typeof comp.data.text === "string") {
         compWords = comp.data.text.split(/\s+/).length;
       }
-      
+
       slideWordCount += compWords;
 
       // Component-level constraints (max words)
@@ -217,7 +217,7 @@ export function validateDesign(ir: PresentationIR): ValidationIssue[] {
           autofix_possible: false,
         });
       }
-      
+
       // Component-level constraints (max items)
       if (comp.type === "BulletList" || comp.type === "NumberedList") {
         const items = comp.data.items || [];
@@ -298,7 +298,7 @@ export function validatePresentation(ir: PresentationIR): ValidationIssue[] {
   ir.slide_order.forEach((slideId, index) => {
     const slide = ir.slides[slideId];
     if (!slide) return;
-    
+
     if (slide.layout_id === consecutiveLayoutId) {
       layoutStreak++;
     } else {

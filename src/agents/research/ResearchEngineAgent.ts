@@ -8,7 +8,10 @@ export class ResearchEngineAgent implements IAgent<{ userPrompt: string }, Resea
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: { userPrompt: string }, signal: AbortSignal): Promise<ResearchOutput> {
+  public async execute(
+    context: { userPrompt: string },
+    signal: AbortSignal,
+  ): Promise<ResearchOutput> {
     const prompt = `You are an elite research analyst for presentation design.
 Analyze the following presentation request:
 "${context.userPrompt}"
@@ -45,27 +48,44 @@ Return JSON matching this exact structure:
 }`;
 
     try {
-      const result = await this.modelRouter.routeToJSON<ResearchOutput>(prompt, this.model_requirements, signal);
+      const result = await this.modelRouter.routeToJSON<ResearchOutput>(
+        prompt,
+        this.model_requirements,
+        signal,
+      );
       return result;
     } catch (e) {
-      console.warn("[ResearchEngineAgent] Failed or timed out, returning structured fallback research:", e);
+      console.warn(
+        "[ResearchEngineAgent] Failed or timed out, returning structured fallback research:",
+        e,
+      );
       return {
         topic_overview: `Comprehensive analysis of ${context.userPrompt}`,
         key_facts: [
-          { topic: "Market Dynamics", fact: "High demand driven by digital transformation", category: "statistic", metric_value: "84%", metric_label: "Adoption Rate" }
+          {
+            topic: "Market Dynamics",
+            fact: "High demand driven by digital transformation",
+            category: "statistic",
+            metric_value: "84%",
+            metric_label: "Adoption Rate",
+          },
         ],
         suggested_statistics: [
           { label: "Market Growth", value: "3.5x", context: "Projected 3-year expansion" },
-          { label: "User Satisfaction", value: "94%", context: "Net Promoter Score" }
+          { label: "User Satisfaction", value: "94%", context: "Net Promoter Score" },
         ],
         timeline_events: [
-          { date: "Phase 1", title: "Foundation", description: "Core framework and initial implementation" },
-          { date: "Phase 2", title: "Scale", description: "Expansion and optimization" }
+          {
+            date: "Phase 1",
+            title: "Foundation",
+            description: "Core framework and initial implementation",
+          },
+          { date: "Phase 2", title: "Scale", description: "Expansion and optimization" },
         ],
         key_takeaways: [
           "Strategic execution requires clear visual communication",
-          "Data-driven insights yield higher engagement"
-        ]
+          "Data-driven insights yield higher engagement",
+        ],
       };
     }
   }

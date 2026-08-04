@@ -54,8 +54,14 @@ function Viewer() {
   // keyboard navigation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); next(); }
-      if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
+      if (e.key === "ArrowRight" || e.key === " ") {
+        e.preventDefault();
+        next();
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prev();
+      }
       if (e.key === "Escape") setFullscreen(false);
       if (e.key === "f" || e.key === "F") setFullscreen((f) => !f);
     };
@@ -68,7 +74,11 @@ function Viewer() {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
-        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        style={{
+          background: "#fdfbf7",
+          backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       >
         <div
           className="flex flex-col items-center gap-4 p-10 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d]"
@@ -80,7 +90,9 @@ function Viewer() {
           >
             📽️
           </div>
-          <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>Loading presentation...</p>
+          <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+            Loading presentation...
+          </p>
         </div>
       </div>
     );
@@ -93,15 +105,27 @@ function Viewer() {
     return (
       <div
         className="flex min-h-screen flex-col items-center justify-center px-4 text-center"
-        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        style={{
+          background: "#fdfbf7",
+          backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       >
         <div
           className="p-10 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d] flex flex-col items-center gap-5"
           style={{ borderRadius: R.card }}
         >
           <div className="text-5xl">😬</div>
-          <h1 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>Presentation not found</h1>
-          <p className="text-base text-[#6b6460] max-w-sm" style={{ fontFamily: "Patrick Hand, cursive" }}>
+          <h1
+            className="text-2xl font-bold text-[#2d2d2d]"
+            style={{ fontFamily: "Kalam, cursive" }}
+          >
+            Presentation not found
+          </h1>
+          <p
+            className="text-base text-[#6b6460] max-w-sm"
+            style={{ fontFamily: "Patrick Hand, cursive" }}
+          >
             This deck doesn't exist or you don't have access.
           </p>
           <Link
@@ -166,7 +190,13 @@ function Viewer() {
   return (
     <div
       className="flex h-screen w-full flex-col overflow-hidden"
-      style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px", fontFamily: "Patrick Hand, cursive", color: "#2d2d2d" }}
+      style={{
+        background: "#fdfbf7",
+        backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+        fontFamily: "Patrick Hand, cursive",
+        color: "#2d2d2d",
+      }}
     >
       {/* ── Top Bar ── */}
       <header className="flex h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-4 z-20">
@@ -219,7 +249,10 @@ function Viewer() {
           {dbSlides.map((s, i) => (
             <button
               key={s.id}
-              onClick={() => { setActive(i); setSelectedEl(null); }}
+              onClick={() => {
+                setActive(i);
+                setSelectedEl(null);
+              }}
               className={`group relative w-full text-left border-[2.5px] overflow-hidden transition-all duration-100 ${
                 active === i
                   ? "border-[#ff4d4d] shadow-[3px_3px_0px_0px_#ff4d4d] bg-white"
@@ -296,11 +329,7 @@ function Viewer() {
                     style={{ borderRadius: R.card, aspectRatio: "16/9" }}
                   >
                     <div className="absolute inset-0">
-                      <SlideCanvas
-                        slide={slide}
-                        onSelect={setSelectedEl}
-                        selected={selectedEl}
-                      />
+                      <SlideCanvas slide={slide} onSelect={setSelectedEl} selected={selectedEl} />
                     </div>
                   </motion.div>
                 </div>
@@ -310,7 +339,10 @@ function Viewer() {
                   style={{ borderRadius: R.md, aspectRatio: "16/9" }}
                 >
                   <div className="text-4xl mb-3">📭</div>
-                  <p className="text-[#6b6460] text-sm" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                  <p
+                    className="text-[#6b6460] text-sm"
+                    style={{ fontFamily: "Patrick Hand, cursive" }}
+                  >
                     No slides found in this presentation.
                   </p>
                 </div>
@@ -336,9 +368,7 @@ function Viewer() {
                   key={i}
                   onClick={() => setActive(i)}
                   className={`transition-all duration-100 border-[1.5px] border-[#2d2d2d] ${
-                    i === active
-                      ? "w-6 h-3 bg-[#ff4d4d]"
-                      : "w-3 h-3 bg-white hover:bg-[#e5e0d8]"
+                    i === active ? "w-6 h-3 bg-[#ff4d4d]" : "w-3 h-3 bg-white hover:bg-[#e5e0d8]"
                   }`}
                   style={{ borderRadius: "2px" }}
                 />
@@ -354,7 +384,10 @@ function Viewer() {
               <ChevronRight size={16} strokeWidth={2.5} />
             </button>
 
-            <div className="absolute right-4 flex items-center gap-1.5 text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+            <div
+              className="absolute right-4 flex items-center gap-1.5 text-xs text-[#6b6460]"
+              style={{ fontFamily: "Patrick Hand, cursive" }}
+            >
               ← → or Space
             </div>
           </div>
@@ -373,7 +406,10 @@ function Viewer() {
                 className="flex h-full flex-col"
               >
                 {selectedEl ? (
-                  <ElementSelectedPanel element={selectedEl} onDeselect={() => setSelectedEl(null)} />
+                  <ElementSelectedPanel
+                    element={selectedEl}
+                    onDeselect={() => setSelectedEl(null)}
+                  />
                 ) : (
                   <AIAssistant />
                 )}

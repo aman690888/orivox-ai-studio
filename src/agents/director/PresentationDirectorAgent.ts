@@ -3,13 +3,19 @@ import { IModelRouter } from "../../orchestrator/ModelRouter";
 import { DirectorOutput } from "./types";
 import { ResearchOutput } from "../research/types";
 
-export class PresentationDirectorAgent implements IAgent<{ userPrompt: string; research?: ResearchOutput }, DirectorOutput> {
+export class PresentationDirectorAgent implements IAgent<
+  { userPrompt: string; research?: ResearchOutput },
+  DirectorOutput
+> {
   public id = "presentation-director";
   public model_requirements: ModelCapabilities = { needs_reasoning: true, needs_json_mode: true };
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: { userPrompt: string; research?: ResearchOutput }, signal: AbortSignal): Promise<DirectorOutput> {
+  public async execute(
+    context: { userPrompt: string; research?: ResearchOutput },
+    signal: AbortSignal,
+  ): Promise<DirectorOutput> {
     const prompt = `You are a World-Class Presentation Director (ex-Apple Keynote Lead / Pitch Deck Strategist).
 Your task is to plan the high-level strategy for this deck. DO NOT write slide bullet points or titles.
 
@@ -40,7 +46,11 @@ Return JSON matching:
 }`;
 
     try {
-      const result = await this.modelRouter.routeToJSON<DirectorOutput>(prompt, this.model_requirements, signal);
+      const result = await this.modelRouter.routeToJSON<DirectorOutput>(
+        prompt,
+        this.model_requirements,
+        signal,
+      );
       return result;
     } catch (e) {
       console.warn("[PresentationDirectorAgent] Falling back to default strategic plan:", e);
@@ -48,12 +58,18 @@ Return JSON matching:
         objective: `Deliver an engaging presentation on ${context.userPrompt}`,
         target_audience: "Executive Leadership & Key Stakeholders",
         presentation_style: "keynote",
-        storytelling_arc: ["Context & Vision", "Core Opportunity", "Solution & Evidence", "Strategic Roadmap", "Next Steps"],
+        storytelling_arc: [
+          "Context & Vision",
+          "Core Opportunity",
+          "Solution & Evidence",
+          "Strategic Roadmap",
+          "Next Steps",
+        ],
         visual_density: "balanced",
         tone: "Professional, Authoritative, Inspiring",
         theme_id: "modern-dark",
         target_slide_count: 10,
-        key_themes: ["Strategy", "Execution", "Value Creation"]
+        key_themes: ["Strategy", "Execution", "Value Creation"],
       };
     }
   }

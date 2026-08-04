@@ -18,12 +18,16 @@ export class WorkflowBudget {
     this.agent_costs[agentId] = (this.agent_costs[agentId] || 0) + costUsd;
 
     if (this.total_cost_usd > this.limits.max_cost_usd) {
-      throw new Error(`[BudgetManager] Max cost exceeded! Limit: $${this.limits.max_cost_usd}, Used: $${this.total_cost_usd}`);
+      throw new Error(
+        `[BudgetManager] Max cost exceeded! Limit: $${this.limits.max_cost_usd}, Used: $${this.total_cost_usd}`,
+      );
     }
-    
+
     if (this.limits.per_agent_cost_usd[agentId]) {
       if (this.agent_costs[agentId] > this.limits.per_agent_cost_usd[agentId]) {
-        throw new Error(`[BudgetManager] Agent '${agentId}' exceeded budget of $${this.limits.per_agent_cost_usd[agentId]}`);
+        throw new Error(
+          `[BudgetManager] Agent '${agentId}' exceeded budget of $${this.limits.per_agent_cost_usd[agentId]}`,
+        );
       }
     }
   }

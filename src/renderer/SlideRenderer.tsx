@@ -3,13 +3,7 @@ import type { AssetIR } from "../types/presentation-ir.types";
 import { ComponentRenderer } from "./ComponentRenderer";
 import { ThemeEngine } from "../engine/ThemeEngine";
 import { geometry } from "./design-system";
-import {
-  HeroLayout,
-  SplitLayout,
-  GridLayout,
-  SidebarLayout,
-  SingleColumnLayout,
-} from "./layouts";
+import { HeroLayout, SplitLayout, GridLayout, SidebarLayout, SingleColumnLayout } from "./layouts";
 
 export const SlideRenderer: React.FC<{
   slide: any;
@@ -63,10 +57,10 @@ export const SlideRenderer: React.FC<{
   }, [slide.layout_id]);
 
   const themeVars = theme ? ThemeEngine.getThemeCSSVariables(theme) : {};
-  const bgStyle = themeVars['--color-background'] || "#0d0f17";
-  const textColor = themeVars['--color-text-primary'] || "#ffffff";
-  const fontFamily = themeVars['--font-body'] || "sans-serif";
-  const borderRadius = themeVars['--radius'] || "1rem";
+  const bgStyle = themeVars["--color-background"] || "#0d0f17";
+  const textColor = themeVars["--color-text-primary"] || "#ffffff";
+  const fontFamily = themeVars["--font-body"] || "sans-serif";
+  const borderRadius = themeVars["--radius"] || "1rem";
 
   React.useEffect(() => {
     if (theme?.typography) {
@@ -74,11 +68,12 @@ export const SlideRenderer: React.FC<{
       if (theme.typography.headingFont) fontsToLoad.push(theme.typography.headingFont);
       if (theme.typography.bodyFont) fontsToLoad.push(theme.typography.bodyFont);
       if (fontsToLoad.length > 0) {
-        window.dispatchEvent(new CustomEvent('orivox:load-fonts', { detail: { fonts: fontsToLoad } }));
+        window.dispatchEvent(
+          new CustomEvent("orivox:load-fonts", { detail: { fonts: fontsToLoad } }),
+        );
       }
     }
   }, [theme]);
-
 
   return (
     <div
@@ -89,7 +84,7 @@ export const SlideRenderer: React.FC<{
         color: `var(--color-text-primary, ${textColor})`,
         fontFamily: `var(--font-body, ${fontFamily})`,
         borderRadius: `var(--radius, ${borderRadius})`,
-        containerType: 'size', // Establish CSS @container context
+        containerType: "size", // Establish CSS @container context
         aspectRatio: "16/9",
       }}
     >
@@ -106,19 +101,18 @@ export const SlideRenderer: React.FC<{
       )}
 
       {/* Noise / Grain Overlay */}
-      <div 
+      <div
         className="absolute inset-0 z-[1] pointer-events-none opacity-[0.15] mix-blend-overlay"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
         }}
       />
 
-
       {/* Content Container */}
-      <div 
+      <div
         className="relative z-10 w-full h-full overflow-hidden box-border"
         style={{
-          padding: `${geometry.safeArea.slidePaddingY} ${geometry.safeArea.slidePaddingX}`
+          padding: `${geometry.safeArea.slidePaddingY} ${geometry.safeArea.slidePaddingX}`,
         }}
       >
         <LayoutComponent

@@ -222,22 +222,49 @@ export class ThemeEngine {
     return PRESET_THEMES["modern-dark"];
   }
 
-  public static selectBestTheme(intent: { tone?: string; audience?: string; topic?: string }): PresentationTheme {
-    const text = `${intent.topic || ""} ${intent.tone || ""} ${intent.audience || ""}`.toLowerCase();
+  public static selectBestTheme(intent: {
+    tone?: string;
+    audience?: string;
+    topic?: string;
+  }): PresentationTheme {
+    const text =
+      `${intent.topic || ""} ${intent.tone || ""} ${intent.audience || ""}`.toLowerCase();
 
-    if (text.includes("apple") || text.includes("minimal") || text.includes("design") || text.includes("clean")) {
+    if (
+      text.includes("apple") ||
+      text.includes("minimal") ||
+      text.includes("design") ||
+      text.includes("clean")
+    ) {
       return PRESET_THEMES["apple"];
     }
-    if (text.includes("startup") || text.includes("pitch") || text.includes("investor") || text.includes("crypto") || text.includes("fintech")) {
+    if (
+      text.includes("startup") ||
+      text.includes("pitch") ||
+      text.includes("investor") ||
+      text.includes("crypto") ||
+      text.includes("fintech")
+    ) {
       return PRESET_THEMES["startup"];
     }
-    if (text.includes("cyber") || text.includes("gaming") || text.includes("futuristic") || text.includes("ai")) {
+    if (
+      text.includes("cyber") ||
+      text.includes("gaming") ||
+      text.includes("futuristic") ||
+      text.includes("ai")
+    ) {
       return PRESET_THEMES["cyberpunk"];
     }
     if (text.includes("creative") || text.includes("glass") || text.includes("modern")) {
       return PRESET_THEMES["glassmorphism"];
     }
-    if (text.includes("corporate") || text.includes("executive") || text.includes("finance") || text.includes("bank") || text.includes("report")) {
+    if (
+      text.includes("corporate") ||
+      text.includes("executive") ||
+      text.includes("finance") ||
+      text.includes("bank") ||
+      text.includes("report")
+    ) {
       return PRESET_THEMES["corporate"];
     }
 

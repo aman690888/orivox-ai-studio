@@ -31,7 +31,6 @@ function Presentations() {
   return (
     <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
-
         {/* Header */}
         <header className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex flex-col gap-2">
@@ -60,7 +59,9 @@ function Presentations() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            onClick={() => navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: "" } })}
+            onClick={() =>
+              navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: "" } })
+            }
             className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold bg-[#ff4d4d] text-white border-[3px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
@@ -97,10 +98,16 @@ function Presentations() {
             >
               <PresIcon className="w-9 h-9 text-[#2d2d2d]" strokeWidth={2.5} />
             </div>
-            <h2 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+            <h2
+              className="text-2xl font-bold text-[#2d2d2d]"
+              style={{ fontFamily: "Kalam, cursive" }}
+            >
               No decks yet! 👀
             </h2>
-            <p className="mt-2 text-base text-[#6b6460] max-w-sm" style={{ fontFamily: "Patrick Hand, cursive" }}>
+            <p
+              className="mt-2 text-base text-[#6b6460] max-w-sm"
+              style={{ fontFamily: "Patrick Hand, cursive" }}
+            >
               Head back home, type an idea, and your first deck will live here in under 30 seconds.
             </p>
             <Link
@@ -137,12 +144,20 @@ function Presentations() {
                     {/* Slide preview area */}
                     <div
                       className="aspect-video bg-[#fdfbf7] border-b-[2px] border-dashed border-[#2d2d2d] flex items-center justify-center relative overflow-hidden"
-                      style={{ borderRadius: `${R.card.split("/")[0].trim().split(" ").slice(0, 2).join(" ")} 0 0` }}
+                      style={{
+                        borderRadius: `${R.card.split("/")[0].trim().split(" ").slice(0, 2).join(" ")} 0 0`,
+                      }}
                     >
                       {/* Decorative slide mockup lines */}
                       <div className="absolute inset-4 flex flex-col gap-2 opacity-30">
-                        <div className="h-2 bg-[#2d2d2d]/30 w-3/4" style={{ borderRadius: "2px" }} />
-                        <div className="h-1.5 bg-[#2d2d2d]/20 w-1/2" style={{ borderRadius: "2px" }} />
+                        <div
+                          className="h-2 bg-[#2d2d2d]/30 w-3/4"
+                          style={{ borderRadius: "2px" }}
+                        />
+                        <div
+                          className="h-1.5 bg-[#2d2d2d]/20 w-1/2"
+                          style={{ borderRadius: "2px" }}
+                        />
                         <div className="flex-1 flex gap-2 mt-1">
                           <div className="flex-1 bg-[#2d2d2d]/10" style={{ borderRadius: "3px" }} />
                           <div className="flex-1 bg-[#2d2d2d]/10" style={{ borderRadius: "3px" }} />
@@ -165,7 +180,10 @@ function Presentations() {
                         {p.title}
                       </h3>
                       <div className="mt-2 flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-xs text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <div
+                          className="flex items-center gap-1 text-xs text-[#6b6460]"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           <Clock size={11} strokeWidth={2.5} />
                           {p.updated}
                         </div>

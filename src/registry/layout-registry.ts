@@ -59,7 +59,10 @@ export const LayoutRegistry: Record<string, LayoutDefinition> = {
       best_use_cases: ["Pitch Deck Cover", "Product Launch"],
       tags: ["Marketing", "Sales", "Corporate", "Startup"],
     },
-    responsive_rules: ["Title scales from 64px to 32px on mobile", "Background image crops to center focus"],
+    responsive_rules: [
+      "Title scales from 64px to 32px on mobile",
+      "Background image crops to center focus",
+    ],
   },
 
   "layout-cover-minimal": {
@@ -280,7 +283,7 @@ export const LayoutRegistry: Record<string, LayoutDefinition> = {
       tags: ["Sales", "Marketing", "Startup"],
     },
     responsive_rules: ["Center aligned stack on mobile"],
-  }
+  },
 };
 
 /**

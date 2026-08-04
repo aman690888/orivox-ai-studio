@@ -13,12 +13,7 @@
  */
 
 import { KeyPool } from "./KeyPool";
-import {
-  AllKeysExhaustedError,
-  KeyLease,
-  PoolStatus,
-  ProviderKeyConfig,
-} from "./types";
+import { AllKeysExhaustedError, KeyLease, PoolStatus, ProviderKeyConfig } from "./types";
 
 export class AIKeyManager<TClient> {
   private pool: KeyPool;
@@ -31,7 +26,7 @@ export class AIKeyManager<TClient> {
     if (config.apiKeys.length === 0) {
       throw new Error(
         `[AIKeyManager] No API keys configured for provider "${config.provider}". ` +
-        `Set GEMINI_API_KEY, GEMINI_API_KEY_2, etc. in your environment.`,
+          `Set GEMINI_API_KEY, GEMINI_API_KEY_2, etc. in your environment.`,
       );
     }
 
@@ -50,7 +45,10 @@ export class AIKeyManager<TClient> {
    * Scans process.env for keys matching the given prefix pattern.
    * e.g. discoverKeys("GEMINI_API_KEY") finds GEMINI_API_KEY, GEMINI_API_KEY_2, ...
    */
-  static discoverKeys(envPrefix: string, env: Record<string, string | undefined> = typeof process !== "undefined" ? process.env : {}): string[] {
+  static discoverKeys(
+    envPrefix: string,
+    env: Record<string, string | undefined> = typeof process !== "undefined" ? process.env : {},
+  ): string[] {
     const keys: string[] = [];
 
     // Primary key (e.g. GEMINI_API_KEY)

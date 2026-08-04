@@ -22,15 +22,21 @@ const R = {
 };
 
 const tabs = [
-  { id: "account",       label: "Account",       icon: User,       emoji: "👤" },
-  { id: "appearance",    label: "Appearance",     icon: Palette,    emoji: "🎨" },
-  { id: "notifications", label: "Notifications",  icon: Bell,       emoji: "🔔" },
-  { id: "ai",            label: "AI Prefs",       icon: Sparkles,   emoji: "✨" },
-  { id: "billing",       label: "Billing",        icon: CreditCard, emoji: "💳" },
+  { id: "account", label: "Account", icon: User, emoji: "👤" },
+  { id: "appearance", label: "Appearance", icon: Palette, emoji: "🎨" },
+  { id: "notifications", label: "Notifications", icon: Bell, emoji: "🔔" },
+  { id: "ai", label: "AI Prefs", icon: Sparkles, emoji: "✨" },
+  { id: "billing", label: "Billing", icon: CreditCard, emoji: "💳" },
 ] as const;
 
 // ─── Section Card ─────────────────────────────────────────────────────────────
-function SectionCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function SectionCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div
       className={`relative bg-white border-[3px] border-[#2d2d2d] shadow-[5px_5px_0px_0px_#2d2d2d] ${className}`}
@@ -46,14 +52,33 @@ function SectionCard({ children, className = "" }: { children: React.ReactNode; 
 }
 
 // ─── Row ──────────────────────────────────────────────────────────────────────
-function Row({ label, hint, children, border = true }: {
-  label: string; hint?: string; children: React.ReactNode; border?: boolean;
+function Row({
+  label,
+  hint,
+  children,
+  border = true,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+  border?: boolean;
 }) {
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 ${border ? "border-b-[2px] border-dashed border-[#2d2d2d]/30" : ""}`}>
+    <div
+      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 ${border ? "border-b-[2px] border-dashed border-[#2d2d2d]/30" : ""}`}
+    >
       <div className="flex-1 pr-8">
-        <div className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{label}</div>
-        {hint && <div className="mt-1.5 text-xs text-[#6b6460] leading-relaxed" style={{ fontFamily: "Patrick Hand, cursive" }}>{hint}</div>}
+        <div className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+          {label}
+        </div>
+        {hint && (
+          <div
+            className="mt-1.5 text-xs text-[#6b6460] leading-relaxed"
+            style={{ fontFamily: "Patrick Hand, cursive" }}
+          >
+            {hint}
+          </div>
+        )}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -61,8 +86,14 @@ function Row({ label, hint, children, border = true }: {
 }
 
 // ─── Hand Input ───────────────────────────────────────────────────────────────
-function Field({ value, onChange, readOnly }: {
-  value: string; onChange?: (v: string) => void; readOnly?: boolean;
+function Field({
+  value,
+  onChange,
+  readOnly,
+}: {
+  value: string;
+  onChange?: (v: string) => void;
+  readOnly?: boolean;
 }) {
   return (
     <div className="relative">
@@ -89,7 +120,6 @@ function Settings() {
   return (
     <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
-
         {/* Header */}
         <header>
           <motion.div
@@ -147,7 +177,10 @@ function Settings() {
               >
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{activeTab?.emoji}</span>
-                  <h2 className="text-2xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                  <h2
+                    className="text-2xl font-bold text-[#2d2d2d]"
+                    style={{ fontFamily: "Kalam, cursive" }}
+                  >
                     {activeTab?.label}
                   </h2>
                 </div>
@@ -180,7 +213,11 @@ function Account() {
 
   const isDirty = name !== originalName;
   const isGoogle = user?.app_metadata?.providers?.includes("google");
-  const provider = isGoogle ? "Google" : user?.app_metadata?.providers?.includes("github") ? "GitHub" : "Email";
+  const provider = isGoogle
+    ? "Google"
+    : user?.app_metadata?.providers?.includes("github")
+      ? "GitHub"
+      : "Email";
 
   useBlocker({
     shouldBlockFn: () => {
@@ -190,7 +227,14 @@ function Account() {
   });
 
   const getInitials = (n: string) =>
-    !n ? "U" : n.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+    !n
+      ? "U"
+      : n
+          .split(" ")
+          .map((p) => p[0])
+          .slice(0, 2)
+          .join("")
+          .toUpperCase();
 
   const handleSave = async () => {
     if (!isDirty || !user?.id) return;
@@ -198,7 +242,11 @@ function Account() {
     try {
       const { error: authError } = await supabase.auth.updateUser({ data: { full_name: name } });
       if (authError) throw authError;
-      try { await updateProfile(user.id, { full_name: name }); } catch (e) { /* silently handled */ }
+      try {
+        await updateProfile(user.id, { full_name: name });
+      } catch (e) {
+        /* silently handled */
+      }
       await supabase.auth.refreshSession();
       toast.success("Profile updated! ✓");
     } catch (err) {
@@ -209,13 +257,21 @@ function Account() {
   };
 
   const handleSignOut = async () => {
-    try { await signOut(); navigate({ to: "/auth" }); } catch { /**/ }
+    try {
+      await signOut();
+      navigate({ to: "/auth" });
+    } catch {
+      /**/
+    }
   };
 
   return (
     <div className="flex flex-col gap-6">
       <SectionCard>
-        <Row label="Profile Picture" hint={isGoogle ? "Managed by Google." : "Synced with your provider."}>
+        <Row
+          label="Profile Picture"
+          hint={isGoogle ? "Managed by Google." : "Synced with your provider."}
+        >
           <Avatar className="h-16 w-16 border-[3px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d]">
             <AvatarImage src={avatarUrl} alt={name || "User"} />
             <AvatarFallback
@@ -251,7 +307,11 @@ function Account() {
             className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d5da1] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
-            {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={2.5} />}
+            {isSaving ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Check size={14} strokeWidth={2.5} />
+            )}
             Save Changes
           </button>
         )}
@@ -289,7 +349,10 @@ function Appearance() {
   return (
     <div className="flex flex-col gap-6">
       <SectionCard>
-        <Row label="Interface Theme" hint="The hand-drawn aesthetic always stays — this controls light/dark preference.">
+        <Row
+          label="Interface Theme"
+          hint="The hand-drawn aesthetic always stays — this controls light/dark preference."
+        >
           <div
             className="flex border-[2px] border-[#2d2d2d] overflow-hidden"
             style={{ borderRadius: R.tag }}
@@ -299,7 +362,9 @@ function Appearance() {
                 key={t}
                 onClick={() => setSelected(t)}
                 className={`px-4 py-2 text-sm font-bold capitalize transition-all duration-100 border-r-[2px] border-dashed border-[#2d2d2d] last:border-0 ${
-                  selected === t ? "bg-[#2d2d2d] text-white" : "bg-white text-[#2d2d2d] hover:bg-[#e5e0d8]"
+                  selected === t
+                    ? "bg-[#2d2d2d] text-white"
+                    : "bg-white text-[#2d2d2d] hover:bg-[#e5e0d8]"
                 }`}
                 style={{ fontFamily: "Kalam, cursive" }}
               >
@@ -340,7 +405,11 @@ function Notifications() {
         <Row label="Weekly Summary 📊" hint="A digest of your activity and usage.">
           <Switch />
         </Row>
-        <Row label="Product Updates 🚀" hint="Hear about new features and improvements." border={false}>
+        <Row
+          label="Product Updates 🚀"
+          hint="Hear about new features and improvements."
+          border={false}
+        >
           <Switch defaultChecked />
         </Row>
       </SectionCard>
@@ -373,7 +442,11 @@ function AIPrefs() {
             <option>20+ slides</option>
           </select>
         </Row>
-        <Row label="Auto-include Citations" hint="Append sources when factual claims are made." border={false}>
+        <Row
+          label="Auto-include Citations"
+          hint="Append sources when factual claims are made."
+          border={false}
+        >
           <Switch defaultChecked />
         </Row>
       </SectionCard>
@@ -384,9 +457,25 @@ function AIPrefs() {
 // ─── Billing Tab ──────────────────────────────────────────────────────────────
 function Billing() {
   const plans = [
-    { name: "Free", price: "$0", features: ["3 decks / month", "PDF export"], active: true, rotation: -1.5 },
-    { name: "Pro", price: "$20", features: ["Unlimited decks", "PPTX + share links", "Priority AI"], rotation: 0.8 },
-    { name: "Team", price: "$40", features: ["Everything in Pro", "Shared library", "SSO"], rotation: -0.5 },
+    {
+      name: "Free",
+      price: "$0",
+      features: ["3 decks / month", "PDF export"],
+      active: true,
+      rotation: -1.5,
+    },
+    {
+      name: "Pro",
+      price: "$20",
+      features: ["Unlimited decks", "PPTX + share links", "Priority AI"],
+      rotation: 0.8,
+    },
+    {
+      name: "Team",
+      price: "$40",
+      features: ["Everything in Pro", "Shared library", "SSO"],
+      rotation: -0.5,
+    },
   ];
 
   return (
@@ -414,16 +503,28 @@ function Billing() {
             </div>
           )}
 
-          <div className="text-xs font-bold uppercase tracking-widest text-[#6b6460]" style={{ fontFamily: "Kalam, cursive" }}>
+          <div
+            className="text-xs font-bold uppercase tracking-widest text-[#6b6460]"
+            style={{ fontFamily: "Kalam, cursive" }}
+          >
             {p.name}
           </div>
           <div className="mt-3 flex items-baseline gap-1">
-            <span className="text-4xl font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>{p.price}</span>
+            <span
+              className="text-4xl font-bold text-[#2d2d2d]"
+              style={{ fontFamily: "Kalam, cursive" }}
+            >
+              {p.price}
+            </span>
             <span className="text-sm text-[#6b6460]">/mo</span>
           </div>
           <ul className="mt-5 space-y-2.5">
             {p.features.map((f) => (
-              <li key={f} className="flex items-center gap-2.5 text-sm text-[#4a4440]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+              <li
+                key={f}
+                className="flex items-center gap-2.5 text-sm text-[#4a4440]"
+                style={{ fontFamily: "Patrick Hand, cursive" }}
+              >
                 <div
                   className={`w-4 h-4 flex items-center justify-center border-[2px] border-[#2d2d2d] ${p.active ? "bg-[#ff4d4d]" : "bg-white"}`}
                   style={{ borderRadius: "3px" }}

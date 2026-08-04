@@ -19,5 +19,5 @@ export const animation = {
     gentle: { type: "spring", stiffness: 120, damping: 14 },
     bouncy: { type: "spring", stiffness: 400, damping: 10 },
     slow: { type: "spring", stiffness: 50, damping: 15 },
-  }
+  },
 } as const;

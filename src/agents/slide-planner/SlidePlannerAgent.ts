@@ -3,9 +3,12 @@ import { IModelRouter } from "@/orchestrator/ModelRouter";
 import { ClarificationRequest } from "@/agents/intent/types";
 import { SlidePlannerInput, SlidePlanOutput, DetailedSlidePlan } from "./types";
 
-export class SlidePlannerAgent implements IAgent<SlidePlannerInput, SlidePlanOutput | ClarificationRequest> {
+export class SlidePlannerAgent implements IAgent<
+  SlidePlannerInput,
+  SlidePlanOutput | ClarificationRequest
+> {
   public id = "slide-planner-agent";
-  
+
   public model_requirements: ModelCapabilities = {
     needs_reasoning: true,
     needs_json_mode: true,
@@ -15,11 +18,14 @@ export class SlidePlannerAgent implements IAgent<SlidePlannerInput, SlidePlanOut
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: SlidePlannerInput, signal: AbortSignal): Promise<SlidePlanOutput | ClarificationRequest> {
+  public async execute(
+    context: SlidePlannerInput,
+    signal: AbortSignal,
+  ): Promise<SlidePlanOutput | ClarificationRequest> {
     const rawResponse = await this.modelRouter.routeToJSON<any>(
       this.buildPrompt(context),
       this.model_requirements,
-      signal
+      signal,
     );
 
     if (rawResponse.clarificationRequired) {
@@ -39,42 +45,54 @@ export class SlidePlannerAgent implements IAgent<SlidePlannerInput, SlidePlanOut
   }
 
   private parse(rawPayload: any): SlidePlanOutput {
-    const slides: DetailedSlidePlan[] = Array.isArray(rawPayload?.slides) ? rawPayload.slides.map((sl: any) => ({
-      slide_id: sl.slide_id || `slide-${Math.random().toString(36).substr(2, 9)}`,
-      section_id: sl.section_id || "unknown",
-      slide_number: typeof sl.slide_number === "number" ? sl.slide_number : -1,
-      title_goal: sl.title_goal || "Untitled Goal",
-      slide_purpose: sl.slide_purpose || "Information",
-      narrative_role: sl.narrative_role || "Context",
-      transition_type: sl.transition_type || "Standard",
-      information_density: sl.information_density || "Medium",
-      visual_priority: sl.visual_priority || "Medium",
-      estimated_word_budget: typeof sl.estimated_word_budget === "number" ? sl.estimated_word_budget : 30,
-      expected_data_complexity: sl.expected_data_complexity || "Low",
-      requires_visual: typeof sl.requires_visual === "boolean" ? sl.requires_visual : false,
-      requires_chart: typeof sl.requires_chart === "boolean" ? sl.requires_chart : false,
-      requires_diagram: typeof sl.requires_diagram === "boolean" ? sl.requires_diagram : false,
-      requires_table: typeof sl.requires_table === "boolean" ? sl.requires_table : false,
-      requires_iconography: typeof sl.requires_iconography === "boolean" ? sl.requires_iconography : false,
-      dependencies: Array.isArray(sl.dependencies) ? sl.dependencies : [],
-      regeneration_group: sl.regeneration_group || "Global",
-      confidence_score: typeof sl.confidence_score === "number" ? sl.confidence_score : 1.0,
-    })) : [];
+    const slides: DetailedSlidePlan[] = Array.isArray(rawPayload?.slides)
+      ? rawPayload.slides.map((sl: any) => ({
+          slide_id: sl.slide_id || `slide-${Math.random().toString(36).substr(2, 9)}`,
+          section_id: sl.section_id || "unknown",
+          slide_number: typeof sl.slide_number === "number" ? sl.slide_number : -1,
+          title_goal: sl.title_goal || "Untitled Goal",
+          slide_purpose: sl.slide_purpose || "Information",
+          narrative_role: sl.narrative_role || "Context",
+          transition_type: sl.transition_type || "Standard",
+          information_density: sl.information_density || "Medium",
+          visual_priority: sl.visual_priority || "Medium",
+          estimated_word_budget:
+            typeof sl.estimated_word_budget === "number" ? sl.estimated_word_budget : 30,
+          expected_data_complexity: sl.expected_data_complexity || "Low",
+          requires_visual: typeof sl.requires_visual === "boolean" ? sl.requires_visual : false,
+          requires_chart: typeof sl.requires_chart === "boolean" ? sl.requires_chart : false,
+          requires_diagram: typeof sl.requires_diagram === "boolean" ? sl.requires_diagram : false,
+          requires_table: typeof sl.requires_table === "boolean" ? sl.requires_table : false,
+          requires_iconography:
+            typeof sl.requires_iconography === "boolean" ? sl.requires_iconography : false,
+          dependencies: Array.isArray(sl.dependencies) ? sl.dependencies : [],
+          regeneration_group: sl.regeneration_group || "Global",
+          confidence_score: typeof sl.confidence_score === "number" ? sl.confidence_score : 1.0,
+        }))
+      : [];
 
     // Ensure slides are sorted by slide_number just in case
     slides.sort((a, b) => a.slide_number - b.slide_number);
 
     return {
       slides,
-      global_confidence_score: typeof rawPayload?.global_confidence_score === "number" ? rawPayload.global_confidence_score : 1.0,
+      global_confidence_score:
+        typeof rawPayload?.global_confidence_score === "number"
+          ? rawPayload.global_confidence_score
+          : 1.0,
     };
   }
 
-  private validate(plan: SlidePlanOutput, context: SlidePlannerInput): SlidePlanOutput | ClarificationRequest {
+  private validate(
+    plan: SlidePlanOutput,
+    context: SlidePlannerInput,
+  ): SlidePlanOutput | ClarificationRequest {
     if (plan.global_confidence_score < this.MIN_CONFIDENCE_THRESHOLD) {
       return {
         clarificationRequired: true,
-        questions: ["I am having trouble planning the individual slides based on the section constraints. Can we adjust the scope?"],
+        questions: [
+          "I am having trouble planning the individual slides based on the section constraints. Can we adjust the scope?",
+        ],
         missingFields: [],
       };
     }
@@ -85,24 +103,28 @@ export class SlidePlannerAgent implements IAgent<SlidePlannerInput, SlidePlanOut
 
     // Tally slides per section
     const slideCountPerSection: Record<string, number> = {};
-    plan.slides.forEach(slide => {
+    plan.slides.forEach((slide) => {
       slideCountPerSection[slide.section_id] = (slideCountPerSection[slide.section_id] || 0) + 1;
     });
 
     // Validate that generated slides match the upstream Section Plan constraints
-    context.sectionPlan.sections.forEach(section => {
+    context.sectionPlan.sections.forEach((section) => {
       const generatedCount = slideCountPerSection[section.section_id] || 0;
       if (generatedCount !== section.estimated_slide_count) {
-        throw new Error(`[SlidePlannerAgent] Validation Error: Section '${section.section_id}' expected ${section.estimated_slide_count} slides, but got ${generatedCount}.`);
+        throw new Error(
+          `[SlidePlannerAgent] Validation Error: Section '${section.section_id}' expected ${section.estimated_slide_count} slides, but got ${generatedCount}.`,
+        );
       }
     });
 
     // Validate slide dependencies
-    const validSlideIds = new Set(plan.slides.map(s => s.slide_id));
-    plan.slides.forEach(slide => {
-      slide.dependencies.forEach(dep => {
+    const validSlideIds = new Set(plan.slides.map((s) => s.slide_id));
+    plan.slides.forEach((slide) => {
+      slide.dependencies.forEach((dep) => {
         if (!validSlideIds.has(dep)) {
-          throw new Error(`[SlidePlannerAgent] Validation Error: Slide '${slide.slide_id}' depends on non-existent slide '${dep}'.`);
+          throw new Error(
+            `[SlidePlannerAgent] Validation Error: Slide '${slide.slide_id}' depends on non-existent slide '${dep}'.`,
+          );
         }
       });
     });
@@ -110,7 +132,9 @@ export class SlidePlannerAgent implements IAgent<SlidePlannerInput, SlidePlanOut
     // Validate global slide sequence
     plan.slides.forEach((slide, index) => {
       if (slide.slide_number !== index + 1) {
-        throw new Error(`[SlidePlannerAgent] Validation Error: Slide sequence broken. Expected ${index + 1}, got ${slide.slide_number}.`);
+        throw new Error(
+          `[SlidePlannerAgent] Validation Error: Slide sequence broken. Expected ${index + 1}, got ${slide.slide_number}.`,
+        );
       }
     });
 

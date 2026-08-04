@@ -1,4 +1,5 @@
-export type CachedAssetType = "image" | "icon" | "logo" | "citation" | "search_query" | "diagram" | "chart";
+export type CachedAssetType =
+  "image" | "icon" | "logo" | "citation" | "search_query" | "diagram" | "chart";
 
 export interface CachedAsset {
   id: string;
@@ -44,7 +45,8 @@ export class AssetCache {
       total_cached: this.cache.size,
       hit_count: this.hitCount,
       miss_count: this.missCount,
-      hit_ratio: this.hitCount + this.missCount === 0 ? 0 : this.hitCount / (this.hitCount + this.missCount),
+      hit_ratio:
+        this.hitCount + this.missCount === 0 ? 0 : this.hitCount / (this.hitCount + this.missCount),
     };
   }
 }

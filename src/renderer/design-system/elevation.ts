@@ -23,5 +23,5 @@ export const elevation = {
     popover: "1500",
     toast: "1600",
     tooltip: "1700",
-  }
+  },
 } as const;

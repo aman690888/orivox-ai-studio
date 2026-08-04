@@ -27,7 +27,10 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Orivox — Stop making boring presentations." },
-      { name: "description", content: "The AI Presentation Operating System. Sketchy, fast, and magical." },
+      {
+        name: "description",
+        content: "The AI Presentation Operating System. Sketchy, fast, and magical.",
+      },
     ],
   }),
   component: Landing,
@@ -109,7 +112,10 @@ function FeatureCard({
       <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "Kalam, cursive" }}>
         {title}
       </h3>
-      <p className="text-base leading-relaxed text-[#4a4440]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+      <p
+        className="text-base leading-relaxed text-[#4a4440]"
+        style={{ fontFamily: "Patrick Hand, cursive" }}
+      >
         {body}
       </p>
     </div>
@@ -129,18 +135,31 @@ function StepCard({
   body: string;
 }) {
   return (
-    <div className="flex flex-col items-start gap-4 p-6 bg-white border-[2px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d]" style={{ borderRadius: R.wobblyMd }}>
+    <div
+      className="flex flex-col items-start gap-4 p-6 bg-white border-[2px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d]"
+      style={{ borderRadius: R.wobblyMd }}
+    >
       <div className="flex items-center gap-3">
         <span
           className="text-2xl font-bold text-white bg-[#2d2d2d] px-3 py-1"
-          style={{ fontFamily: "Kalam, cursive", borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
+          style={{
+            fontFamily: "Kalam, cursive",
+            borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%",
+          }}
         >
           {num}
         </span>
         <Icon size={20} strokeWidth={2.5} />
       </div>
-      <h3 className="text-lg font-bold" style={{ fontFamily: "Kalam, cursive" }}>{title}</h3>
-      <p className="text-sm leading-relaxed text-[#4a4440]" style={{ fontFamily: "Patrick Hand, cursive" }}>{body}</p>
+      <h3 className="text-lg font-bold" style={{ fontFamily: "Kalam, cursive" }}>
+        {title}
+      </h3>
+      <p
+        className="text-sm leading-relaxed text-[#4a4440]"
+        style={{ fontFamily: "Patrick Hand, cursive" }}
+      >
+        {body}
+      </p>
     </div>
   );
 }
@@ -156,13 +175,21 @@ function Landing() {
   return (
     <div
       className="min-h-screen text-[#2d2d2d] flex flex-col"
-      style={{ fontFamily: "Patrick Hand, cursive", background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+      style={{
+        fontFamily: "Patrick Hand, cursive",
+        background: "#fdfbf7",
+        backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+      }}
     >
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 bg-[#fdfbf7]/90 backdrop-blur-sm border-b-[3px] border-[#2d2d2d] border-dashed">
         <div className="max-w-5xl mx-auto px-6 h-[72px] flex items-center justify-between gap-6">
           <Logo />
-          <nav className="hidden md:flex items-center gap-8 text-base" style={{ fontFamily: "Patrick Hand, cursive" }}>
+          <nav
+            className="hidden md:flex items-center gap-8 text-base"
+            style={{ fontFamily: "Patrick Hand, cursive" }}
+          >
             {["Features", "Workflow", "Pricing", "FAQ"].map((item) => (
               <a
                 key={item}
@@ -212,22 +239,32 @@ function Landing() {
                 className="text-5xl md:text-7xl font-bold leading-tight text-[#2d2d2d]"
                 style={{ fontFamily: "Kalam, cursive" }}
               >
-                Stop making
-                {" "}
-                <span
-                  className="relative inline-block text-[#ff4d4d]"
-                >
+                Stop making{" "}
+                <span className="relative inline-block text-[#ff4d4d]">
                   boring
                   {/* wavy underline */}
-                  <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 100 8" preserveAspectRatio="none" height="8">
-                    <path d="M0,4 Q10,0 20,4 Q30,8 40,4 Q50,0 60,4 Q70,8 80,4 Q90,0 100,4" stroke="#ff4d4d" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                  <svg
+                    className="absolute -bottom-2 left-0 w-full"
+                    viewBox="0 0 100 8"
+                    preserveAspectRatio="none"
+                    height="8"
+                  >
+                    <path
+                      d="M0,4 Q10,0 20,4 Q30,8 40,4 Q50,0 60,4 Q70,8 80,4 Q90,0 100,4"
+                      stroke="#ff4d4d"
+                      strokeWidth="2.5"
+                      fill="none"
+                      strokeLinecap="round"
+                    />
                   </svg>
-                </span>
-                {" "}
+                </span>{" "}
                 slides.
               </h1>
 
-              <p className="text-xl md:text-2xl text-[#4a4440] leading-relaxed" style={{ fontFamily: "Patrick Hand, cursive" }}>
+              <p
+                className="text-xl md:text-2xl text-[#4a4440] leading-relaxed"
+                style={{ fontFamily: "Patrick Hand, cursive" }}
+              >
                 The AI presentation OS. Give it a rough idea and watch it turn into a{" "}
                 <em>genuinely beautiful</em> deck in seconds. No dragging boxes. No templates. Just{" "}
                 <span className="font-bold text-[#2d5da1]">magic</span>.
@@ -239,7 +276,10 @@ function Landing() {
                     Try it free <ArrowRight size={18} strokeWidth={2.5} />
                   </WobblyBtn>
                 </Link>
-                <WobblyBtn variant="secondary" onClick={() => go("A product launch pitch deck for a B2B SaaS company")}>
+                <WobblyBtn
+                  variant="secondary"
+                  onClick={() => go("A product launch pitch deck for a B2B SaaS company")}
+                >
                   See a demo <Zap size={18} strokeWidth={2.5} />
                 </WobblyBtn>
               </div>
@@ -251,13 +291,20 @@ function Landing() {
                     <div
                       key={i}
                       className="w-8 h-8 border-2 border-white flex items-center justify-center text-white text-xs font-bold"
-                      style={{ background: c, borderRadius: "50% 45% 50% 45% / 45% 50% 45% 50%", zIndex: 4 - i }}
+                      style={{
+                        background: c,
+                        borderRadius: "50% 45% 50% 45% / 45% 50% 45% 50%",
+                        zIndex: 4 - i,
+                      }}
                     >
                       {["K", "A", "J", "M"][i]}
                     </div>
                   ))}
                 </div>
-                <p className="text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                <p
+                  className="text-sm text-[#6b6460]"
+                  style={{ fontFamily: "Patrick Hand, cursive" }}
+                >
                   Loved by <strong className="text-[#2d2d2d]">1,000+</strong> creators already
                 </p>
               </div>
@@ -283,7 +330,10 @@ function Landing() {
                   style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1.5deg)" }}
                 />
 
-                <p className="text-sm font-bold uppercase tracking-widest text-[#6b6460] mb-4" style={{ fontFamily: "Kalam, cursive" }}>
+                <p
+                  className="text-sm font-bold uppercase tracking-widest text-[#6b6460] mb-4"
+                  style={{ fontFamily: "Kalam, cursive" }}
+                >
                   ✍️ What do you want to create?
                 </p>
 
@@ -338,10 +388,16 @@ function Landing() {
                 className="flex flex-col items-center justify-center text-center p-5 bg-white border-[2.5px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:rotate-1 transition-transform duration-100"
                 style={{ borderRadius: "50% 40% 55% 45% / 40% 55% 45% 50%", minHeight: "100px" }}
               >
-                <span className="text-3xl font-bold text-[#ff4d4d]" style={{ fontFamily: "Kalam, cursive" }}>
+                <span
+                  className="text-3xl font-bold text-[#ff4d4d]"
+                  style={{ fontFamily: "Kalam, cursive" }}
+                >
                   {stat.val}
                 </span>
-                <span className="text-sm mt-1 text-[#4a4440]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                <span
+                  className="text-sm mt-1 text-[#4a4440]"
+                  style={{ fontFamily: "Patrick Hand, cursive" }}
+                >
                   {stat.label}
                 </span>
               </div>
@@ -355,15 +411,24 @@ function Landing() {
           <div className="flex flex-col items-center mb-14">
             <div
               className="inline-block px-4 py-1 text-sm bg-[#2d2d2d] text-white mb-4 shadow-[3px_3px_0px_0px_#ff4d4d]"
-              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive", transform: "rotate(-1deg)" }}
+              style={{
+                borderRadius: R.tag,
+                fontFamily: "Kalam, cursive",
+                transform: "rotate(-1deg)",
+              }}
             >
               The Good Stuff
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-center" style={{ fontFamily: "Kalam, cursive" }}>
-              Everything you need.{" "}
-              <span className="text-[#2d5da1]">Nothing you don't.</span>
+            <h2
+              className="text-4xl md:text-5xl font-bold text-center"
+              style={{ fontFamily: "Kalam, cursive" }}
+            >
+              Everything you need. <span className="text-[#2d5da1]">Nothing you don't.</span>
             </h2>
-            <p className="text-lg text-[#4a4440] text-center mt-4 max-w-xl" style={{ fontFamily: "Patrick Hand, cursive" }}>
+            <p
+              className="text-lg text-[#4a4440] text-center mt-4 max-w-xl"
+              style={{ fontFamily: "Patrick Hand, cursive" }}
+            >
               Built from the ground up for humans who'd rather think than drag boxes around.
             </p>
           </div>
@@ -423,13 +488,19 @@ function Landing() {
             <div className="flex flex-col items-center mb-14">
               <div
                 className="inline-block px-4 py-1 text-sm bg-[#ff4d4d] text-white mb-4 shadow-[3px_3px_0px_0px_#2d2d2d]"
-                style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive", transform: "rotate(1deg)" }}
+                style={{
+                  borderRadius: R.tag,
+                  fontFamily: "Kalam, cursive",
+                  transform: "rotate(1deg)",
+                }}
               >
                 How It Works
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-center" style={{ fontFamily: "Kalam, cursive" }}>
-                Four steps.{" "}
-                <span className="text-[#ff4d4d]">Infinite results.</span>
+              <h2
+                className="text-4xl md:text-5xl font-bold text-center"
+                style={{ fontFamily: "Kalam, cursive" }}
+              >
+                Four steps. <span className="text-[#ff4d4d]">Infinite results.</span>
               </h2>
             </div>
 
@@ -448,10 +519,30 @@ function Landing() {
                 </svg>
               </div>
 
-              <StepCard num="01" icon={Search} title="Research" body="Pulls from the web & your context to understand the topic." />
-              <StepCard num="02" icon={FileText} title="Outline" body="Structures the narrative automatically. No blank page panic." />
-              <StepCard num="03" icon={LayoutTemplate} title="Design" body="Picks cinematic layouts, charts, and visual hierarchy." />
-              <StepCard num="04" icon={Presentation} title="Present" body="Speaker notes included. Just show up and present." />
+              <StepCard
+                num="01"
+                icon={Search}
+                title="Research"
+                body="Pulls from the web & your context to understand the topic."
+              />
+              <StepCard
+                num="02"
+                icon={FileText}
+                title="Outline"
+                body="Structures the narrative automatically. No blank page panic."
+              />
+              <StepCard
+                num="03"
+                icon={LayoutTemplate}
+                title="Design"
+                body="Picks cinematic layouts, charts, and visual hierarchy."
+              />
+              <StepCard
+                num="04"
+                icon={Presentation}
+                title="Present"
+                body="Speaker notes included. Just show up and present."
+              />
             </div>
           </div>
         </section>
@@ -461,11 +552,18 @@ function Landing() {
           <div className="flex flex-col items-center mb-14">
             <div
               className="inline-block px-4 py-1 text-sm bg-[#2d5da1] text-white mb-4 shadow-[3px_3px_0px_0px_#2d2d2d]"
-              style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive", transform: "rotate(-0.5deg)" }}
+              style={{
+                borderRadius: R.tag,
+                fontFamily: "Kalam, cursive",
+                transform: "rotate(-0.5deg)",
+              }}
             >
               Got Questions?
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-center" style={{ fontFamily: "Kalam, cursive" }}>
+            <h2
+              className="text-4xl md:text-5xl font-bold text-center"
+              style={{ fontFamily: "Kalam, cursive" }}
+            >
               Frequently asked stuff
             </h2>
           </div>
@@ -535,12 +633,15 @@ function Landing() {
               className="text-5xl md:text-7xl font-bold text-[#fdfbf7] leading-tight"
               style={{ fontFamily: "Kalam, cursive" }}
             >
-              The end of{" "}
-              <span className="text-[#ff4d4d]">boring.</span>
+              The end of <span className="text-[#ff4d4d]">boring.</span>
             </h2>
 
-            <p className="text-xl text-[#e5e0d8] max-w-lg" style={{ fontFamily: "Patrick Hand, cursive" }}>
-              Stop spending hours on slides that nobody reads. Spend 30 seconds on Orivox instead. Your time is worth more.
+            <p
+              className="text-xl text-[#e5e0d8] max-w-lg"
+              style={{ fontFamily: "Patrick Hand, cursive" }}
+            >
+              Stop spending hours on slides that nobody reads. Spend 30 seconds on Orivox instead.
+              Your time is worth more.
             </p>
 
             <div className="flex flex-wrap gap-4 justify-center">
@@ -575,7 +676,10 @@ function Landing() {
           <div className="opacity-90 grayscale invert">
             <Logo />
           </div>
-          <div className="flex items-center gap-8 text-[#e5e0d8] text-sm" style={{ fontFamily: "Patrick Hand, cursive" }}>
+          <div
+            className="flex items-center gap-8 text-[#e5e0d8] text-sm"
+            style={{ fontFamily: "Patrick Hand, cursive" }}
+          >
             {["Twitter", "GitHub", "Discord"].map((link) => (
               <a
                 key={link}

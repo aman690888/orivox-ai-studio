@@ -3,9 +3,12 @@ import { IModelRouter } from "@/orchestrator/ModelRouter";
 import { PresentationPlannerInput, PresentationPlan } from "./types";
 import { ClarificationRequest } from "@/agents/intent/types";
 
-export class PresentationPlannerAgent implements IAgent<PresentationPlannerInput, PresentationPlan | ClarificationRequest> {
+export class PresentationPlannerAgent implements IAgent<
+  PresentationPlannerInput,
+  PresentationPlan | ClarificationRequest
+> {
   public id = "presentation-planner-agent";
-  
+
   // Requires high reasoning to build a cohesive narrative structure
   public model_requirements: ModelCapabilities = {
     needs_reasoning: true,
@@ -16,11 +19,14 @@ export class PresentationPlannerAgent implements IAgent<PresentationPlannerInput
 
   constructor(private modelRouter: IModelRouter) {}
 
-  public async execute(context: PresentationPlannerInput, signal: AbortSignal): Promise<PresentationPlan | ClarificationRequest> {
+  public async execute(
+    context: PresentationPlannerInput,
+    signal: AbortSignal,
+  ): Promise<PresentationPlan | ClarificationRequest> {
     const rawResponse = await this.modelRouter.routeToJSON<any>(
       this.buildPrompt(context),
       this.model_requirements,
-      signal
+      signal,
     );
 
     if (rawResponse.clarificationRequired) {
@@ -45,20 +51,30 @@ export class PresentationPlannerAgent implements IAgent<PresentationPlannerInput
       narrative_flow: rawPayload?.narrative_flow || "Chronological",
       storytelling_strategy: rawPayload?.storytelling_strategy || "Fact-Based",
       audience_adaptation: rawPayload?.audience_adaptation || "Standard Professional",
-      presentation_phases: Array.isArray(rawPayload?.presentation_phases) ? rawPayload.presentation_phases : [],
-      section_hierarchy: Array.isArray(rawPayload?.section_hierarchy) ? rawPayload.section_hierarchy : [],
-      estimated_total_slides: typeof rawPayload?.estimated_total_slides === "number" ? rawPayload.estimated_total_slides : 10,
+      presentation_phases: Array.isArray(rawPayload?.presentation_phases)
+        ? rawPayload.presentation_phases
+        : [],
+      section_hierarchy: Array.isArray(rawPayload?.section_hierarchy)
+        ? rawPayload.section_hierarchy
+        : [],
+      estimated_total_slides:
+        typeof rawPayload?.estimated_total_slides === "number"
+          ? rawPayload.estimated_total_slides
+          : 10,
       presentation_pacing: rawPayload?.presentation_pacing || "Moderate",
       complexity_level: rawPayload?.complexity_level || "Intermediate",
       recommended_visual_density: rawPayload?.recommended_visual_density || "Medium",
-      theme_recommendations: Array.isArray(rawPayload?.theme_recommendations) ? rawPayload.theme_recommendations : [],
+      theme_recommendations: Array.isArray(rawPayload?.theme_recommendations)
+        ? rawPayload.theme_recommendations
+        : [],
       emphasis_distribution: rawPayload?.emphasis_distribution || {},
       content_balance: {
         text_percentage: rawPayload?.content_balance?.text_percentage || 40,
         visual_percentage: rawPayload?.content_balance?.visual_percentage || 40,
         data_percentage: rawPayload?.content_balance?.data_percentage || 20,
       },
-      confidence_score: typeof rawPayload?.confidence_score === "number" ? rawPayload.confidence_score : 1.0,
+      confidence_score:
+        typeof rawPayload?.confidence_score === "number" ? rawPayload.confidence_score : 1.0,
     };
   }
 
@@ -66,17 +82,21 @@ export class PresentationPlannerAgent implements IAgent<PresentationPlannerInput
     if (plan.confidence_score < this.MIN_CONFIDENCE_THRESHOLD) {
       return {
         clarificationRequired: true,
-        questions: ["The presentation scope is too broad to plan accurately. Could you specify which areas to focus on?"],
+        questions: [
+          "The presentation scope is too broad to plan accurately. Could you specify which areas to focus on?",
+        ],
         missingFields: ["emphasis_distribution", "section_hierarchy"],
       };
     }
 
     if (plan.section_hierarchy.length === 0) {
-      throw new Error("[PresentationPlannerAgent] Validation Error: No sections generated in the hierarchy.");
+      throw new Error(
+        "[PresentationPlannerAgent] Validation Error: No sections generated in the hierarchy.",
+      );
     }
 
     let calculatedSlides = 0;
-    plan.section_hierarchy.forEach(section => {
+    plan.section_hierarchy.forEach((section) => {
       calculatedSlides += section.estimated_slides;
     });
 
@@ -85,12 +105,15 @@ export class PresentationPlannerAgent implements IAgent<PresentationPlannerInput
       plan.estimated_total_slides = calculatedSlides;
     }
 
-    const totalBalance = plan.content_balance.text_percentage + 
-                         plan.content_balance.visual_percentage + 
-                         plan.content_balance.data_percentage;
-                         
+    const totalBalance =
+      plan.content_balance.text_percentage +
+      plan.content_balance.visual_percentage +
+      plan.content_balance.data_percentage;
+
     if (totalBalance < 99 || totalBalance > 101) {
-      throw new Error(`[PresentationPlannerAgent] Validation Error: Content balance percentages do not sum to 100 (got ${totalBalance}).`);
+      throw new Error(
+        `[PresentationPlannerAgent] Validation Error: Content balance percentages do not sum to 100 (got ${totalBalance}).`,
+      );
     }
 
     return plan;

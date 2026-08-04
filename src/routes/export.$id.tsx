@@ -118,7 +118,7 @@ async function exportPDF(slides: Slide[], title: string): Promise<void> {
         }
         ${s.notes ? `<div class="notes">Speaker notes: ${escapeHtml(s.notes)}</div>` : ""}
       </div>
-    `
+    `,
     )
     .join("");
 
@@ -271,14 +271,20 @@ function Export() {
     return (
       <div
         className="flex min-h-screen items-center justify-center"
-        style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+        style={{
+          background: "#fdfbf7",
+          backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
       >
         <div
           className="flex flex-col items-center gap-4 p-10 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d]"
           style={{ borderRadius: R.card }}
         >
           <div className="text-3xl animate-bounce">📦</div>
-          <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>Loading...</p>
+          <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+            Loading...
+          </p>
         </div>
       </div>
     );
@@ -314,14 +320,21 @@ function Export() {
     }
   };
 
-  const shareUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/present/${id}`
-    : `https://orivox-one.vercel.app/present/${id}`;
+  const shareUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/present/${id}`
+      : `https://orivox-one.vercel.app/present/${id}`;
 
   return (
     <div
       className="flex min-h-screen flex-col"
-      style={{ background: "#fdfbf7", backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)", backgroundSize: "24px 24px", fontFamily: "Patrick Hand, cursive", color: "#2d2d2d" }}
+      style={{
+        background: "#fdfbf7",
+        backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+        fontFamily: "Patrick Hand, cursive",
+        color: "#2d2d2d",
+      }}
     >
       {/* ── Header ── */}
       <header className="flex h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-4 z-20">
@@ -335,7 +348,10 @@ function Export() {
             <ArrowLeft size={14} strokeWidth={2.5} /> Viewer
           </Link>
           <div className="h-4 w-[2px] bg-[#2d2d2d]/20" />
-          <h1 className="text-sm font-bold text-[#2d2d2d] truncate max-w-[240px]" style={{ fontFamily: "Kalam, cursive" }}>
+          <h1
+            className="text-sm font-bold text-[#2d2d2d] truncate max-w-[240px]"
+            style={{ fontFamily: "Kalam, cursive" }}
+          >
             {presentationTitle}
           </h1>
         </div>
@@ -350,7 +366,6 @@ function Export() {
       {/* ── Main ── */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="w-full max-w-2xl flex flex-col gap-8">
-
           {/* Heading */}
           <div className="flex flex-col gap-2">
             <motion.div
@@ -388,7 +403,12 @@ function Export() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.07 }}
-                onClick={() => { setFmt(f.id); setState("idle"); setCopied(false); setErrorMsg(""); }}
+                onClick={() => {
+                  setFmt(f.id);
+                  setState("idle");
+                  setCopied(false);
+                  setErrorMsg("");
+                }}
                 className={`relative flex flex-col gap-3 p-5 border-[3px] text-left transition-all duration-100 ${
                   fmt === f.id
                     ? "border-[#ff4d4d] bg-white shadow-[5px_5px_0px_0px_#ff4d4d]"
@@ -414,14 +434,21 @@ function Export() {
 
                 <span className="text-3xl">{f.emoji}</span>
                 <div>
-                  <div className="text-base font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                  <div
+                    className="text-base font-bold text-[#2d2d2d]"
+                    style={{ fontFamily: "Kalam, cursive" }}
+                  >
                     {f.label}
                   </div>
                   <div className="text-xs text-[#6b6460] mt-0.5">{f.desc}</div>
                 </div>
                 <div
                   className="self-start px-2 py-0.5 text-[10px] font-bold text-white"
-                  style={{ background: f.tagColor, borderRadius: "3px", fontFamily: "Kalam, cursive" }}
+                  style={{
+                    background: f.tagColor,
+                    borderRadius: "3px",
+                    fontFamily: "Kalam, cursive",
+                  }}
                 >
                   {f.tag}
                 </div>
@@ -444,21 +471,29 @@ function Export() {
             />
 
             <AnimatePresence mode="wait">
-
               {/* ── Idle ── */}
               {state === "idle" && (
-                <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                <motion.div
+                  key="idle"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="flex flex-col items-center gap-5 text-center"
                 >
                   {fmt === "pptx" && (
                     <>
                       <div className="text-5xl">📊</div>
                       <div>
-                        <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                        <p
+                          className="text-lg font-bold text-[#2d2d2d]"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
                           Export as PowerPoint
                         </p>
                         <p className="mt-1 text-sm text-[#6b6460]">
-                          Downloads a real <code className="bg-[#e5e0d8] px-1 py-0.5 rounded text-xs">.pptx</code> file with all {dbSlides.length} slides, bullets, and speaker notes.
+                          Downloads a real{" "}
+                          <code className="bg-[#e5e0d8] px-1 py-0.5 rounded text-xs">.pptx</code>{" "}
+                          file with all {dbSlides.length} slides, bullets, and speaker notes.
                         </p>
                       </div>
                     </>
@@ -467,11 +502,15 @@ function Export() {
                     <>
                       <div className="text-5xl">📄</div>
                       <div>
-                        <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                        <p
+                          className="text-lg font-bold text-[#2d2d2d]"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
                           Export as PDF
                         </p>
                         <p className="mt-1 text-sm text-[#6b6460]">
-                          Opens a print dialog — choose "Save as PDF" in your browser. Renders all {dbSlides.length} slides in landscape A4.
+                          Opens a print dialog — choose "Save as PDF" in your browser. Renders all{" "}
+                          {dbSlides.length} slides in landscape A4.
                         </p>
                       </div>
                     </>
@@ -480,11 +519,15 @@ function Export() {
                     <>
                       <div className="text-5xl">🔗</div>
                       <div>
-                        <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                        <p
+                          className="text-lg font-bold text-[#2d2d2d]"
+                          style={{ fontFamily: "Kalam, cursive" }}
+                        >
                           Share a link
                         </p>
                         <p className="mt-1 text-sm text-[#6b6460]">
-                          Anyone with the link can view your presentation in the browser — no account needed.
+                          Anyone with the link can view your presentation in the browser — no
+                          account needed.
                         </p>
                       </div>
                     </>
@@ -503,7 +546,11 @@ function Export() {
 
               {/* ── Working ── */}
               {state === "working" && (
-                <motion.div key="working" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                <motion.div
+                  key="working"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="flex flex-col items-center gap-5 text-center"
                 >
                   <div
@@ -512,11 +559,17 @@ function Export() {
                   >
                     <Loader2 size={28} className="animate-spin text-[#ff4d4d]" strokeWidth={2.5} />
                   </div>
-                  <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                  <p
+                    className="text-lg font-bold text-[#2d2d2d]"
+                    style={{ fontFamily: "Kalam, cursive" }}
+                  >
                     Preparing your {fmt.toUpperCase()}...
                   </p>
                   {/* Progress bar */}
-                  <div className="w-full max-w-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] overflow-hidden" style={{ height: "12px", borderRadius: R.tag }}>
+                  <div
+                    className="w-full max-w-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] overflow-hidden"
+                    style={{ height: "12px", borderRadius: R.tag }}
+                  >
                     <motion.div
                       className="h-full bg-[#ff4d4d]"
                       initial={{ width: 0 }}
@@ -529,7 +582,10 @@ function Export() {
 
               {/* ── Done ── */}
               {state === "done" && (
-                <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                <motion.div
+                  key="done"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   className="flex flex-col items-center gap-5 text-center w-full"
                 >
                   <div
@@ -541,14 +597,20 @@ function Export() {
 
                   {fmt === "link" ? (
                     <>
-                      <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                      <p
+                        className="text-lg font-bold text-[#2d2d2d]"
+                        style={{ fontFamily: "Kalam, cursive" }}
+                      >
                         Your link is ready! 🎉
                       </p>
                       <div
                         className="flex w-full max-w-sm items-center gap-2 bg-[#fdfbf7] border-[2px] border-[#2d2d2d] px-3 py-2 shadow-[2px_2px_0px_0px_#2d2d2d]"
                         style={{ borderRadius: R.input }}
                       >
-                        <span className="flex-1 truncate text-sm text-[#6b6460]" style={{ fontFamily: "Patrick Hand, cursive" }}>
+                        <span
+                          className="flex-1 truncate text-sm text-[#6b6460]"
+                          style={{ fontFamily: "Patrick Hand, cursive" }}
+                        >
                           {shareUrl}
                         </span>
                         <button
@@ -558,17 +620,30 @@ function Export() {
                             setTimeout(() => setCopied(false), 2000);
                           }}
                           className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border-[2px] border-[#2d2d2d] transition-all duration-100 ${
-                            copied ? "bg-[#2d8a5b] text-white" : "bg-white text-[#2d2d2d] hover:bg-[#e5e0d8]"
+                            copied
+                              ? "bg-[#2d8a5b] text-white"
+                              : "bg-white text-[#2d2d2d] hover:bg-[#e5e0d8]"
                           }`}
                           style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                         >
-                          {copied ? <><Check size={11} strokeWidth={2.5} /> Copied!</> : <><Copy size={11} strokeWidth={2.5} /> Copy</>}
+                          {copied ? (
+                            <>
+                              <Check size={11} strokeWidth={2.5} /> Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={11} strokeWidth={2.5} /> Copy
+                            </>
+                          )}
                         </button>
                       </div>
                     </>
                   ) : (
                     <>
-                      <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                      <p
+                        className="text-lg font-bold text-[#2d2d2d]"
+                        style={{ fontFamily: "Kalam, cursive" }}
+                      >
                         {fmt === "pdf" ? "PDF export sent! 🎉" : "Download started! 🎉"}
                       </p>
                       <p className="text-sm text-[#6b6460]">
@@ -580,7 +655,10 @@ function Export() {
                   )}
 
                   <button
-                    onClick={() => { setState("idle"); setCopied(false); }}
+                    onClick={() => {
+                      setState("idle");
+                      setCopied(false);
+                    }}
                     className="mt-1 px-5 py-2 text-sm font-bold bg-white text-[#2d2d2d] border-[2px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
                     style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                   >
@@ -591,7 +669,10 @@ function Export() {
 
               {/* ── Error ── */}
               {state === "error" && (
-                <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   className="flex flex-col items-center gap-5 text-center"
                 >
                   <div
@@ -601,13 +682,19 @@ function Export() {
                     <AlertTriangle size={28} className="text-[#ff4d4d]" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                    <p
+                      className="text-lg font-bold text-[#2d2d2d]"
+                      style={{ fontFamily: "Kalam, cursive" }}
+                    >
                       Export failed 😬
                     </p>
                     <p className="mt-1 text-sm text-[#6b6460]">{errorMsg}</p>
                   </div>
                   <button
-                    onClick={() => { setState("idle"); setErrorMsg(""); }}
+                    onClick={() => {
+                      setState("idle");
+                      setErrorMsg("");
+                    }}
                     className="px-5 py-2 text-sm font-bold bg-[#ff4d4d] text-white border-[2px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
                     style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                   >
@@ -615,10 +702,8 @@ function Export() {
                   </button>
                 </motion.div>
               )}
-
             </AnimatePresence>
           </motion.div>
-
         </div>
       </main>
     </div>

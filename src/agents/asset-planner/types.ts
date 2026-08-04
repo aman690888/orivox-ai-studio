@@ -2,7 +2,19 @@ import { SlidePlanOutput } from "@/agents/slide-planner/types";
 import { LayoutPlanOutput } from "@/agents/layout-planner/types";
 import { ComponentPlanOutput } from "@/agents/component-planner/types";
 
-export type AssetCategory = "image" | "chart" | "diagram" | "table" | "icon" | "logo" | "screenshot" | "timeline" | "avatar" | "graphic" | "animation" | "background";
+export type AssetCategory =
+  | "image"
+  | "chart"
+  | "diagram"
+  | "table"
+  | "icon"
+  | "logo"
+  | "screenshot"
+  | "timeline"
+  | "avatar"
+  | "graphic"
+  | "animation"
+  | "background";
 
 export interface DetailedAssetPlan {
   asset_id: string;

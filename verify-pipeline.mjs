@@ -65,10 +65,10 @@ async function run() {
   if (!accessToken) {
     console.error("\n❌ Cannot proceed without authentication token.");
     console.log("\nManual verification required. Please check the browser console for:");
-    console.log('  [1] Workspace: startGeneration() triggered');
-    console.log('  [2] Prompt:', TEST_PROMPT);
-    console.log('  [3] Before generateFullPresentation()');
-    console.log('  [4] After generateFullPresentation()');
+    console.log("  [1] Workspace: startGeneration() triggered");
+    console.log("  [2] Prompt:", TEST_PROMPT);
+    console.log("  [3] Before generateFullPresentation()");
+    console.log("  [4] After generateFullPresentation()");
     process.exit(1);
   }
 
@@ -80,7 +80,7 @@ async function run() {
   const outlineStart = Date.now();
   const { data: outlineData, error: outlineError } = await supabase.functions.invoke(
     "generate-outline",
-    { body: { prompt: TEST_PROMPT, config: { provider: "gemini" } } }
+    { body: { prompt: TEST_PROMPT, config: { provider: "gemini" } } },
   );
   const outlineDuration = Date.now() - outlineStart;
 
@@ -120,7 +120,7 @@ async function run() {
   const slidesStart = Date.now();
   const { data: slidesData, error: slidesError } = await supabase.functions.invoke(
     "generate-slides",
-    { body: { outline: outlineData, config: { provider: "gemini" } } }
+    { body: { outline: outlineData, config: { provider: "gemini" } } },
   );
   const slidesDuration = Date.now() - slidesStart;
 
@@ -174,27 +174,21 @@ async function run() {
   console.log("VERIFICATION CHECKLIST");
   console.log("=".repeat(60));
   console.log(
-    `Prompt forwarded correctly:        ${hasDemocracy ? "✅" : "❌"} "${TEST_PROMPT}" → Gemini received it`
+    `Prompt forwarded correctly:        ${hasDemocracy ? "✅" : "❌"} "${TEST_PROMPT}" → Gemini received it`,
   );
   console.log(
-    `No banned/mock content in outline: ${outlineBanned.length === 0 ? "✅" : "❌"} ${outlineBanned.join(", ")}`
+    `No banned/mock content in outline: ${outlineBanned.length === 0 ? "✅" : "❌"} ${outlineBanned.join(", ")}`,
   );
   console.log(
-    `No banned/mock content in slides:  ${slidesBanned.length === 0 ? "✅" : "❌"} ${slidesBanned.join(", ")}`
+    `No banned/mock content in slides:  ${slidesBanned.length === 0 ? "✅" : "❌"} ${slidesBanned.join(", ")}`,
   );
   console.log(
-    `Correct slide count (≥10):         ${slides.length >= 10 ? "✅" : "❌"} ${slides.length} slides`
+    `Correct slide count (≥10):         ${slides.length >= 10 ? "✅" : "❌"} ${slides.length} slides`,
   );
-  console.log(
-    `generate-outline latency:          ✅ ${outlineDuration}ms`
-  );
-  console.log(
-    `generate-slides latency:           ✅ ${slidesDuration}ms`
-  );
+  console.log(`generate-outline latency:          ✅ ${outlineDuration}ms`);
+  console.log(`generate-slides latency:           ✅ ${slidesDuration}ms`);
   console.log(`No JSON parse errors:              ✅ Both functions returned valid JSON`);
-  console.log(
-    `First slide title:                 ✅ "${firstSlide?.title}"`
-  );
+  console.log(`First slide title:                 ✅ "${firstSlide?.title}"`);
   console.log("\nOutline title:", outlineData.title);
   console.log("All slide titles:");
   slides.forEach((s, i) => console.log(`  ${i + 1}. ${s.title}`));

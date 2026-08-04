@@ -18,7 +18,7 @@ export class EventBus {
       workflow_id,
       payload,
     };
-    
+
     const handlers = this.handlers.get(eventType) || [];
     handlers.forEach((h) => {
       try {

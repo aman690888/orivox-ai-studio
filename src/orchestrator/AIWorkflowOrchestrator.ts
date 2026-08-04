@@ -11,7 +11,7 @@ import { TelemetryTracker, TelemetryMetrics } from "./Telemetry";
 export class AIWorkflowOrchestrator {
   private state: ExecutionState = "PENDING";
   private abortController: AbortController = new AbortController();
-  
+
   private graph: ExecutionGraph;
   private eventBus: EventBus;
   private contextStore: ContextStore;
@@ -24,7 +24,7 @@ export class AIWorkflowOrchestrator {
     private config: WorkflowConfig,
     initialState: WorkflowState,
     graph: ExecutionGraph,
-    budget: WorkflowBudget
+    budget: WorkflowBudget,
   ) {
     this.graph = graph;
     this.budget = budget;
@@ -52,7 +52,11 @@ export class AIWorkflowOrchestrator {
   }
 
   public async run(): Promise<WorkflowState> {
-    if (this.state !== "PENDING" && this.state !== "FAILED" && this.state !== "CLARIFICATION_REQUIRED") {
+    if (
+      this.state !== "PENDING" &&
+      this.state !== "FAILED" &&
+      this.state !== "CLARIFICATION_REQUIRED"
+    ) {
       throw new Error(`Cannot run workflow in state: ${this.state}`);
     }
 
@@ -68,12 +72,16 @@ export class AIWorkflowOrchestrator {
         }
 
         const node = this.graph.getNode(nodeId);
-        
+
         if (this.config.enable_checkpoints) {
           const cachedState = this.checkpointManager.getCheckpoint(nodeId);
           if (cachedState) {
             this.contextStore.setState(cachedState);
-            this.eventBus.publish("CHECKPOINT_RESTORED", { node_id: nodeId }, this.config.workflow_id);
+            this.eventBus.publish(
+              "CHECKPOINT_RESTORED",
+              { node_id: nodeId },
+              this.config.workflow_id,
+            );
             continue;
           }
         }
@@ -85,8 +93,12 @@ export class AIWorkflowOrchestrator {
         }
 
         const currentState = this.contextStore.getState();
-        const nextState = await this.executor.executeNode(node, currentState, this.abortController.signal);
-        
+        const nextState = await this.executor.executeNode(
+          node,
+          currentState,
+          this.abortController.signal,
+        );
+
         // Handle Clarification state explicitly
         const ephemeralOut = nextState.getEphemeral<any>("ClarificationRequest");
         if (ephemeralOut && ephemeralOut.clarificationRequired) {
@@ -106,7 +118,6 @@ export class AIWorkflowOrchestrator {
       this.state = "COMPLETED";
       this.eventBus.publish("WORKFLOW_COMPLETED", {}, this.config.workflow_id);
       return this.contextStore.getState();
-
     } catch (error: any) {
       if ((this.state as string) !== "CANCELLED") {
         this.state = "FAILED";

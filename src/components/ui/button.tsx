@@ -14,7 +14,8 @@ const buttonVariants = cva(
         outline:
           "border border-black bg-transparent hover:bg-black hover:text-white hard-shadow-hover",
         secondary: "bg-gray-200 text-black hover:bg-black hover:text-white hard-shadow-hover",
-        ghost: "border-transparent hover:border-black hover:bg-black hover:text-white hard-shadow-hover",
+        ghost:
+          "border-transparent hover:border-black hover:bg-black hover:text-white hard-shadow-hover",
         link: "border-transparent text-black underline-offset-4 hover:underline",
       },
       size: {
@@ -40,20 +41,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     if (asChild) {
       return (
-        <Slot
-          className={cn(buttonVariants({ variant, size, className }))}
-          ref={ref}
-          {...props}
-        />
+        <Slot className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
       );
     }
-    
+
     return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
+      <button className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
     );
   },
 );
