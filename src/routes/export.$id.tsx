@@ -573,7 +573,7 @@ function Export() {
                       </p>
                       <p className="text-sm text-[#6b6460]">
                         {fmt === "pdf"
-                          ? "Check your browser's print dialog. Select "Save as PDF" to download."
+                          ? "Check your browser's print dialog. Select &ldquo;Save as PDF&rdquo; to download."
                           : "Your .pptx file is downloading. Open it in PowerPoint or Google Slides."}
                       </p>
                     </>
