@@ -2,25 +2,25 @@
 @source "../src";
 @import "tw-animate-css";
 
-/* Font Imports for Newsprint */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=block');
+/* Hand-Drawn Design System Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&family=Inter:wght@400;500;600&display=swap');
 
 @theme inline {
-  --font-serif: "Playfair Display", "Times New Roman", serif;
-  --font-body: "Lora", Georgia, serif;
+  --font-heading: "Kalam", cursive;
+  --font-body: "Patrick Hand", cursive;
   --font-sans: "Inter", "Helvetica Neue", sans-serif;
   --font-mono: "JetBrains Mono", "Courier New", monospace;
-  
-  /* Enforce zero radius everywhere */
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius: 0px;
 
-  /* Newsprint Palette */
+  /* Keep radius tokens available but DO NOT enforce zero — wobbly radii are inline */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius: 8px;
+
+  /* Hand-Drawn Palette */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--background);
@@ -43,70 +43,40 @@
 }
 
 :root {
-  /* No Dark Mode Support - Permanent Light Mode */
-  --background: #F9F9F7;
-  --foreground: #111111;
-  --primary: #111111;
-  --primary-foreground: #F9F9F7;
-  --secondary: #E5E5E0;
-  --secondary-foreground: #111111;
-  --muted: #E5E5E0;
-  --muted-foreground: #737373;
-  --accent: #CC0000;
-  --accent-foreground: #F9F9F7;
-  --border: #111111;
-  --input: #111111;
-  --ring: #111111;
+  --background: #fdfbf7;
+  --foreground: #2d2d2d;
+  --primary: #2d2d2d;
+  --primary-foreground: #fdfbf7;
+  --secondary: #e5e0d8;
+  --secondary-foreground: #2d2d2d;
+  --muted: #e5e0d8;
+  --muted-foreground: #6b6460;
+  --accent: #ff4d4d;
+  --accent-foreground: #fdfbf7;
+  --border: #2d2d2d;
+  --input: #2d2d2d;
+  --ring: #2d5da1;
 }
 
-/* Force light mode even if .dark class is present */
 .dark {
-  --background: #F9F9F7;
-  --foreground: #111111;
-  --primary: #111111;
-  --primary-foreground: #F9F9F7;
-  --secondary: #E5E5E0;
-  --secondary-foreground: #111111;
-  --muted: #E5E5E0;
-  --muted-foreground: #737373;
-  --accent: #CC0000;
-  --accent-foreground: #F9F9F7;
-  --border: #111111;
-  --input: #111111;
-  --ring: #111111;
-}
-
-@utility sharp-corners {
-  border-radius: 0px !important;
-}
-
-@utility hard-shadow-hover {
-  transition: all 200ms ease-out;
-  &:hover {
-    box-shadow: 4px 4px 0px 0px #111111;
-    transform: translate(-2px, -2px);
-  }
-}
-
-@utility newsprint-texture {
-  position: relative;
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(0deg, transparent 98%, rgba(0,0,0,0.02) 100%),
-      linear-gradient(90deg, transparent 98%, rgba(0,0,0,0.02) 100%);
-    background-size: 3px 3px;
-    pointer-events: none;
-    opacity: 0.5;
-  }
+  --background: #fdfbf7;
+  --foreground: #2d2d2d;
+  --primary: #2d2d2d;
+  --primary-foreground: #fdfbf7;
+  --secondary: #e5e0d8;
+  --secondary-foreground: #2d2d2d;
+  --muted: #e5e0d8;
+  --muted-foreground: #6b6460;
+  --accent: #ff4d4d;
+  --accent-foreground: #fdfbf7;
+  --border: #2d2d2d;
+  --input: #2d2d2d;
+  --ring: #2d5da1;
 }
 
 @layer base {
   * {
-    border-color: var(--color-border);
-    border-radius: 0px !important; /* Global enforcement */
+    box-sizing: border-box;
   }
 
   html {
@@ -114,21 +84,80 @@
   }
 
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-body); /* Default to Lora */
+    background-color: #fdfbf7;
+    color: #2d2d2d;
+    font-family: "Patrick Hand", cursive;
     -webkit-font-smoothing: antialiased;
-    /* Subtle dot grid pattern */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23111111' fill-opacity='0.04' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+    /* Notebook dot-grid paper texture */
+    background-image: radial-gradient(#e5e0d8 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif);
-    color: var(--color-foreground);
+    font-family: "Kalam", cursive;
+    color: #2d2d2d;
   }
 
   ::selection {
-    background: var(--color-accent);
-    color: var(--color-primary-foreground);
+    background: #ff4d4d;
+    color: #fdfbf7;
   }
+}
+
+/* Hand-Drawn Utility: Wobbly border-radius presets */
+.wobbly {
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+}
+
+.wobbly-md {
+  border-radius: 8px 42px 12px 38px / 42px 12px 38px 8px !important;
+}
+
+.wobbly-sm {
+  border-radius: 4px 22px 6px 18px / 22px 6px 18px 4px !important;
+}
+
+/* Bounce animation for decorative elements */
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(2deg); }
+}
+
+.animate-gentle-bounce {
+  animation: gentle-bounce 3s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 2s ease-in-out infinite;
+}
+
+/* Hard offset shadow utilities */
+.shadow-hand {
+  box-shadow: 4px 4px 0px 0px #2d2d2d;
+}
+
+.shadow-hand-lg {
+  box-shadow: 8px 8px 0px 0px #2d2d2d;
+}
+
+.shadow-hand-sm {
+  box-shadow: 2px 2px 0px 0px #2d2d2d;
+}
+
+/* Tape strip effect */
+.tape::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  width: 60px;
+  height: 20px;
+  background: rgba(200, 200, 200, 0.5);
+  border: 1px dashed rgba(150,150,150,0.4);
 }
