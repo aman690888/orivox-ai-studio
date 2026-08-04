@@ -78,7 +78,7 @@ function Landing() {
         <section className="grid grid-cols-1 md:grid-cols-12 border-b border-black divide-y md:divide-y-0 md:divide-x divide-black">
           {/* Main Hero Text */}
           <div className="md:col-span-8 p-8 md:p-16 flex flex-col justify-center @container">
-            <h1 className="font-serif leading-[0.85] tracking-tighter mb-8 text-balance break-words text-[clamp(3rem,12cqw,10rem)]">
+            <h1 className="font-serif leading-[0.85] tracking-tighter mb-8 text-balance text-[clamp(2rem,10cqw,8rem)]">
               STOP MAKING PRESENTATIONS.
             </h1>
             <p className="text-xl md:text-2xl font-medium max-w-2xl leading-snug">
