@@ -28,3 +28,35 @@ export async function updateProfile(id: string, profile: ProfileUpdate): Promise
   }
   return data;
 }
+
+export async function ensureProfile(user: any): Promise<Profile | null> {
+  const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+  
+  if (data) {
+    return data;
+  }
+  
+  if (error && error.code !== "PGRST116") {
+    console.error("Error fetching profile during ensure:", error);
+  }
+
+  // Profile not found, create it
+  const newProfile = {
+    id: user.id,
+    full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
+    avatar_url: user.user_metadata?.avatar_url || null,
+  };
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("profiles")
+    .insert(newProfile)
+    .select()
+    .single();
+
+  if (insertError) {
+    console.error("Error creating profile:", insertError);
+    return null;
+  }
+  
+  return inserted;
+}

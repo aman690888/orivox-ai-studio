@@ -5,6 +5,7 @@ import { Check, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -28,6 +29,7 @@ const R = {
   tag: "4px 22px 6px 18px / 22px 6px 18px 4px",
   input: "4px 18px 4px 16px / 18px 4px 16px 4px",
 };
+
 
 // ─── Hand-Drawn Input ─────────────────────────────────────────────────────────
 function HandInput({
@@ -291,7 +293,9 @@ function Auth() {
       });
       if (error) throw error;
     } catch (err) {
-      setAuthError((err as Error).message || "Failed Google Authentication");
+      const msg = (err as Error).message || "Failed Google Authentication";
+      setAuthError(msg);
+      toast.error(msg);
     }
   };
 
@@ -306,8 +310,11 @@ function Auth() {
       });
       if (error) throw error;
       setSignupStep("confirm-sent");
+      toast.success("Account created! Check your email.");
     } catch (err) {
-      setAuthError((err as Error).message || "Sign up failed. Please try again.");
+      const msg = (err as Error).message || "Sign up failed. Please try again.";
+      setAuthError(msg);
+      toast.error(msg);
     } finally { setActionLoading(false); }
   };
 
@@ -316,9 +323,12 @@ function Auth() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      toast.success("Welcome back!");
       navigate({ to: "/home" });
     } catch (err) {
-      setAuthError((err as Error).message || "Invalid credentials.");
+      const msg = (err as Error).message || "Invalid credentials.";
+      setAuthError(msg);
+      toast.error(msg);
     } finally { setActionLoading(false); }
   };
 
@@ -330,8 +340,11 @@ function Auth() {
       });
       if (error) throw error;
       setLoginStep("forgot-sent");
+      toast.success("Password reset link sent!");
     } catch (err) {
-      setAuthError((err as Error).message || "Failed to send reset link.");
+      const msg = (err as Error).message || "Failed to send reset link.";
+      setAuthError(msg);
+      toast.error(msg);
     } finally { setActionLoading(false); }
   };
 
