@@ -384,6 +384,16 @@ function Workspace() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [undo, redo, slides.length]);
 
+  const gen = {
+    isReady: progress.phase === "ready" || progress.status === "success" || progress.status === "idle",
+    showOutline: progress.phasePct > 0 || progress.phase === 'ready',
+    showSlides: progress.imagePct > 0,
+    showCharts: progress.chartPct > 0,
+    showDiagrams: progress.diagramPct > 0,
+    steps: progress.timeline.map(t => t.step),
+    stepStatus: (i: number) => progress.timeline[i]?.status || 'pending',
+  };
+
   const generatedCount = useMemo(() => {
     if (progress.phase === "ready") return renderSlidesList.length;
     if (!progress.imagePct) return 0;
@@ -845,7 +855,7 @@ function Workspace() {
           onClick={() => setSelectedEl(null)}
         >
           {/* Error banner */}
-          {generationError && (
+          {progress.status === 'error' && (
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -855,7 +865,7 @@ function Workspace() {
                 className="flex items-center gap-3 px-4 py-3 bg-[#fff9c4] border-[2px] border-[#ff4d4d] text-[#ff4d4d] text-sm shadow-[3px_3px_0px_0px_#ff4d4d]"
                 style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
               >
-                ⚠️ Failed: {generationError}
+                ⚠️ Failed: Generation failed. Please try again.
               </div>
             </motion.div>
           )}
