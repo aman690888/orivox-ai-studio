@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { motion } from "motion/react";
 import { CommandPalette, useCommandPalette } from "@/components/command/CommandPalette";
 import { useEffect, Suspense } from "react";
 import { useAuth } from "@/lib/auth-context";
@@ -39,7 +38,7 @@ function AppLayout() {
         }}
       >
         <div
-          className="flex flex-col items-center gap-3 p-8 bg-white border-[3px] border-[#2d2d2d] shadow-sm glass-card"
+          className="flex flex-col items-center gap-3 p-8 bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#ff4d4d]"
           style={{ borderRadius: R.md }}
         >
           <Loader2 className="h-8 w-8 animate-spin text-[#ff4d4d]" />
@@ -60,22 +59,15 @@ function AppLayout() {
         background: "#fdfbf7",
         backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
         backgroundSize: "24px 24px",
-        fontFamily: "var(--font-sans)",
+        fontFamily: "Patrick Hand, cursive",
         color: "#2d2d2d",
       }}
     >
       <Sidebar />
       <main className="flex-1 relative overflow-y-auto z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
-          className="h-full w-full"
-        >
-          <Suspense fallback={<AppSkeleton />}>
-            <Outlet />
-          </Suspense>
-        </motion.div>
+        <Suspense fallback={<AppSkeleton />}>
+          <Outlet />
+        </Suspense>
       </main>
       <CommandPalette />
     </div>
@@ -145,7 +137,7 @@ function Sidebar() {
           <Link
             to="/workspace/$id"
             params={{ id: "new" }}
-            className="flex items-center gap-2 justify-center w-full bg-[#ff4d4d] text-white border-[2px] border-[#2d2d2d] px-3 py-2.5 text-sm font-bold shadow-sm glass-card hover:shadow-sm glass-card hover-lift transition-all duration-300 hover-lift duration-100"
+            className="flex items-center gap-2 justify-center w-full bg-[#ff4d4d] text-white border-[2px] border-[#2d2d2d] px-3 py-2.5 text-sm font-bold shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
             style={{ borderRadius: R.btn, fontFamily: "Kalam, cursive" }}
           >
             <span>✨ New Presentation</span>
@@ -153,7 +145,7 @@ function Sidebar() {
           
           <button
             onClick={open}
-            className="flex items-center gap-3 w-full bg-white border-[2px] border-[#2d2d2d] px-3 py-2 text-sm shadow-sm glass-card hover:shadow-sm glass-card hover-lift transition-all duration-300 hover-lift duration-100"
+            className="flex items-center gap-3 w-full bg-white border-[2px] border-[#2d2d2d] px-3 py-2 text-sm shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
             <Search className="w-4 h-4 text-[#2d2d2d]" strokeWidth={2.5} />
@@ -176,10 +168,10 @@ function Sidebar() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative flex items-center gap-3 px-3 py-2 text-sm transition-all duration-300 hover-lift duration-100 border-[2.5px] border-[#2d2d2d] ${
+                className={`relative flex items-center gap-3 px-3 py-2 text-sm transition-all duration-100 border-[2.5px] border-[#2d2d2d] ${
                   isActive
-                    ? "bg-[#2d2d2d] text-white shadow-sm glass-card"
-                    : "bg-white text-[#2d2d2d] shadow-sm glass-card hover:bg-[#e5e0d8] hover:shadow-sm glass-card hover-lift"
+                    ? "bg-[#2d2d2d] text-white shadow-[3px_3px_0px_0px_#ff4d4d]"
+                    : "bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px]"
                 }`}
                 style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
               >
@@ -206,7 +198,7 @@ function Sidebar() {
 
         {/* User card */}
         <div
-          className="relative bg-[#fdfbf7] border-[2px] border-[#2d2d2d] p-3 shadow-sm glass-card hover:shadow-sm glass-card hover-lift transition-all duration-300 hover-lift cursor-pointer group"
+          className="relative bg-[#fdfbf7] border-[2px] border-[#2d2d2d] p-3 shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer group"
           style={{ borderRadius: R.md }}
         >
           <div className="flex items-center gap-2.5">
@@ -228,7 +220,7 @@ function Sidebar() {
             <button
               onClick={(e) => { e.stopPropagation(); handleSignOut(); }}
               title="Sign out"
-              className="text-[#6b6460] group-hover:text-[#ff4d4d] transition-colors flex-shrink-0 bg-white border-[1.5px] border-[#2d2d2d] p-1.5 shadow-sm glass-card"
+              className="text-[#6b6460] group-hover:text-[#ff4d4d] transition-colors flex-shrink-0 bg-white border-[1.5px] border-[#2d2d2d] p-1.5 shadow-[2px_2px_0px_0px_#2d2d2d]"
               style={{ borderRadius: "6px" }}
             >
               <LogOut size={14} strokeWidth={2.5} />

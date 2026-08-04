@@ -58,7 +58,7 @@ function Home() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center self-start gap-2 px-3 py-1 bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-xs shadow-sm glass-card"
+            className="inline-flex items-center self-start gap-2 px-3 py-1 bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-xs shadow-[2px_2px_0px_0px_#2d2d2d]"
             style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
           >
             📅 {dateLabel}
@@ -113,7 +113,7 @@ function Home() {
             style={{ borderRadius: R.card, transform: "rotate(1.5deg) translate(4px, 4px)" }}
           />
           <div
-            className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-sm glass-card"
+            className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-[5px_5px_0px_0px_#ff4d4d]"
             style={{ borderRadius: R.card }}
           >
             {/* Tape */}
@@ -128,7 +128,7 @@ function Home() {
               ✍️ Describe your presentation...
             </p>
             <div
-              className="border-[2px] border-[#2d2d2d] p-1 bg-[#fdfbf7] focus-within:border-[#2d5da1] focus-within:ring-2 focus-within:ring-[#2d5da1]/20 transition-all duration-300 hover-lift"
+              className="border-[2px] border-[#2d2d2d] p-1 bg-[#fdfbf7] focus-within:border-[#2d5da1] focus-within:ring-2 focus-within:ring-[#2d5da1]/20 transition-all"
               style={{ borderRadius: R.input }}
             >
               <PromptBox
@@ -147,7 +147,7 @@ function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 + i * 0.06 }}
                   onClick={() => setPrompt(s)}
-                  className="text-xs px-3 py-1.5 bg-[#fdfbf7] border-[2px] border-dashed border-[#2d2d2d] hover:bg-[#e5e0d8] hover:border-solid transition-all duration-300 hover-lift duration-100"
+                  className="text-xs px-3 py-1.5 bg-[#fdfbf7] border-[2px] border-dashed border-[#2d2d2d] hover:bg-[#e5e0d8] hover:border-solid transition-all duration-100"
                   style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
                 >
                   {s}
@@ -179,7 +179,7 @@ function Home() {
             style={{ borderRadius: R.md }}
           >
             <div
-              className="w-16 h-16 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-3xl mb-5 shadow-sm glass-card animate-wiggle"
+              className="w-16 h-16 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-3xl mb-5 shadow-[3px_3px_0px_0px_#2d2d2d] animate-wiggle"
               style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
             >
               <PresIcon className="w-7 h-7 text-[#2d2d2d]" strokeWidth={2.5} />
@@ -198,7 +198,7 @@ function Home() {
             </p>
             <button
               onClick={() => go("A startup pitch deck for investors")}
-              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-sm glass-card hover:bg-[#ff4d4d] hover:shadow-sm glass-card hover-lift transition-all duration-300 hover-lift duration-100"
+              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
               style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
             >
               <Zap size={16} strokeWidth={2.5} /> Try a demo deck
@@ -215,7 +215,7 @@ function Home() {
                 {featured && (
                   <section className="flex flex-col gap-3">
                     <div
-                      className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#2d2d2d] text-white shadow-sm glass-card"
+                      className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#2d2d2d] text-white shadow-[2px_2px_0px_0px_#ff4d4d]"
                       style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                     >
                       <Clock size={12} strokeWidth={2.5} /> Continue where you left off
@@ -224,7 +224,7 @@ function Home() {
                       <motion.div
                         whileHover={{ y: -3 }}
                         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                        className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-sm glass-card hover:shadow-sm glass-card transition-all duration-300 hover-lift"
+                        className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-[5px_5px_0px_0px_#2d2d2d] hover:shadow-[7px_7px_0px_0px_#2d2d2d] transition-all"
                         style={{ borderRadius: R.card }}
                       >
                         {/* Tape */}
@@ -267,7 +267,7 @@ function Home() {
                 {/* Workspace Statistics — real data */}
                 <section className="flex flex-col gap-3">
                   <div
-                    className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-sm glass-card"
+                    className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
                     style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                   >
                     📊 Workspace Stats
@@ -292,7 +292,7 @@ function Home() {
                     ].map((stat, i) => (
                       <div
                         key={i}
-                        className="bg-white border-[2px] border-[#2d2d2d] p-4 flex flex-col items-center justify-center text-center shadow-sm glass-card hover-lift hover:shadow-sm glass-card transition-all duration-300 hover-lift"
+                        className="bg-white border-[2px] border-[#2d2d2d] p-4 flex flex-col items-center justify-center text-center shadow-[3px_3px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#2d2d2d] transition-all"
                         style={{ borderRadius: R.tag }}
                       >
                         <span className="mb-1">{stat.icon}</span>
@@ -311,13 +311,13 @@ function Home() {
               {/* Right Column (Recent Activity — real data) */}
               <div className="flex flex-col gap-3">
                 <div
-                  className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-sm glass-card"
+                  className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
                   style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                 >
                   ⚡ Recent Activity
                 </div>
                 <div
-                  className="flex-1 bg-white border-[2.5px] border-[#2d2d2d] shadow-sm glass-card p-4 overflow-hidden relative"
+                  className="flex-1 bg-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] p-4 overflow-hidden relative"
                   style={{ borderRadius: R.md }}
                 >
                   <div className="flex flex-col gap-4 mt-2">
@@ -355,7 +355,7 @@ function Home() {
               <section className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div
-                    className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-sm glass-card"
+                    className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#e5e0d8] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
                     style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                   >
                     📚 Recent
@@ -378,7 +378,7 @@ function Home() {
                     >
                       <Link to="/workspace/$id" params={{ id: p.id }} className="group block">
                         <div
-                          className="flex items-center gap-3 bg-white border-[2px] border-[#2d2d2d] px-4 py-3 shadow-sm glass-card hover:shadow-sm glass-card hover-lift transition-all duration-300 hover-lift duration-100"
+                          className="flex items-center gap-3 bg-white border-[2px] border-[#2d2d2d] px-4 py-3 shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
                           style={{ borderRadius: R.tag }}
                         >
                           <div
@@ -414,7 +414,7 @@ function Home() {
         {/* ── Templates ── */}
         <section className="flex flex-col gap-5 pt-4 border-t-[2px] border-dashed border-[#2d2d2d]">
           <div
-            className="inline-flex items-center self-start gap-2 px-3 py-1 text-xs bg-[#2d5da1] text-white shadow-sm glass-card"
+            className="inline-flex items-center self-start gap-2 px-3 py-1 text-xs bg-[#2d5da1] text-white shadow-[2px_2px_0px_0px_#2d2d2d]"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
             ✨ Start from a template
@@ -427,7 +427,7 @@ function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.06 }}
                 onClick={() => setPrompt(`A ${c.name.toLowerCase()} on `)}
-                className="group flex flex-col items-start gap-3 bg-white border-[2.5px] border-[#2d2d2d] p-5 text-left shadow-sm glass-card hover:shadow-sm glass-card hover-lift hover:bg-[#fff9c4] transition-all duration-300 hover-lift duration-100"
+                className="group flex flex-col items-start gap-3 bg-white border-[2.5px] border-[#2d2d2d] p-5 text-left shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#fff9c4] transition-all duration-100"
                 style={{
                   borderRadius: R.tag,
                   transform: `rotate(${[-0.8, 0.6, -0.5, 0.7][i % 4]}deg)`,
