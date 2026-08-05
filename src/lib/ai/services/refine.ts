@@ -34,7 +34,7 @@ Instruction: ${instruction}
 Please return the updated slide JSON. Keep the same 'id'. Match the 'kind' exactly (cover, content, chart, diagram, quote, closing). Add or update bullets and notes as appropriate based on the instruction. Return only valid JSON.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro",
+      model: "gemini-3.1-flash-lite",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
