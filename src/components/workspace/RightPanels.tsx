@@ -26,8 +26,20 @@ const recentActions = [
   "Regenerated cover slide",
 ];
 
-export function AIAssistant() {
+export function AIAssistant({ 
+  onRefine,
+  isRefining = false 
+}: { 
+  onRefine?: (instruction: string) => void;
+  isRefining?: boolean;
+}) {
   const [prompt, setPrompt] = useState("");
+
+  const handleSend = (text: string) => {
+    if (!text.trim() || isRefining) return;
+    onRefine?.(text);
+    setPrompt("");
+  };
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -67,9 +79,11 @@ export function AIAssistant() {
           {quickActions.slice(0, 4).map((q, i) => (
             <motion.button
               key={q}
+              onClick={() => handleSend(q)}
+              disabled={isRefining}
               whileHover={{ y: -1 }}
               whileTap={{ scale: 0.97 }}
-              className="text-xs px-3 py-2 text-left bg-white border-[2px] border-[#2d2d2d] text-[#2d2d2d] font-bold shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#fff9c4] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] transition-all duration-100"
+              className="text-xs px-3 py-2 text-left bg-white border-[2px] border-[#2d2d2d] text-[#2d2d2d] font-bold shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#fff9c4] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] disabled:opacity-50 transition-all duration-100"
               style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
             >
               {q}
@@ -109,8 +123,10 @@ export function AIAssistant() {
           Suggestion
         </div>
         <motion.button
+          onClick={() => handleSend("Add a slide on regulatory trends")}
+          disabled={isRefining}
           whileHover={{ y: -1 }}
-          className="flex w-full items-center gap-2 px-3 py-2.5 text-xs text-left bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] transition-all"
+          className="flex w-full items-center gap-2 px-3 py-2.5 text-xs text-left bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] disabled:opacity-50 transition-all"
           style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
         >
           <Wand2 className="h-3.5 w-3.5 text-[#2d5da1] shrink-0" strokeWidth={2.5} />
@@ -127,14 +143,21 @@ export function AIAssistant() {
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend(prompt);
+              }
+            }}
+            disabled={isRefining}
             placeholder="Ask AI to change anything..."
             rows={2}
-            className="max-h-24 flex-1 resize-none bg-transparent px-2 py-1 text-xs outline-none placeholder-[#2d2d2d]/40 text-[#2d2d2d]"
+            className="max-h-24 flex-1 resize-none bg-transparent px-2 py-1 text-xs outline-none placeholder-[#2d2d2d]/40 text-[#2d2d2d] disabled:opacity-50"
             style={{ fontFamily: "Patrick Hand, cursive" }}
           />
           <button
-            disabled={!prompt.trim()}
-            onClick={() => setPrompt("")}
+            disabled={!prompt.trim() || isRefining}
+            onClick={() => handleSend(prompt)}
             className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#ff4d4d] text-white border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-100"
             style={{ borderRadius: R.tag }}
           >
@@ -155,11 +178,21 @@ export function AIAssistant() {
 export function ElementSelectedPanel({
   element,
   onDeselect,
+  onRefine,
+  isRefining = false,
 }: {
   element: string;
   onDeselect: () => void;
+  onRefine?: (instruction: string) => void;
+  isRefining?: boolean;
 }) {
   const [prompt, setPrompt] = useState("");
+
+  const handleSend = (text: string) => {
+    if (!text.trim() || isRefining) return;
+    onRefine?.(text);
+    setPrompt("");
+  };
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -204,14 +237,22 @@ export function ElementSelectedPanel({
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend(prompt);
+            }
+          }}
+          disabled={isRefining}
           placeholder={`Describe a change to this ${element}...`}
           rows={2}
-          className="max-h-20 flex-1 resize-none bg-transparent px-2 py-1 text-xs outline-none placeholder-[#2d2d2d]/40 text-[#2d2d2d]"
+          className="max-h-20 flex-1 resize-none bg-transparent px-2 py-1 text-xs outline-none placeholder-[#2d2d2d]/40 text-[#2d2d2d] disabled:opacity-50"
           style={{ fontFamily: "Patrick Hand, cursive" }}
         />
         <button
-          disabled={!prompt.trim()}
-          className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#ff4d4d] text-white border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] disabled:opacity-30 disabled:cursor-not-allowed"
+          disabled={!prompt.trim() || isRefining}
+          onClick={() => handleSend(prompt)}
+          className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#ff4d4d] text-white border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] disabled:opacity-30 disabled:cursor-not-allowed hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100"
           style={{ borderRadius: R.tag }}
         >
           <ArrowUp size={13} strokeWidth={2.5} />
@@ -237,7 +278,9 @@ export function ElementSelectedPanel({
           ].map((a) => (
             <button
               key={a.label}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs bg-white border-[2px] border-[#2d2d2d] text-[#2d2d2d] font-bold shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#fff9c4] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] transition-all duration-100"
+              onClick={() => handleSend(a.label)}
+              disabled={isRefining}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs bg-white border-[2px] border-[#2d2d2d] text-[#2d2d2d] font-bold shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#fff9c4] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] disabled:opacity-50 transition-all duration-100"
               style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
             >
               <a.icon className="h-3 w-3 text-[#2d5da1] shrink-0" strokeWidth={2.5} />

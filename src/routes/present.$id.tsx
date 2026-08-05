@@ -5,9 +5,11 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Download, Maximize2, Minimize2 } 
 import { SlideCanvas } from "@/components/workspace/SlideCanvas";
 import { AIAssistant, ElementSelectedPanel } from "@/components/workspace/RightPanels";
 import { useAuth } from "@/lib/auth-context";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPresentation } from "@/lib/database/presentations";
-import { getSlides } from "@/lib/database/slides";
+import { getSlides, saveSlides } from "@/lib/database/slides";
+import { toast } from "sonner";
+import { refineSlide } from "@/lib/ai/services/refine";
 
 export const Route = createFileRoute("/present/$id")({
   head: () => ({ meta: [{ title: "Viewer — Orivox" }] }),
@@ -24,6 +26,8 @@ function Viewer() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { id } = Route.useParams();
+  const queryClient = useQueryClient();
+  const [isRefining, setIsRefining] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { reset: false } });
@@ -50,6 +54,25 @@ function Viewer() {
 
   const prev = useCallback(() => setActive((a) => Math.max(0, a - 1)), []);
   const next = useCallback(() => setActive((a) => Math.min(total - 1, a + 1)), [total]);
+
+  const handleRefine = async (instruction: string) => {
+    if (!slide) return;
+    setIsRefining(true);
+    toast.info("Refining slide...");
+    try {
+      const updatedSlide = await refineSlide({ data: { slide, instruction } });
+      const newSlides = [...dbSlides];
+      newSlides[active] = { ...updatedSlide, id: slide.id };
+      await saveSlides(id, newSlides);
+      await queryClient.invalidateQueries({ queryKey: ["slides", id] });
+      toast.success("Slide updated!");
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to refine slide.");
+    } finally {
+      setIsRefining(false);
+    }
+  };
 
   // keyboard navigation
   useEffect(() => {
@@ -409,9 +432,14 @@ function Viewer() {
                   <ElementSelectedPanel
                     element={selectedEl}
                     onDeselect={() => setSelectedEl(null)}
+                    onRefine={handleRefine}
+                    isRefining={isRefining}
                   />
                 ) : (
-                  <AIAssistant />
+                  <AIAssistant 
+                    onRefine={handleRefine}
+                    isRefining={isRefining}
+                  />
                 )}
               </motion.div>
             </AnimatePresence>
