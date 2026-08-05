@@ -7,7 +7,7 @@ import { AIAssistant, ElementSelectedPanel } from "@/components/workspace/RightP
 import { useAuth } from "@/lib/auth-context";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getPresentation } from "@/lib/database/presentations";
-import { getSlides, saveSlides } from "@/lib/database/slides";
+import { getSlides, updateSlide } from "@/lib/database/slides";
 import { toast } from "sonner";
 import { refineSlide } from "@/lib/ai/services/refine";
 
@@ -61,9 +61,13 @@ function Viewer() {
     toast.info("Refining slide...");
     try {
       const updatedSlide = await refineSlide({ data: { slide, instruction } });
-      const newSlides = [...dbSlides];
-      newSlides[active] = { ...updatedSlide, id: slide.id };
-      await saveSlides(id, newSlides);
+      // Safe: update only this one slide row in the DB by its ID
+      await updateSlide(slide.id, {
+        title: updatedSlide.title,
+        bullets: updatedSlide.bullets,
+        notes: updatedSlide.notes,
+        kind: updatedSlide.kind || slide.kind,
+      });
       await queryClient.invalidateQueries({ queryKey: ["slides", id] });
       toast.success("Slide updated!");
     } catch (error: any) {

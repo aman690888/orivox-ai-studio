@@ -31,9 +31,10 @@ export async function getSlides(presentationId: string): Promise<Slide[]> {
 }
 
 export async function saveSlides(presentationId: string, slides: Slide[]): Promise<Slide[]> {
-  // To keep it simple and bulletproof, we will delete existing slides and insert new ones
-  // inside a transactional-like sequence or back-to-back queries, or do an upsert.
-  // Deleting and inserting is very clean for replacing the entire presentation state.
+  // Guard: validate all slides have required fields before touching the DB
+  for (const s of slides) {
+    if (!s.kind) throw new Error(`Slide "${s.title}" is missing a kind/slide_type. Aborting save.`);
+  }
 
   const { error: deleteError } = await supabase
     .from("slides")
@@ -67,3 +68,49 @@ export async function saveSlides(presentationId: string, slides: Slide[]): Promi
 
   return (data || []).map(mapToUi);
 }
+
+/**
+ * Update a single slide in-place by its DB id.
+ * Safe — does NOT touch any other slides in the presentation.
+ */
+export async function updateSlide(slideId: string, patch: Partial<Slide>): Promise<Slide> {
+  if (!patch.kind && patch.kind !== undefined) {
+    throw new Error("Cannot update slide with a null kind.");
+  }
+
+  const update: Record<string, unknown> = {};
+  if (patch.kind !== undefined) update.slide_type = patch.kind;
+  if (patch.notes !== undefined) update.notes = patch.notes ?? null;
+
+  // title and bullets live inside the `content` JSONB column —
+  // fetch existing content first so we can merge cleanly
+  if (patch.title !== undefined || patch.bullets !== undefined) {
+    const { data: existing, error: fetchErr } = await supabase
+      .from("slides")
+      .select("content")
+      .eq("id", slideId)
+      .single();
+    if (fetchErr) throw fetchErr;
+
+    const existingContent = (existing?.content as { title?: string; bullets?: string[] }) || {};
+    update.content = {
+      title: patch.title ?? existingContent.title ?? "",
+      bullets: patch.bullets ?? existingContent.bullets ?? [],
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("slides")
+    .update(update)
+    .eq("id", slideId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error updating slide:", error);
+    throw error;
+  }
+
+  return mapToUi(data);
+}
+
