@@ -25,19 +25,33 @@ export const refineSlide = createServerFn({ method: "POST" })
     }
 
     const ai = new GoogleGenAI({ apiKey });
+
+    const slideSchema = {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        kind: { type: "string", enum: ["cover", "content", "chart", "diagram", "quote", "closing"] },
+        title: { type: "string" },
+        bullets: { type: "array", items: { type: "string" } },
+        notes: { type: "string" },
+      },
+      required: ["id", "kind", "title"],
+    };
+
     const prompt = `You are a professional presentation slide editor.
 Current slide JSON:
 ${JSON.stringify(slide, null, 2)}
 
 Instruction: ${instruction}
 
-Please return the updated slide JSON. Keep the same 'id'. Match the 'kind' exactly (cover, content, chart, diagram, quote, closing). Add or update bullets and notes as appropriate based on the instruction. Return only valid JSON.`;
+Return the updated slide JSON. IMPORTANT: you MUST include the same "id" and "kind" values from the current slide. Update title, bullets, and notes based on the instruction. Return only valid JSON.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3.1-flash-lite",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
+        responseSchema: slideSchema,
       },
     });
 
@@ -46,7 +60,13 @@ Please return the updated slide JSON. Keep the same 'id'. Match the 'kind' exact
     
     try {
       const parsed = JSON.parse(text);
-      return parsed as Slide;
+      // Always merge back required fields from original slide as safety net
+      return {
+        ...slide,
+        ...parsed,
+        id: slide.id,
+        kind: parsed.kind || slide.kind,
+      } as Slide;
     } catch (e) {
       throw new Error("Failed to parse Gemini response as JSON");
     }
