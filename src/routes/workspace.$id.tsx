@@ -234,12 +234,13 @@ function Workspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, effectivePrompt, user?.id, dbPresentation, dbSlides, isSlidesLoading, queryClient]);
 
-  const startGeneration = async () => {
+  const startGeneration = async (customPrompt?: string) => {
+    const targetPrompt = customPrompt || effectivePrompt;
     abortRef.current = new AbortController();
     setGenStatus("generating");
-    savePromptToHistory(effectivePrompt);
+    savePromptToHistory(targetPrompt);
     try {
-      const result = await generateFullPresentation(effectivePrompt, {
+      const result = await generateFullPresentation(targetPrompt, {
         config: { provider: "gemini" },
       });
       if (abortRef.current.signal.aborted) return;

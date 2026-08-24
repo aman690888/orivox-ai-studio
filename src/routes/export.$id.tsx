@@ -350,7 +350,7 @@ function Export() {
           className="text-xs sm:text-sm font-bold text-[#2d2d2d] truncate max-w-[180px] sm:max-w-xs"
           style={{ fontFamily: "Kalam, cursive" }}
         >
-          {dbPresentation.title}
+          {presentationTitle}
         </h1>
         <div
           className="px-2.5 py-0.5 text-xs font-bold bg-[#fff9c4] border-[1.5px] border-[#2d2d2d]"
