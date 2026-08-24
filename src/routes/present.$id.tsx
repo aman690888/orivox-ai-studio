@@ -214,6 +214,8 @@ function Viewer() {
     );
   }
 
+  const [mobileAIOpen, setMobileAIOpen] = useState(false);
+
   return (
     <div
       className="flex h-screen w-full flex-col overflow-hidden"
@@ -226,28 +228,30 @@ function Viewer() {
       }}
     >
       {/* ── Top Bar ── */}
-      <header className="flex h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-4 z-20">
-        <div className="flex items-center gap-3">
+      <header className="flex h-[56px] sm:h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-3 sm:px-4 z-20 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
             to="/workspace/$id"
             params={{ id }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold border-[2px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 text-xs sm:text-sm font-bold border-[2px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] active:translate-x-[1px] active:translate-y-[1px] transition-all duration-100 shrink-0"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
-            <ArrowLeft size={14} strokeWidth={2.5} /> Workspace
+            <ArrowLeft size={14} strokeWidth={2.5} />
+            <span className="hidden sm:inline">Workspace</span>
           </Link>
-          <div className="h-4 w-[2px] bg-dashed bg-[#2d2d2d]/20" />
+          <div className="h-4 w-[2px] bg-dashed bg-[#2d2d2d]/20 shrink-0" />
           <h1
-            className="text-sm font-bold text-[#2d2d2d] truncate max-w-[240px]"
+            className="text-xs sm:text-sm font-bold text-[#2d2d2d] truncate max-w-[120px] sm:max-w-[220px]"
             style={{ fontFamily: "Kalam, cursive" }}
           >
             {dbPresentation.title}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {total > 0 && (
             <div
-              className="px-3 py-1 text-xs font-bold bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+              className="px-2.5 py-1 text-xs font-bold bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
               style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
             >
               {active + 1} / {total}
@@ -255,24 +259,35 @@ function Viewer() {
           )}
           <button
             onClick={() => setFullscreen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold bg-white border-[2px] border-[#2d2d2d] text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-bold bg-white border-[2px] border-[#2d2d2d] text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] active:translate-x-[1px] active:translate-y-[1px] transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
-            <Maximize2 size={13} strokeWidth={2.5} /> Present
+            <Maximize2 size={13} strokeWidth={2.5} />
+            <span className="hidden sm:inline">Present</span>
           </button>
           <button
             onClick={() => navigate({ to: "/export/$id", params: { id } })}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold bg-[#ff4d4d] text-white border-[2px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-bold bg-[#ff4d4d] text-white border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] active:translate-x-[1px] active:translate-y-[1px] transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
-            <Download size={13} strokeWidth={2.5} /> Export
+            <Download size={13} strokeWidth={2.5} />
+            <span className="hidden sm:inline">Export</span>
+          </button>
+          {/* Mobile AI Assistant Button */}
+          <button
+            onClick={() => setMobileAIOpen(true)}
+            className="lg:hidden flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold bg-[#fff9c4] text-[#2d2d2d] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] active:translate-x-[1px] active:translate-y-[1px] transition-all"
+            style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+          >
+            <span>✨</span>
+            <span className="font-bold">AI</span>
           </button>
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* ── Left: slide thumbnails ── */}
-        <aside className="w-[200px] shrink-0 overflow-y-auto border-r-[3px] border-dashed border-[#2d2d2d] p-3 bg-[#fdfbf7] flex flex-col gap-2">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* ── Left: desktop slide thumbnails ── */}
+        <aside className="hidden md:flex w-[200px] shrink-0 overflow-y-auto border-r-[3px] border-dashed border-[#2d2d2d] p-3 bg-[#fdfbf7] flex-col gap-2">
           {dbSlides.map((s, i) => (
             <button
               key={s.id}
@@ -287,8 +302,6 @@ function Viewer() {
               }`}
               style={{ borderRadius: "4px 16px 4px 16px / 16px 4px 16px 4px" }}
             >
-              {/* Real scaled-down slide preview */}
-              {/* Outer: clips to 16:9, inner: renders at 960px then scales down */}
               <div
                 className="w-full overflow-hidden bg-white pointer-events-none"
                 style={{ aspectRatio: "16/9", position: "relative" }}
@@ -307,7 +320,6 @@ function Viewer() {
                   <SlideCanvas slide={s} onSelect={() => {}} selected={null} />
                 </div>
               </div>
-              {/* Title row */}
               <div className="px-2.5 py-2 border-t-[2px] border-dashed border-[#2d2d2d]/30">
                 <div className="flex items-start gap-1.5">
                   <span
@@ -330,21 +342,21 @@ function Viewer() {
 
         {/* ── Center: main slide canvas ── */}
         <main
-          className="flex flex-1 flex-col overflow-hidden bg-[#f0ece6]"
+          className="flex flex-1 flex-col overflow-hidden bg-[#f0ece6] min-w-0"
           onClick={() => setSelectedEl(null)}
         >
-          <div className="flex-1 overflow-y-auto flex items-start justify-center p-8">
+          <div className="flex-1 overflow-y-auto flex items-center justify-center p-3 sm:p-6 md:p-8">
             <div className="w-full max-w-4xl">
               {slide ? (
                 <div className="relative">
                   {/* Tilted shadow behind */}
                   <div
                     className="absolute inset-0 bg-[#e5e0d8] border-[2px] border-[#2d2d2d]"
-                    style={{ borderRadius: R.card, transform: "rotate(1deg) translate(5px, 5px)" }}
+                    style={{ borderRadius: R.card, transform: "rotate(1deg) translate(4px, 4px)" }}
                   />
                   {/* Tape */}
                   <div
-                    className="absolute -top-4 left-1/2 w-12 h-5 bg-gray-300/60 border border-dashed border-gray-400/50 z-10"
+                    className="absolute -top-3 left-1/2 w-10 sm:w-12 h-4 sm:h-5 bg-gray-300/60 border border-dashed border-gray-400/50 z-10"
                     style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1.5deg)" }}
                   />
                   <motion.div
@@ -352,7 +364,7 @@ function Viewer() {
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                    className="relative w-full bg-white border-[3px] border-[#2d2d2d] shadow-[8px_8px_0px_0px_#2d2d2d] overflow-hidden"
+                    className="relative w-full bg-white border-[2.5px] sm:border-[3px] border-[#2d2d2d] shadow-[5px_5px_0px_0px_#2d2d2d] sm:shadow-[8px_8px_0px_0px_#2d2d2d] overflow-hidden"
                     style={{ borderRadius: R.card, aspectRatio: "16/9" }}
                   >
                     <div className="absolute inset-0">
@@ -362,7 +374,7 @@ function Viewer() {
                 </div>
               ) : (
                 <div
-                  className="flex flex-col items-center justify-center py-20 text-center bg-white border-[3px] border-dashed border-[#2d2d2d]"
+                  className="flex flex-col items-center justify-center py-16 text-center bg-white border-[3px] border-dashed border-[#2d2d2d]"
                   style={{ borderRadius: R.md, aspectRatio: "16/9" }}
                 >
                   <div className="text-4xl mb-3">📭</div>
@@ -377,25 +389,49 @@ function Viewer() {
             </div>
           </div>
 
-          {/* ── Nav bar ── */}
-          <div className="flex items-center justify-center gap-3 border-t-[3px] border-dashed border-[#2d2d2d] py-3 bg-[#fdfbf7]">
+          {/* ── Mobile Horizontal Thumbnail Strip ── */}
+          <div className="md:hidden flex overflow-x-auto gap-2 px-3 py-2 bg-[#fdfbf7] border-t-[2px] border-dashed border-[#2d2d2d] shrink-0">
+            {dbSlides.map((s, i) => (
+              <button
+                key={s.id}
+                onClick={() => {
+                  setActive(i);
+                  setSelectedEl(null);
+                }}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold border-[2px] transition-all ${
+                  active === i
+                    ? "bg-[#ff4d4d] text-white border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+                    : "bg-white text-[#2d2d2d] border-[#2d2d2d]/40 hover:border-[#2d2d2d]"
+                }`}
+                style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
+              >
+                <span>#{i + 1}</span>
+                <span className="max-w-[80px] truncate">{s.title || "Slide"}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* ── Bottom Nav bar ── */}
+          <div className="flex items-center justify-between sm:justify-center gap-3 border-t-[3px] border-dashed border-[#2d2d2d] px-4 py-2.5 bg-[#fdfbf7] shrink-0">
             <button
               onClick={prev}
               disabled={active === 0}
-              className="flex items-center justify-center w-10 h-10 border-[2.5px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:shadow-[3px_3px_0px_0px_#2d2d2d] disabled:hover:translate-x-0 disabled:hover:translate-y-0 transition-all duration-100"
+              aria-label="Previous slide"
+              className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 border-[2.5px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               style={{ borderRadius: R.tag }}
             >
               <ChevronLeft size={16} strokeWidth={2.5} />
             </button>
 
             {/* Dot indicators */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto max-w-[180px] sm:max-w-none px-2">
               {dbSlides.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setActive(i)}
-                  className={`transition-all duration-100 border-[1.5px] border-[#2d2d2d] ${
-                    i === active ? "w-6 h-3 bg-[#ff4d4d]" : "w-3 h-3 bg-white hover:bg-[#e5e0d8]"
+                  aria-label={`Go to slide ${i + 1}`}
+                  className={`transition-all duration-100 border-[1.5px] border-[#2d2d2d] shrink-0 ${
+                    i === active ? "w-5 sm:w-6 h-2.5 sm:h-3 bg-[#ff4d4d]" : "w-2.5 sm:w-3 h-2.5 sm:h-3 bg-white hover:bg-[#e5e0d8]"
                   }`}
                   style={{ borderRadius: "2px" }}
                 />
@@ -405,14 +441,15 @@ function Viewer() {
             <button
               onClick={next}
               disabled={active === total - 1}
-              className="flex items-center justify-center w-10 h-10 border-[2.5px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:shadow-[3px_3px_0px_0px_#2d2d2d] disabled:hover:translate-x-0 disabled:hover:translate-y-0 transition-all duration-100"
+              aria-label="Next slide"
+              className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 border-[2.5px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               style={{ borderRadius: R.tag }}
             >
               <ChevronRight size={16} strokeWidth={2.5} />
             </button>
 
             <div
-              className="absolute right-4 flex items-center gap-1.5 text-xs text-[#6b6460]"
+              className="hidden sm:flex absolute right-4 items-center gap-1.5 text-xs text-[#6b6460]"
               style={{ fontFamily: "Patrick Hand, cursive" }}
             >
               ← → or Space
@@ -420,9 +457,9 @@ function Viewer() {
           </div>
         </main>
 
-        {/* ── Right: AI Panel ── */}
-        <aside className="w-[300px] shrink-0 border-l-[3px] border-dashed border-[#2d2d2d] bg-[#fdfbf7]">
-          <div className="flex h-full flex-col p-4">
+        {/* ── Desktop Right: AI Panel ── */}
+        <aside className="hidden lg:flex w-[300px] shrink-0 border-l-[3px] border-dashed border-[#2d2d2d] bg-[#fdfbf7]">
+          <div className="flex h-full w-full flex-col p-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedEl ? "selected" : "assistant"}
@@ -449,6 +486,66 @@ function Viewer() {
             </AnimatePresence>
           </div>
         </aside>
+
+        {/* ── Mobile Slide-Up AI Bottom Sheet ── */}
+        <AnimatePresence>
+          {mobileAIOpen && (
+            <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMobileAIOpen(false)}
+                className="fixed inset-0 bg-[#2d2d2d]/40 backdrop-blur-[2px]"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                className="relative z-10 w-full max-h-[80vh] bg-[#fdfbf7] border-t-[3px] border-[#2d2d2d] shadow-[0px_-6px_0px_0px_#2d2d2d] flex flex-col p-4 overflow-y-auto"
+                style={{ borderTopLeftRadius: "18px", borderTopRightRadius: "18px" }}
+              >
+                <div className="flex items-center justify-between pb-3 border-b-[2px] border-dashed border-[#2d2d2d]/30 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">✨</span>
+                    <h3 className="text-base font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+                      AI Assistant
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setMobileAIOpen(false)}
+                    className="p-1.5 bg-white border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+                    style={{ borderRadius: "6px" }}
+                  >
+                    <ArrowLeft size={14} className="rotate-[-90deg]" strokeWidth={2.5} />
+                  </button>
+                </div>
+                <div className="flex-1">
+                  {selectedEl ? (
+                    <ElementSelectedPanel
+                      element={selectedEl}
+                      onDeselect={() => setSelectedEl(null)}
+                      onRefine={(inst) => {
+                        handleRefine(inst);
+                        setMobileAIOpen(false);
+                      }}
+                      isRefining={isRefining}
+                    />
+                  ) : (
+                    <AIAssistant 
+                      onRefine={(inst) => {
+                        handleRefine(inst);
+                        setMobileAIOpen(false);
+                      }}
+                      isRefining={isRefining}
+                    />
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

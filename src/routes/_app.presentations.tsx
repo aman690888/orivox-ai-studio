@@ -52,11 +52,11 @@ function Presentations() {
   const categories = ["All", ...Array.from(new Set(presentations.map((p) => p.category)))];
 
   return (
-    <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
-      <div className="max-w-5xl mx-auto flex flex-col gap-8">
+    <div className="h-full w-full overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-12">
+      <div className="max-w-5xl mx-auto flex flex-col gap-6 sm:gap-8">
         {/* Header */}
-        <header className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex flex-col gap-2">
+        <header className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap">
+          <div className="flex flex-col gap-1 sm:gap-2">
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
@@ -69,12 +69,12 @@ function Presentations() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 }}
-              className="text-4xl font-bold text-[#2d2d2d]"
+              className="text-3xl sm:text-4xl font-bold text-[#2d2d2d]"
               style={{ fontFamily: "Kalam, cursive" }}
             >
               My Decks{" "}
               {!isLoading && (
-                <span className="text-2xl text-[#6b6460]">({presentations.length})</span>
+                <span className="text-xl sm:text-2xl text-[#6b6460]">({presentations.length})</span>
               )}
             </motion.h1>
           </div>
@@ -85,7 +85,7 @@ function Presentations() {
             onClick={() =>
               navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: "" } })
             }
-            className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold bg-[#ff4d4d] text-white border-[3px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-100"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-3 text-xs sm:text-sm font-bold bg-[#ff4d4d] text-white border-[2.5px] sm:border-[3px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] sm:shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
             <Plus size={16} strokeWidth={2.5} /> New deck
@@ -94,15 +94,15 @@ function Presentations() {
 
         {/* Filters & Actions Bar */}
         <div
-          className="flex flex-col md:flex-row gap-4 justify-between items-center bg-white border-[2.5px] border-[#2d2d2d] p-3 shadow-[4px_4px_0px_0px_#2d2d2d]"
+          className="flex flex-col md:flex-row gap-3 sm:gap-4 justify-between items-stretch md:items-center bg-white border-[2.5px] border-[#2d2d2d] p-3 shadow-[3px_3px_0px_0px_#2d2d2d] sm:shadow-[4px_4px_0px_0px_#2d2d2d]"
           style={{ borderRadius: R.md }}
         >
-          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveFilter(cat)}
-                className={`px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-colors border-[2px] border-transparent ${activeFilter === cat ? "bg-[#2d2d2d] text-white border-[#2d2d2d]" : "bg-[#fdfbf7] text-[#6b6460] hover:border-[#2d2d2d]"}`}
+                className={`px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-colors border-[2px] shrink-0 ${activeFilter === cat ? "bg-[#2d2d2d] text-white border-[#2d2d2d]" : "bg-[#fdfbf7] text-[#6b6460] border-transparent hover:border-[#2d2d2d]"}`}
                 style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
               >
                 {cat}
@@ -110,20 +110,20 @@ function Presentations() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative w-full md:w-64">
+          <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
               <input
                 type="text"
                 placeholder="Search decks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#fdfbf7] border-[2px] border-[#2d2d2d] pl-9 pr-4 py-2 text-sm outline-none focus:border-[#2d5da1] focus:ring-2 focus:ring-[#2d5da1]/20"
+                className="w-full bg-[#fdfbf7] border-[2px] border-[#2d2d2d] pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm outline-none focus:border-[#2d5da1] focus:ring-2 focus:ring-[#2d5da1]/20"
                 style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b6460]" />
             </div>
             <button
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#fdfbf7] border-[2px] border-[#2d2d2d] text-xs font-bold hover:bg-[#e5e0d8] transition-colors whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 bg-[#fdfbf7] border-[2px] border-[#2d2d2d] text-xs font-bold hover:bg-[#e5e0d8] transition-colors whitespace-nowrap shrink-0"
               style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
             >
               <ArrowDownAZ size={14} /> Sort

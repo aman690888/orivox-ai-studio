@@ -168,13 +168,14 @@ function StepCard({
 function Landing() {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const go = (p: string) =>
     navigate({ to: "/workspace/$id", params: { id: "new" }, search: { prompt: p } });
 
   return (
     <div
-      className="min-h-screen text-[#2d2d2d] flex flex-col"
+      className="min-h-screen text-[#2d2d2d] flex flex-col overflow-x-hidden"
       style={{
         fontFamily: "Patrick Hand, cursive",
         background: "#fdfbf7",
@@ -183,14 +184,14 @@ function Landing() {
       }}
     >
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 bg-[#fdfbf7]/90 backdrop-blur-sm border-b-[3px] border-[#2d2d2d] border-dashed">
-        <div className="max-w-5xl mx-auto px-6 h-[72px] flex items-center justify-between gap-6">
+      <header className="sticky top-0 z-50 bg-[#fdfbf7]/95 backdrop-blur-md border-b-[3px] border-[#2d2d2d] border-dashed">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-[64px] sm:h-[72px] flex items-center justify-between gap-4">
           <Logo />
           <nav
             className="hidden md:flex items-center gap-8 text-base"
             style={{ fontFamily: "Patrick Hand, cursive" }}
           >
-            {["Features", "Workflow", "Pricing", "FAQ"].map((item) => (
+            {["Features", "Workflow", "FAQ"].map((item) => (
               <a
                 key={item}
                 href={`#${item.toLowerCase()}`}
@@ -200,19 +201,23 @@ function Landing() {
               </a>
             ))}
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               to="/auth"
               search={{ reset: false }}
-              className="hidden md:block text-sm text-[#2d2d2d] hover:text-[#ff4d4d] transition-colors"
+              className="text-xs sm:text-sm text-[#2d2d2d] hover:text-[#ff4d4d] transition-colors px-2 py-1"
               style={{ fontFamily: "Patrick Hand, cursive" }}
             >
               Log in
             </Link>
             <Link to="/auth" search={{ reset: false }}>
-              <WobblyBtn>
-                Get Started <ArrowRight size={18} strokeWidth={2.5} />
-              </WobblyBtn>
+              <button
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 py-2 sm:px-5 sm:py-2.5 text-sm sm:text-base font-bold bg-white text-[#2d2d2d] border-[2.5px] sm:border-[3px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#ff4d4d] hover:text-white hover:shadow-[1px_1px_0px_0px_#2d2d2d] active:shadow-none transition-all duration-100"
+                style={{ borderRadius: R.wobblyBtn, fontFamily: "Kalam, cursive" }}
+              >
+                <span>Get Started</span>
+                <ArrowRight size={16} strokeWidth={2.5} />
+              </button>
             </Link>
           </div>
         </div>
@@ -220,24 +225,24 @@ function Landing() {
 
       <main className="flex-1">
         {/* ── Hero ── */}
-        <section className="max-w-5xl mx-auto px-6 py-20 md:py-28">
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20 md:py-28">
           {/* Announcement badge */}
-          <div className="flex justify-center mb-10">
+          <div className="flex justify-center mb-6 sm:mb-10 text-center">
             <div
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-sm shadow-[3px_3px_0px_0px_#2d2d2d] animate-wiggle"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-xs sm:text-sm shadow-[3px_3px_0px_0px_#2d2d2d] animate-wiggle"
               style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
             >
-              <Star size={14} strokeWidth={2.5} className="text-[#ff4d4d]" />
-              ✨ Orivox 2.0 just dropped — it's kinda magical
-              <Star size={14} strokeWidth={2.5} className="text-[#ff4d4d]" />
+              <Star size={14} strokeWidth={2.5} className="text-[#ff4d4d] shrink-0" />
+              <span>✨ Orivox 2.0 is live — it's kinda magical</span>
+              <Star size={14} strokeWidth={2.5} className="text-[#ff4d4d] shrink-0 hidden sm:inline" />
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left: Headline + CTA */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-5 sm:gap-6">
               <h1
-                className="text-5xl md:text-7xl font-bold leading-tight text-[#2d2d2d]"
+                className="text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] text-[#2d2d2d] break-words"
                 style={{ fontFamily: "Kalam, cursive" }}
               >
                 Stop making{" "}
@@ -245,7 +250,7 @@ function Landing() {
                   boring
                   {/* wavy underline */}
                   <svg
-                    className="absolute -bottom-2 left-0 w-full"
+                    className="absolute -bottom-1 sm:-bottom-2 left-0 w-full"
                     viewBox="0 0 100 8"
                     preserveAspectRatio="none"
                     height="8"

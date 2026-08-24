@@ -327,7 +327,7 @@ function Export() {
 
   return (
     <div
-      className="flex min-h-screen flex-col"
+      className="min-h-screen flex flex-col"
       style={{
         background: "#fdfbf7",
         backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
@@ -336,51 +336,48 @@ function Export() {
         color: "#2d2d2d",
       }}
     >
-      {/* ── Header ── */}
-      <header className="flex h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-4 z-20">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/present/$id"
-            params={{ id }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold border-[2px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
-            style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
-          >
-            <ArrowLeft size={14} strokeWidth={2.5} /> Viewer
-          </Link>
-          <div className="h-4 w-[2px] bg-[#2d2d2d]/20" />
-          <h1
-            className="text-sm font-bold text-[#2d2d2d] truncate max-w-[240px]"
-            style={{ fontFamily: "Kalam, cursive" }}
-          >
-            {presentationTitle}
-          </h1>
-        </div>
-        <div
-          className="px-3 py-1 text-xs font-bold bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
+      {/* ── Top Bar ── */}
+      <header className="flex h-[56px] sm:h-[60px] items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-4 z-20">
+        <Link
+          to="/present/$id"
+          params={{ id }}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-bold border-[2px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] active:translate-x-[1px] active:translate-y-[1px] transition-all duration-100"
           style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
         >
-          {dbSlides.length} slide{dbSlides.length !== 1 ? "s" : ""}
+          <ArrowLeft size={14} strokeWidth={2.5} /> Viewer
+        </Link>
+        <h1
+          className="text-xs sm:text-sm font-bold text-[#2d2d2d] truncate max-w-[180px] sm:max-w-xs"
+          style={{ fontFamily: "Kalam, cursive" }}
+        >
+          {dbPresentation.title}
+        </h1>
+        <div
+          className="px-2.5 py-0.5 text-xs font-bold bg-[#fff9c4] border-[1.5px] border-[#2d2d2d]"
+          style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
+        >
+          {dbSlides.length} slides
         </div>
       </header>
 
-      {/* ── Main ── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        <div className="w-full max-w-2xl flex flex-col gap-8">
+      {/* ── Main content ── */}
+      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12 md:py-16">
+        <div className="w-full max-w-3xl flex flex-col gap-6 sm:gap-8">
           {/* Heading */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1 sm:gap-2">
             <motion.div
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d]"
-              style={{ borderRadius: R.tag }}
+              style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
             >
-              📦 Ready to export
+              📤 Ready to share?
             </motion.div>
             <motion.h2
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="text-4xl font-bold text-[#2d2d2d]"
+              className="text-3xl sm:text-4xl font-bold text-[#2d2d2d]"
               style={{ fontFamily: "Kalam, cursive" }}
             >
               Export your deck
@@ -389,14 +386,14 @@ function Export() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="text-base text-[#6b6460]"
+              className="text-sm sm:text-base text-[#6b6460]"
             >
               Pick a format below and download in seconds.
             </motion.p>
           </div>
 
           {/* Format selector */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {FORMATS.map((f, i) => (
               <motion.button
                 key={f.id}
@@ -409,10 +406,10 @@ function Export() {
                   setCopied(false);
                   setErrorMsg("");
                 }}
-                className={`relative flex flex-col gap-3 p-5 border-[3px] text-left transition-all duration-100 ${
+                className={`relative flex flex-col gap-2.5 sm:gap-3 p-4 sm:p-5 border-[3px] text-left transition-all duration-100 ${
                   fmt === f.id
-                    ? "border-[#ff4d4d] bg-white shadow-[5px_5px_0px_0px_#ff4d4d]"
-                    : "border-[#2d2d2d] bg-white shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px]"
+                    ? "border-[#ff4d4d] bg-white shadow-[4px_4px_0px_0px_#ff4d4d] sm:shadow-[5px_5px_0px_0px_#ff4d4d]"
+                    : "border-[#2d2d2d] bg-white shadow-[3px_3px_0px_0px_#2d2d2d] sm:shadow-[4px_4px_0px_0px_#2d2d2d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px]"
                 }`}
                 style={{ borderRadius: R.md }}
               >
@@ -432,10 +429,10 @@ function Export() {
                   </div>
                 )}
 
-                <span className="text-3xl">{f.emoji}</span>
+                <span className="text-2xl sm:text-3xl">{f.emoji}</span>
                 <div>
                   <div
-                    className="text-base font-bold text-[#2d2d2d]"
+                    className="text-sm sm:text-base font-bold text-[#2d2d2d]"
                     style={{ fontFamily: "Kalam, cursive" }}
                   >
                     {f.label}
@@ -461,7 +458,7 @@ function Export() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="relative bg-white border-[3px] border-[#2d2d2d] p-8 shadow-[5px_5px_0px_0px_#2d2d2d]"
+            className="relative bg-white border-[3px] border-[#2d2d2d] p-5 sm:p-8 shadow-[4px_4px_0px_0px_#2d2d2d] sm:shadow-[5px_5px_0px_0px_#2d2d2d]"
             style={{ borderRadius: R.card }}
           >
             {/* Tape */}

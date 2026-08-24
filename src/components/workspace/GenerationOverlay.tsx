@@ -30,8 +30,8 @@ function ProgressRing({
   const strokeDashoffset = circumference - (pct / 100) * circumference;
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="relative w-24 h-24 flex items-center justify-center">
+    <div className="flex flex-col items-center gap-2 sm:gap-3">
+      <div className="relative w-18 h-18 sm:w-24 sm:h-24 flex items-center justify-center">
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
           <circle
             cx="40"
@@ -55,10 +55,10 @@ function ProgressRing({
             className="transition-all duration-500 ease-out"
           />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center text-3xl">
+        <div className="absolute inset-0 flex items-center justify-center text-2xl sm:text-3xl">
           {pct === 100 ? (
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-[#2d8a5b]">
-              <CheckCircle className="w-8 h-8" />
+              <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8" />
             </motion.div>
           ) : (
             <span>{icon}</span>
@@ -66,10 +66,10 @@ function ProgressRing({
         </div>
       </div>
       <div className="text-center">
-        <div className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
+        <div className="text-xs sm:text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
           {label}
         </div>
-        <div className="text-xs text-[#6b6460] font-mono">{pct}%</div>
+        <div className="text-[10px] sm:text-xs text-[#6b6460] font-mono">{pct}%</div>
       </div>
     </div>
   );
@@ -98,7 +98,7 @@ export function GenerationOverlay({ progress, onRetry }: GenerationOverlayProps)
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#fdfbf7]/95 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#fdfbf7]/95 backdrop-blur-sm p-4 overflow-y-auto"
         style={{
           backgroundImage: "radial-gradient(#e5e0d8 1px, transparent 1px)",
           backgroundSize: "24px 24px",
@@ -114,18 +114,18 @@ export function GenerationOverlay({ progress, onRetry }: GenerationOverlayProps)
           </div>
         )}
 
-        <div className="w-full max-w-2xl px-6 flex flex-col items-center gap-8">
+        <div className="w-full max-w-2xl px-4 sm:px-6 flex flex-col items-center gap-6 sm:gap-8">
           {/* Header */}
-          <div className="text-center flex flex-col items-center gap-4">
+          <div className="text-center flex flex-col items-center gap-3 sm:gap-4">
             <div
-              className="w-20 h-20 bg-[#fff9c4] border-[3px] border-[#2d2d2d] flex items-center justify-center text-4xl shadow-[4px_4px_0px_0px_#2d2d2d]"
+              className="w-16 h-16 sm:w-20 sm:h-20 bg-[#fff9c4] border-[3px] border-[#2d2d2d] flex items-center justify-center text-3xl sm:text-4xl shadow-[4px_4px_0px_0px_#2d2d2d]"
               style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
             >
               {status === "error" ? "💥" : status === "timeout" ? "⏱️" : "✨"}
             </div>
 
             <h1
-              className="text-3xl font-bold text-[#2d2d2d]"
+              className="text-2xl sm:text-3xl font-bold text-[#2d2d2d]"
               style={{ fontFamily: "Kalam, cursive" }}
             >
               {status === "error"
@@ -136,15 +136,15 @@ export function GenerationOverlay({ progress, onRetry }: GenerationOverlayProps)
             </h1>
 
             {(status === "generating" || status === "queued") && (
-              <div className="flex items-center gap-4 text-[#6b6460]">
+              <div className="flex items-center gap-3 sm:gap-4 text-[#6b6460]">
                 <div
-                  className="flex items-center gap-1.5 font-mono text-lg bg-white px-3 py-1 border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#e5e0d8]"
+                  className="flex items-center gap-1.5 font-mono text-base sm:text-lg bg-white px-3 py-1 border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#e5e0d8]"
                   style={{ borderRadius: "8px" }}
                 >
                   <Clock className="w-4 h-4 text-[#2d5da1]" />
                   <span>{formatTime(elapsedMs)}</span>
                 </div>
-                <div className="text-sm">Est. remaining: {formatTime(estimatedMs)}</div>
+                <div className="text-xs sm:text-sm">Est. remaining: {formatTime(estimatedMs)}</div>
               </div>
             )}
           </div>
@@ -210,7 +210,7 @@ export function GenerationOverlay({ progress, onRetry }: GenerationOverlayProps)
           {(status === "generating" || status === "queued") && (
             <>
               {/* Phase Cards */}
-              <div className="flex gap-8 justify-center w-full">
+              <div className="flex gap-4 sm:gap-8 justify-center w-full">
                 <ProgressRing pct={imagePct} label="Slides" color="#2d5da1" icon="🖼️" />
                 <ProgressRing pct={chartPct} label="Charts" color="#e87a2d" icon="📊" />
                 <ProgressRing pct={diagramPct} label="Diagrams" color="#8b5cf6" icon="🔀" />

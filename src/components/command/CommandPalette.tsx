@@ -77,7 +77,7 @@ export function CommandPalette() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[100] flex items-start justify-center bg-[#2d2d2d]/30 p-4 pt-[15vh] backdrop-blur-[2px]"
+          className="fixed inset-0 z-[100] flex items-start justify-center bg-[#2d2d2d]/30 p-3 sm:p-4 pt-[6vh] sm:pt-[12vh] backdrop-blur-[2px]"
           onClick={close}
         >
           <motion.div
@@ -86,7 +86,7 @@ export function CommandPalette() {
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xl overflow-hidden bg-white border-[3px] border-[#2d2d2d] shadow-[8px_8px_0px_0px_#2d2d2d]"
+            className="w-full max-w-xl max-h-[85vh] overflow-hidden bg-white border-[3px] border-[#2d2d2d] shadow-[6px_6px_0px_0px_#2d2d2d] sm:shadow-[8px_8px_0px_0px_#2d2d2d] flex flex-col"
             style={{ borderRadius: "8px 42px 12px 38px / 42px 12px 38px 8px" }}
           >
             <Command label="Command palette" className="flex flex-col">

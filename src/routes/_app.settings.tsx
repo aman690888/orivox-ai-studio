@@ -65,22 +65,22 @@ function Row({
 }) {
   return (
     <div
-      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 ${border ? "border-b-[2px] border-dashed border-[#2d2d2d]/30" : ""}`}
+      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6 p-4 sm:p-6 ${border ? "border-b-[2px] border-dashed border-[#2d2d2d]/30" : ""}`}
     >
-      <div className="flex-1 pr-8">
+      <div className="flex-1 pr-0 sm:pr-6">
         <div className="text-sm font-bold text-[#2d2d2d]" style={{ fontFamily: "Kalam, cursive" }}>
           {label}
         </div>
         {hint && (
           <div
-            className="mt-1.5 text-xs text-[#6b6460] leading-relaxed"
+            className="mt-1 text-xs text-[#6b6460] leading-relaxed"
             style={{ fontFamily: "Patrick Hand, cursive" }}
           >
             {hint}
           </div>
         )}
       </div>
-      <div className="shrink-0">{children}</div>
+      <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">{children}</div>
     </div>
   );
 }
@@ -96,12 +96,12 @@ function Field({
   readOnly?: boolean;
 }) {
   return (
-    <div className="relative">
+    <div className="relative w-full sm:w-auto">
       <input
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         readOnly={readOnly}
-        className={`w-full sm:w-72 border-[2px] border-[#2d2d2d] px-4 py-2.5 text-sm outline-none transition-all ${
+        className={`w-full sm:w-72 border-[2px] border-[#2d2d2d] px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm outline-none transition-all ${
           readOnly
             ? "bg-[#e5e0d8] text-[#6b6460] cursor-not-allowed"
             : "bg-white text-[#2d2d2d] focus:border-[#2d5da1] focus:ring-2 focus:ring-[#2d5da1]/20"
@@ -118,14 +118,14 @@ function Settings() {
   const activeTab = tabs.find((t) => t.id === tab);
 
   return (
-    <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
-      <div className="max-w-4xl mx-auto flex flex-col gap-8">
+    <div className="h-full w-full overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-12">
+      <div className="max-w-4xl mx-auto flex flex-col gap-6 sm:gap-8">
         {/* Header */}
         <header>
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] mb-3"
+            className="inline-flex items-center gap-2 self-start px-3 py-1 text-xs bg-[#fff9c4] border-[2px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] mb-2 sm:mb-3"
             style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
           >
             ⚙️ Configuration
@@ -134,30 +134,30 @@ function Settings() {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
-            className="text-4xl font-bold text-[#2d2d2d]"
+            className="text-3xl sm:text-4xl font-bold text-[#2d2d2d]"
             style={{ fontFamily: "Kalam, cursive" }}
           >
             Settings
           </motion.h1>
-          <div className="mt-6 border-t-[2px] border-dashed border-[#2d2d2d]" />
+          <div className="mt-4 sm:mt-6 border-t-[2px] border-dashed border-[#2d2d2d]" />
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Sidebar Tabs */}
           <aside className="w-full lg:w-[200px] shrink-0">
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-row overflow-x-auto gap-2 pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
               {tabs.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setTab(t.id)}
-                  className={`flex items-center gap-3 px-4 py-3 text-left text-sm font-bold border-[2.5px] border-[#2d2d2d] transition-all duration-100 ${
+                  className={`flex items-center gap-2 sm:gap-3 px-3 py-2 sm:px-4 sm:py-3 text-left text-xs sm:text-sm font-bold border-[2.5px] border-[#2d2d2d] transition-all duration-100 shrink-0 whitespace-nowrap ${
                     tab === t.id
-                      ? "bg-[#2d2d2d] text-white shadow-[3px_3px_0px_0px_#ff4d4d]"
-                      : "bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px]"
+                      ? "bg-[#2d2d2d] text-white shadow-[2px_2px_0px_0px_#ff4d4d] sm:shadow-[3px_3px_0px_0px_#ff4d4d]"
+                      : "bg-white text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] sm:shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:translate-x-[1px] hover:translate-y-[1px]"
                   }`}
                   style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                 >
-                  <span className="text-base">{t.emoji}</span>
+                  <span className="text-sm sm:text-base">{t.emoji}</span>
                   <span>{t.label}</span>
                 </button>
               ))}

@@ -48,6 +48,8 @@ import {
 import { getSlides, saveSlides } from "@/lib/database/slides";
 import { usePresentationSync } from "@/hooks/usePresentationSync";
 import { generateFullPresentation } from "@/lib/ai";
+import { refineSlide } from "@/lib/ai/services/refine";
+import { toast } from "sonner";
 
 const searchSchema = z.object({ prompt: z.string().optional() });
 
@@ -433,24 +435,66 @@ function Workspace() {
     [renderSlidesList, activeSlide, setSlides, id, sync, title],
   );
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     if (!text.trim()) return;
     const uId = nextIdRef.current++;
     setMessages((m) => [...m, { id: uId, role: "user", text, ts: Date.now() }]);
     setComposer("");
-    setTimeout(() => {
+
+    const currentSlide = renderSlidesList[activeSlide];
+    if (currentSlide && renderSlidesList.length > 0) {
       const aiId = nextIdRef.current++;
       setMessages((m) => [
         ...m,
         {
           id: aiId,
           role: "ai",
-          text: "On it — updating the deck now. ✏️",
+          text: "Refining slide with Gemini AI... ✏️",
           ts: Date.now(),
           stream: true,
         },
       ]);
-    }, 600);
+      try {
+        const updatedSlide = await refineSlide({ data: { slide: currentSlide, instruction: text } });
+        const updatedSlides = renderSlidesList.map((s, i) =>
+          i === activeSlide
+            ? {
+                ...s,
+                title: updatedSlide.title,
+                bullets: updatedSlide.bullets,
+                notes: updatedSlide.notes,
+                kind: updatedSlide.kind || s.kind,
+              }
+            : s,
+        );
+        setSlides(updatedSlides);
+        if (id !== "new") sync({ title, slides: updatedSlides });
+        setMessages((m) => [
+          ...m,
+          {
+            id: nextIdRef.current++,
+            role: "ai",
+            text: `Updated slide #${activeSlide + 1}: "${updatedSlide.title}" ✨`,
+            ts: Date.now(),
+          },
+        ]);
+        toast.success("Slide updated!");
+      } catch (err: any) {
+        console.error(err);
+        setMessages((m) => [
+          ...m,
+          {
+            id: nextIdRef.current++,
+            role: "ai",
+            text: `⚠️ Couldn't update slide: ${err.message || "Failed"}`,
+            ts: Date.now(),
+          },
+        ]);
+        toast.error(err.message || "Failed to update slide.");
+      }
+    } else {
+      startGeneration(text);
+    }
   };
 
   const handleTitleChange = useCallback(
@@ -587,6 +631,18 @@ function Workspace() {
 
   if (!user) return null;
 
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true,
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <div
       className="flex h-screen w-full flex-col overflow-hidden"
@@ -599,12 +655,12 @@ function Workspace() {
       }}
     >
       {/* ── Top Toolbar ── */}
-      <header className="flex h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-4 z-20">
+      <header className="flex h-[56px] sm:h-[60px] shrink-0 items-center justify-between bg-[#fdfbf7] border-b-[3px] border-dashed border-[#2d2d2d] px-3 sm:px-4 z-20 gap-2">
         {/* Left: back + title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link
             to="/home"
-            className="flex items-center justify-center h-9 w-9 border-[2.5px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+            className="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9 border-[2.5px] border-[#2d2d2d] bg-white text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] active:translate-x-[1px] active:translate-y-[1px] transition-all duration-100 shrink-0"
             style={{ borderRadius: R.tag }}
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={2.5} />
@@ -612,7 +668,7 @@ function Workspace() {
           <input
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
-            className="bg-transparent border-none outline-none text-sm font-bold text-[#2d2d2d] max-w-[180px] sm:max-w-[280px] hover:bg-[#e5e0d8] focus:bg-[#e5e0d8] px-2 py-1 transition-colors"
+            className="bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-[#2d2d2d] max-w-[120px] sm:max-w-[240px] hover:bg-[#e5e0d8] focus:bg-[#e5e0d8] px-2 py-1 transition-colors truncate"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           />
           {id !== "new" && (
@@ -621,7 +677,7 @@ function Workspace() {
         </div>
 
         {/* Right: generating pill + chat toggle + present */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {active && progress.status !== "success" && progress.status !== "idle" && (
             <AIStatusBar
               status={progress.status}
@@ -633,38 +689,52 @@ function Workspace() {
           )}
           <button
             onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-bold border-[2.5px] border-[#2d2d2d] transition-all duration-100 ${
+            className={`flex items-center gap-1 sm:gap-2 px-2.5 sm:px-3 py-1.5 text-xs sm:text-sm font-bold border-[2.5px] border-[#2d2d2d] transition-all duration-100 ${
               isChatOpen
                 ? "bg-[#2d2d2d] text-white shadow-[2px_2px_0px_0px_#ff4d4d]"
-                : "bg-white text-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px]"
+                : "bg-white text-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:bg-[#e5e0d8] active:translate-x-[1px] active:translate-y-[1px]"
             }`}
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
             <MessageSquare className="w-3.5 h-3.5" strokeWidth={2.5} />
-            AI Chat
+            <span>AI Chat</span>
           </button>
           <button
             onClick={() => navigate({ to: "/present/$id", params: { id } })}
             disabled={progress.status !== "success" && !isExistingPresentation}
-            className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold bg-[#ff4d4d] text-white border-[2.5px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-[3px_3px_0px_0px_#2d2d2d] disabled:hover:translate-x-0 disabled:hover:translate-y-0 transition-all duration-100"
+            className="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-bold bg-[#ff4d4d] text-white border-[2.5px] border-[#2d2d2d] shadow-[2px_2px_0px_0px_#2d2d2d] hover:shadow-[1px_1px_0px_0px_#2d2d2d] active:translate-x-[1px] active:translate-y-[1px] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-100"
             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
           >
-            <Play className="h-3.5 w-3.5" strokeWidth={2.5} /> Present ▶
+            <Play className="h-3.5 w-3.5" strokeWidth={2.5} />
+            <span>Present ▶</span>
           </button>
         </div>
       </header>
 
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* ── Chat Panel (floating left drawer) ── */}
+        {/* ── Chat Panel Backdrop (Mobile only) ── */}
+        <AnimatePresence>
+          {isChatOpen && !isDesktop && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsChatOpen(false)}
+              className="fixed inset-0 bg-[#2d2d2d]/40 backdrop-blur-[2px] z-40"
+            />
+          )}
+        </AnimatePresence>
+
+        {/* ── Chat Panel (left drawer) ── */}
         <AnimatePresence>
           {isChatOpen && (
             <motion.aside
-              initial={{ x: -310, opacity: 0 }}
+              initial={{ x: -330, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -310, opacity: 0 }}
+              exit={{ x: -330, opacity: 0 }}
               transition={{ type: "spring", stiffness: 320, damping: 30 }}
-              className="absolute left-0 top-0 bottom-0 w-[300px] z-10 flex flex-col bg-[#fdfbf7] border-r-[3px] border-dashed border-[#2d2d2d]"
+              className="fixed inset-y-0 left-0 sm:absolute sm:inset-y-0 sm:left-0 w-[300px] max-w-[85vw] z-50 sm:z-20 flex flex-col bg-[#fdfbf7] border-r-[3px] border-dashed border-[#2d2d2d] shadow-[6px_0px_0px_0px_#2d2d2d]"
             >
               {/* Chat header */}
               <div className="flex items-center justify-between px-4 py-3 border-b-[2px] border-dashed border-[#2d2d2d]">
@@ -873,7 +943,7 @@ function Workspace() {
         <main
           className="flex-1 h-full overflow-y-auto relative"
           style={{
-            marginLeft: isChatOpen ? "300px" : "0",
+            marginLeft: isChatOpen && isDesktop ? "300px" : "0",
             transition: "margin-left 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
           onClick={() => setSelectedEl(null)}

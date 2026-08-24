@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { GoogleGenAI } from "@google/genai";
 import { Slide } from "@/lib/mock";
+import { AIKeyManager } from "@/orchestrator/key-manager/AIKeyManager";
 
 const refineInputSchema = z.object({
   slide: z.any(),
@@ -12,16 +13,26 @@ export const refineSlide = createServerFn({ method: "POST" })
   .validator((d: unknown) => refineInputSchema.parse(d))
   .handler(async ({ data }) => {
     const { slide, instruction } = data;
-    
+
     const envObj = {
       ...((typeof process !== "undefined" && process.env) || {}),
       ...((import.meta as any).env || {}),
     };
-    
-    let apiKey = envObj.GEMINI_API_KEY || envObj.VITE_GEMINI_API_KEY;
-    
+
+    const discoveredKeys = [
+      ...AIKeyManager.discoverKeys("GEMINI_API_KEY", envObj),
+      ...AIKeyManager.discoverKeys("VITE_GEMINI_API_KEY", envObj),
+    ];
+
+    const apiKey =
+      discoveredKeys[0] ||
+      envObj.GEMINI_API_KEY ||
+      envObj.VITE_GEMINI_API_KEY ||
+      process.env.GEMINI_API_KEY ||
+      process.env.VITE_GEMINI_API_KEY;
+
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY not found in production.");
+      throw new Error("GEMINI_API_KEY not found in production environment.");
     }
 
     const ai = new GoogleGenAI({ apiKey });
@@ -30,7 +41,10 @@ export const refineSlide = createServerFn({ method: "POST" })
       type: "object",
       properties: {
         id: { type: "string" },
-        kind: { type: "string", enum: ["cover", "content", "chart", "diagram", "quote", "closing"] },
+        kind: {
+          type: "string",
+          enum: ["cover", "content", "chart", "diagram", "quote", "closing"],
+        },
         title: { type: "string" },
         bullets: { type: "array", items: { type: "string" } },
         notes: { type: "string" },
@@ -46,28 +60,35 @@ Instruction: ${instruction}
 
 Return the updated slide JSON. IMPORTANT: you MUST include the same "id" and "kind" values from the current slide. Update title, bullets, and notes based on the instruction. Return only valid JSON.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-flash-lite",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: slideSchema,
-      },
-    });
+    const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+    let lastError: Error | null = null;
 
-    let text = response.text || "";
-    text = text.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
-    
-    try {
-      const parsed = JSON.parse(text);
-      // Always merge back required fields from original slide as safety net
-      return {
-        ...slide,
-        ...parsed,
-        id: slide.id,
-        kind: parsed.kind || slide.kind,
-      } as Slide;
-    } catch (e) {
-      throw new Error("Failed to parse Gemini response as JSON");
+    for (const modelName of candidateModels) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: slideSchema,
+          },
+        });
+
+        let text = response.text || "";
+        text = text.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
+
+        const parsed = JSON.parse(text);
+        return {
+          ...slide,
+          ...parsed,
+          id: slide.id,
+          kind: parsed.kind || slide.kind,
+        } as Slide;
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[refineSlide] Model ${modelName} failed, attempting next model fallback:`, err?.message || err);
+      }
     }
+
+    throw new Error(lastError?.message || "Failed to refine slide with Gemini AI.");
   });

@@ -466,23 +466,23 @@ function Auth() {
       }}
     >
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 bg-[#fdfbf7]/90 backdrop-blur-sm border-b-[3px] border-dashed border-[#2d2d2d]">
-        <div className="max-w-5xl mx-auto px-6 h-[72px] flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-[#fdfbf7]/95 backdrop-blur-md border-b-[3px] border-[#2d2d2d] border-dashed">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-[64px] sm:h-[72px] flex items-center justify-between">
           <Link to="/">
             <Logo />
           </Link>
           <div
-            className="inline-flex items-center gap-2 px-3 py-1 bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-sm shadow-[2px_2px_0px_0px_#2d2d2d]"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-3 sm:py-1 bg-[#fff9c4] border-[2px] border-[#2d2d2d] text-xs sm:text-sm shadow-[2px_2px_0px_0px_#2d2d2d]"
             style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
           >
-            ✍️ Secure Sign In
+            ✍️ <span>Secure Sign In</span>
           </div>
         </div>
       </header>
 
       {/* ── Main ── */}
-      <main className="flex-1 flex items-center justify-center px-6 py-16">
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 sm:py-16">
+        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* ── Left: Branding Panel ── */}
           <div className="hidden md:flex flex-col gap-8 relative">
             {/* Decorative tilted card behind */}
@@ -577,7 +577,7 @@ function Auth() {
           </div>
 
           {/* ── Right: Auth Form Card ── */}
-          <div className="relative">
+          <div className="relative w-full max-w-md mx-auto">
             {/* Tilted card behind */}
             <div
               className="absolute inset-0 bg-[#e5e0d8] border-[3px] border-[#2d2d2d] -z-10"
@@ -588,7 +588,7 @@ function Auth() {
             />
 
             <div
-              className="relative bg-white border-[3px] border-[#2d2d2d] p-8 shadow-[6px_6px_0px_0px_#ff4d4d] min-h-[520px] flex flex-col"
+              className="relative bg-white border-[3px] border-[#2d2d2d] p-5 sm:p-8 shadow-[6px_6px_0px_0px_#ff4d4d] min-h-[480px] sm:min-h-[520px] flex flex-col"
               style={{ borderRadius: R.wobblyCard }}
             >
               {/* Tape */}

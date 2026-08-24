@@ -64,10 +64,10 @@ function Home() {
   );
 
   return (
-    <div className="h-full w-full overflow-y-auto px-6 py-10 md:px-10 md:py-12">
-      <div className="max-w-4xl mx-auto flex flex-col gap-12">
+    <div className="h-full w-full overflow-y-auto px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-12">
+      <div className="max-w-4xl mx-auto flex flex-col gap-8 sm:gap-12">
         {/* ── Header ── */}
-        <header className="flex flex-col gap-3">
+        <header className="flex flex-col gap-2 sm:gap-3">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -80,7 +80,7 @@ function Home() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
-            className="text-4xl md:text-5xl font-bold text-[#2d2d2d]"
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#2d2d2d]"
             style={{ fontFamily: "Kalam, cursive" }}
           >
             {greeting},{" "}
@@ -106,7 +106,7 @@ function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.15 }}
-            className="text-base text-[#6b6460]"
+            className="text-sm sm:text-base text-[#6b6460]"
             style={{ fontFamily: "Patrick Hand, cursive" }}
           >
             What are we building today?
@@ -126,16 +126,16 @@ function Home() {
             style={{ borderRadius: R.card, transform: "rotate(1.5deg) translate(4px, 4px)" }}
           />
           <div
-            className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-[5px_5px_0px_0px_#ff4d4d]"
+            className="relative bg-white border-[3px] border-[#2d2d2d] p-4 sm:p-6 shadow-[5px_5px_0px_0px_#ff4d4d]"
             style={{ borderRadius: R.card }}
           >
             {/* Tape */}
             <div
-              className="absolute -top-4 left-1/2 w-12 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
+              className="absolute -top-3 left-1/2 w-10 sm:w-12 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
               style={{ borderRadius: "2px", transform: "translateX(-50%) rotate(-1deg)" }}
             />
             <p
-              className="text-sm font-bold mb-3 text-[#6b6460]"
+              className="text-xs sm:text-sm font-bold mb-2.5 sm:mb-3 text-[#6b6460]"
               style={{ fontFamily: "Kalam, cursive" }}
             >
               ✍️ Describe your presentation...
@@ -152,7 +152,7 @@ function Home() {
               />
             </div>
             {/* Suggestions */}
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-3 sm:mt-4 flex flex-wrap gap-1.5 sm:gap-2">
               {suggestions.slice(0, 4).map((s, i) => (
                 <motion.button
                   key={s}
@@ -160,7 +160,7 @@ function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 + i * 0.06 }}
                   onClick={() => setPrompt(s)}
-                  className="text-xs px-3 py-1.5 bg-[#fdfbf7] border-[2px] border-dashed border-[#2d2d2d] hover:bg-[#e5e0d8] hover:border-solid transition-all duration-100"
+                  className="text-[11px] sm:text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 bg-[#fdfbf7] border-[1.5px] sm:border-[2px] border-dashed border-[#2d2d2d] hover:bg-[#e5e0d8] hover:border-solid transition-all duration-100"
                   style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
                 >
                   {s}
@@ -190,37 +190,37 @@ function Home() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="relative flex flex-col items-center justify-center text-center py-16 px-8 bg-white border-[3px] border-dashed border-[#2d2d2d]"
+            className="relative flex flex-col items-center justify-center text-center py-12 sm:py-16 px-4 sm:px-8 bg-white border-[3px] border-dashed border-[#2d2d2d]"
             style={{ borderRadius: R.md }}
           >
             <div
-              className="w-16 h-16 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-3xl mb-5 shadow-[3px_3px_0px_0px_#2d2d2d] animate-wiggle"
+              className="w-14 h-14 sm:w-16 sm:h-16 bg-[#fff9c4] border-[2px] border-[#2d2d2d] flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-5 shadow-[3px_3px_0px_0px_#2d2d2d] animate-wiggle"
               style={{ borderRadius: "50% 40% 55% 35% / 40% 55% 35% 50%" }}
             >
-              <PresIcon className="w-7 h-7 text-[#2d2d2d]" strokeWidth={2.5} />
+              <PresIcon className="w-6 h-6 sm:w-7 sm:h-7 text-[#2d2d2d]" strokeWidth={2.5} />
             </div>
             <h2
-              className="text-xl font-bold text-[#2d2d2d]"
+              className="text-lg sm:text-xl font-bold text-[#2d2d2d]"
               style={{ fontFamily: "Kalam, cursive" }}
             >
               Nothing here yet!
             </h2>
             <p
-              className="mt-2 text-sm text-[#6b6460] max-w-xs"
+              className="mt-1.5 text-xs sm:text-sm text-[#6b6460] max-w-xs"
               style={{ fontFamily: "Patrick Hand, cursive" }}
             >
               Type an idea in the box above and watch it come to life in seconds. ✨
             </p>
             <button
               onClick={() => go("A startup pitch deck for investors")}
-              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[4px_4px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
+              className="mt-5 sm:mt-6 inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-bold bg-[#2d2d2d] text-white border-[2.5px] border-[#2d2d2d] shadow-[3px_3px_0px_0px_#ff4d4d] hover:bg-[#ff4d4d] hover:shadow-[2px_2px_0px_0px_#2d2d2d] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-100"
               style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
             >
-              <Zap size={16} strokeWidth={2.5} /> Try a demo deck
+              <Zap size={14} strokeWidth={2.5} /> Try a demo deck
             </button>
           </motion.div>
         ) : (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6 sm:gap-8">
             {/* Dashboard Overview Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column (Featured + Stats) */}
@@ -238,7 +238,7 @@ function Home() {
                       <motion.div
                         whileHover={{ y: -3 }}
                         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                        className="relative bg-white border-[3px] border-[#2d2d2d] p-6 shadow-[5px_5px_0px_0px_#2d2d2d] hover:shadow-[7px_7px_0px_0px_#2d2d2d] transition-all"
+                        className="relative bg-white border-[3px] border-[#2d2d2d] p-4 sm:p-6 shadow-[4px_4px_0px_0px_#2d2d2d] sm:shadow-[5px_5px_0px_0px_#2d2d2d] hover:shadow-[6px_6px_0px_0px_#2d2d2d] transition-all"
                         style={{ borderRadius: R.card }}
                       >
                         {/* Tape */}
@@ -246,26 +246,26 @@ function Home() {
                           className="absolute -top-3 left-8 w-10 h-4 bg-gray-300/60 border border-dashed border-gray-400/50"
                           style={{ borderRadius: "2px", transform: "rotate(-1deg)" }}
                         />
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                           <div className="flex-1 min-w-0">
                             <div
-                              className="inline-block px-2 py-0.5 text-xs bg-[#fff9c4] border-[1.5px] border-[#2d2d2d] mb-3"
+                              className="inline-block px-2 py-0.5 text-xs bg-[#fff9c4] border-[1.5px] border-[#2d2d2d] mb-2 sm:mb-3"
                               style={{ borderRadius: R.tag, fontFamily: "Patrick Hand, cursive" }}
                             >
                               {featured.category}
                             </div>
                             <h3
-                              className="text-xl md:text-2xl font-bold text-[#2d2d2d] line-clamp-2 group-hover:text-[#ff4d4d] transition-colors"
+                              className="text-lg sm:text-xl md:text-2xl font-bold text-[#2d2d2d] line-clamp-2 group-hover:text-[#ff4d4d] transition-colors"
                               style={{ fontFamily: "Kalam, cursive" }}
                             >
                               {featured.title}
                             </h3>
                           </div>
                           <div
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-[#2d2d2d] text-white border-[2px] border-[#2d2d2d] shrink-0"
+                            className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold bg-[#2d2d2d] text-white border-[2px] border-[#2d2d2d] shrink-0"
                             style={{ borderRadius: R.tag, fontFamily: "Kalam, cursive" }}
                           >
-                            Resume Editing{" "}
+                            <span>Resume</span>
                             <ArrowRight
                               size={14}
                               strokeWidth={2.5}
@@ -286,38 +286,38 @@ function Home() {
                   >
                     📊 Workspace Stats
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     {[
                       {
                         label: "Total Decks",
                         value: String(totalDecks),
-                        icon: <BookOpen size={18} strokeWidth={2.5} className="text-[#2d5da1]" />,
+                        icon: <BookOpen size={16} strokeWidth={2.5} className="text-[#2d5da1]" />,
                       },
                       {
                         label: "Total Slides",
                         value: String(presentations.reduce((sum, p) => sum + (p.slides || 0), 0)),
-                        icon: <BarChart2 size={18} strokeWidth={2.5} className="text-[#ff4d4d]" />,
+                        icon: <BarChart2 size={16} strokeWidth={2.5} className="text-[#ff4d4d]" />,
                       },
                       {
                         label: "Latest",
                         value: presentations.length > 0 ? presentations[0].updated : "—",
-                        icon: <Sparkles size={18} strokeWidth={2.5} className="text-[#f59e0b]" />,
+                        icon: <Sparkles size={16} strokeWidth={2.5} className="text-[#f59e0b]" />,
                       },
                     ].map((stat, i) => (
                       <div
                         key={i}
-                        className="bg-white border-[2px] border-[#2d2d2d] p-4 flex flex-col items-center justify-center text-center shadow-[3px_3px_0px_0px_#2d2d2d] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_0px_#2d2d2d] transition-all"
+                        className="bg-white border-[2px] border-[#2d2d2d] p-2.5 sm:p-4 flex flex-col items-center justify-center text-center shadow-[2px_2px_0px_0px_#2d2d2d] sm:shadow-[3px_3px_0px_0px_#2d2d2d] transition-all"
                         style={{ borderRadius: R.tag }}
                       >
                         <span className="mb-1">{stat.icon}</span>
                         <span
-                          className="text-base font-bold text-[#2d2d2d] leading-tight"
+                          className="text-sm sm:text-base font-bold text-[#2d2d2d] leading-tight"
                           style={{ fontFamily: "Kalam, cursive" }}
                         >
                           {stat.value}
                         </span>
                         <span
-                          className="text-xs text-[#6b6460]"
+                          className="text-[10px] sm:text-xs text-[#6b6460] truncate max-w-full"
                           style={{ fontFamily: "Patrick Hand, cursive" }}
                         >
                           {stat.label}
